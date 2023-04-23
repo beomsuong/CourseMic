@@ -4,7 +4,6 @@ void main() {
   runApp(MyApp());
 }
 
-//erwer
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -25,7 +24,7 @@ class GradientText extends StatelessWidget {
     return Text(
       'CouserMic',
       style: TextStyle(
-        fontSize: 1557,
+        fontSize: 20,
         fontWeight: FontWeight.bold,
         foreground: Paint()
           ..shader = const LinearGradient(
@@ -43,9 +42,9 @@ class GradientText extends StatelessWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
   final List<Widget> _pages = [
-    mypage(),
+    const Center(child: Text('첫 번째 페이지')),
     const Center(child: Text('두 번째 페이지')),
-    const Center(child: Text('세 번째 페이지')),
+    mypage(),
   ];
 
   void _onItemTapped(int index) {
@@ -61,18 +60,11 @@ class _MyHomePageState extends State<MyHomePage> {
         title: GradientText(),
         centerTitle: false,
         backgroundColor: Colors.white,
-        leading: Padding(
-          padding: const EdgeInsets.all(30), //격을 줄여줍니다.
-          child: IconButton(
-            onPressed: null,
-            icon: SizedBox(
-              width: 10,
-              height: 10,
-              child: Image.asset(
-                "assets/image/logo.png",
-                fit: BoxFit.contain, // 이미지 크기를 그대로 유지합니다.
-              ),
-            ),
+        leading: IconButton(
+          onPressed: null,
+          icon: Image.asset(
+            "assets/image/logo.png",
+            fit: BoxFit.contain, // 이미지 크기를 그대로 유지합니다.
           ),
         ),
       ),
