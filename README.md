@@ -1,4 +1,4 @@
-# capston
+# 강원대학교 캡스톤 졸업과제
 
 A new Flutter project.
 
