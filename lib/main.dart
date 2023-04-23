@@ -4,6 +4,7 @@ void main() {
   runApp(MyApp());
 }
 
+//erwer
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class GradientText extends StatelessWidget {
     return Text(
       'CouserMic',
       style: TextStyle(
-        fontSize: 30,
+        fontSize: 20,
         fontWeight: FontWeight.bold,
         foreground: Paint()
           ..shader = const LinearGradient(
