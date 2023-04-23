@@ -25,7 +25,7 @@ class GradientText extends StatelessWidget {
     return Text(
       'CouserMic',
       style: TextStyle(
-        fontSize: 20,
+        fontSize: 1557,
         fontWeight: FontWeight.bold,
         foreground: Paint()
           ..shader = const LinearGradient(
