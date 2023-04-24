@@ -1,6 +1,23 @@
 import 'package:flutter/material.dart';
 
-class mypage extends StatelessWidget {
+class Mypage extends StatelessWidget {
+  Mypage({super.key});
+  SizedBox print_info(String a, String b) {
+    //기본 정보 출력 함수
+    //파이어 베이스에서 해당 정보를 받아온다
+    return SizedBox(
+      height: 30,
+      child: Row(
+        children: [
+          Text(
+            ' $a : $b',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,74 +90,10 @@ class mypage extends StatelessWidget {
                     height: 3,
                     color: Colors.black,
                   ),
-                  SizedBox(
-                    height: 30,
-                    child: Row(
-                      children: const [
-                        Text(
-                          '대학 :',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          '대학교 변수',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    height: 30,
-                    child: Row(
-                      children: const [
-                        Text(
-                          '학과 :',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          '학과 변수',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    height: 30,
-                    child: Row(
-                      children: const [
-                        Text(
-                          'MBTI :',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          'MBTI 변수',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    height: 30,
-                    child: Row(
-                      children: const [
-                        Text(
-                          '연락 가능 시간 :',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          '연락가능 시간 변수',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
-                  ),
+                  print_info("대학", "대학 정보 변수"),
+                  print_info("학과 ", "학과 변수"),
+                  print_info("MBTI ", "MBTI 변수"),
+                  print_info("연락 가능 시간 ", "연락가능 시간 변수"),
                   const Divider(
                     thickness: 2,
                     height: 10,
@@ -186,17 +139,7 @@ class mypage extends StatelessWidget {
                     child: Row(
                       children: const [
                         Text(
-                          '현재 참여중인 과제 : ',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          '갯수 변수',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          '(개)',
+                          '현재 참여중인 과제 : ' '갯수 변수' '(개)',
                           style: TextStyle(
                               fontSize: 15, fontWeight: FontWeight.w700),
                         ),
@@ -208,17 +151,7 @@ class mypage extends StatelessWidget {
                     child: Row(
                       children: const [
                         Text(
-                          '완료한 과제 : ',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          '갯수 변수',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          '(개)',
+                          '완료한 과제 : ' '갯수 변수' '(개)',
                           style: TextStyle(
                               fontSize: 15, fontWeight: FontWeight.w700),
                         ),
