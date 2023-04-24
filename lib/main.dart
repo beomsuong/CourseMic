@@ -113,30 +113,106 @@ class mypage extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(
-            child: Text(
-              '이름 예정',
-              style: TextStyle(
-                fontSize: 30,
-                decoration: TextDecoration.underline,
+          Column(
+            children: const [
+              Text(
+                '이름 예정',
+                style: TextStyle(
+                  fontSize: 30,
+                ),
+              ),
+              Divider(
+                thickness: 2,
+                height: 10,
+                indent: 70,
+                endIndent: 70,
+                color: Colors.black,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+            ],
+          ),
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 30, left: 30),
+              child: Column(
+                children: [
+                  const Text(
+                    '이름 123예정',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  ),
+                  const Divider(
+                    thickness: 2,
+                    height: 10,
+                    color: Colors.black,
+                  ),
+                  Row(
+                    children: const [
+                      Text(
+                        '대학 :',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        '대학교 변수',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: const [
+                      Text(
+                        '학과 :',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        '학과 변수',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: const [
+                      Text(
+                        'MBTI :',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        'MBTI 변수',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: const [
+                      Text(
+                        '연락 가능 시간 :',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        '연락가능 시간 변수',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                  const Divider(
+                    thickness: 2,
+                    height: 10,
+                    color: Colors.black,
+                  ),
+                ],
               ),
             ),
           ),
-          const Align(
-            alignment: Alignment.bottomLeft,
-            child: Padding(
-              padding: EdgeInsets.only(bottom: 30, left: 30),
-              child: SizedBox(
-                child: Text(
-                  '기본 정보',
-                  style: TextStyle(
-                    fontSize: 20,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ),
-          )
         ],
       ),
     );
