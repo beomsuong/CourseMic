@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'message.dart';
 import 'mypage.dart';
 
 void main() {
@@ -20,6 +21,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class GradientText extends StatelessWidget {
+  const GradientText({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Text(
@@ -45,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<Widget> _pages = [
     //각 페이지 이동 시 사용하는 리스트형 위젯 각 페이지 클래스를 실행한다
     const Center(child: Text('첫 번째 페이지')),
-    const Center(child: Text('두 번째 페이지')),
+    RoomList(),
     Mypage(),
   ];
 
