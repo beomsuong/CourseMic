@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'message.dart';
 import 'mypage.dart';
+import 'loginpage.dart';
 
 void main() {
   runApp(MyApp());
@@ -47,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
   final List<Widget> _pages = [
     //각 페이지 이동 시 사용하는 리스트형 위젯 각 페이지 클래스를 실행한다
-    const Center(child: Text('첫 번째 페이지')),
+    Loginpage(),
     RoomList(),
     Mypage(),
   ];
