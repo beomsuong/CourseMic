@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 
 class Mypage extends StatelessWidget {
   Mypage({super.key});
@@ -63,16 +64,23 @@ class Mypage extends StatelessWidget {
             padding: const EdgeInsets.only(right: 30, left: 30),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 SizedBox(
                   child: Text(
                     '기본 정보',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
                 ),
-                SizedBox(
+                ElevatedButton(
+                  onPressed: () {
+                    // 버튼을 눌렀을 때 실행되는 코드
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
+                  ),
                   child: Text(
-                    '수정버튼 수정 예정',
+                    '+ 수정',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
                 ),
@@ -107,16 +115,23 @@ class Mypage extends StatelessWidget {
             padding: const EdgeInsets.only(right: 30, left: 30, top: 30),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 SizedBox(
                   child: Text(
                     '활동 이력',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
                 ),
-                SizedBox(
+                ElevatedButton(
+                  onPressed: () {
+                    // 버튼을 눌렀을 때 실행되는 코드
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
+                  ),
                   child: Text(
-                    '조회 버튼 추가 예정',
+                    '+ 조회',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
                 ),
@@ -172,7 +187,7 @@ class Mypage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
                 Padding(
-                  padding: EdgeInsets.only(top: 7),
+                  padding: EdgeInsets.only(top: 7, bottom: 7),
                   child: Text(
                     'Level : ' '레벨변수',
                     style: TextStyle(fontSize: 25, fontWeight: FontWeight.w900),
@@ -184,10 +199,32 @@ class Mypage extends StatelessWidget {
           SizedBox(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Text(
-                  'EXP',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900),
+              children: [
+                //이하 주석 부분 LinearPercentIndicator에 병합
+                // Text(
+                //   'EXP',
+                //   style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900),
+                // ),
+                LinearPercentIndicator(
+                  width: 200.0,
+                  lineHeight: 20.0,
+                  leading: Text(
+                    //좌측 문자열 Leading
+                    "EXP",
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+                  ),
+                  trailing: Text(
+                    //우측 문자열 trailing
+                    "% 변수",
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+                  ),
+                  percent: 0.8,
+                  center: Text("80.0%"),
+                  backgroundColor: const Color.fromARGB(255, 198, 198, 198),
+                  progressColor: Color.fromRGBO(237, 145, 255, 1),
+                  animation: true,
+                  animationDuration: 2500,
+                  barRadius: Radius.circular(30.0),
                 ),
               ],
             ),
