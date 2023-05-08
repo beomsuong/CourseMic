@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Loginpage extends StatefulWidget {
   Loginpage({super.key});
 
@@ -16,6 +18,36 @@ class _LoginpageState extends State<Loginpage> {
       print("$id $pwd");
     } else {
       print("안출력");
+    }
+  }
+
+  Map<String, List<List<dynamic>>> datas = {
+    '수학': [
+      [1, 9, 30, 60],
+      [2, 9, 30, 60],
+    ],
+    '과학': [
+      [3, 9, 30, 60],
+    ]
+  };
+  int i = 0;
+  @override
+  void initState() {
+    for (var key in datas.keys) {
+      print("!");
+      final usercol =
+          FirebaseFirestore.instance.collection("!@#users12").doc(key);
+      usercol.set({});
+
+      for (final value in datas[key]!) {
+        i++;
+
+        final usercol =
+            FirebaseFirestore.instance.collection("!@#users12").doc(key);
+        usercol.update({
+          i.toString(): value,
+        });
+      }
     }
   }
 
