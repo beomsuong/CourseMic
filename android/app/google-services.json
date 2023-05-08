@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "903118596740",
+    "project_id": "coursermic",
+    "storage_bucket": "coursermic.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:903118596740:android:b9455767b2dfaf4983f0d1",
+        "android_client_info": {
+          "package_name": "com.example.capston"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "903118596740-aib58priigs643cd2qm6h0ln8vv3a2t1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "apikey"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "903118596740-aib58priigs643cd2qm6h0ln8vv3a2t1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "903118596740-15iqts5nivs0jdhhvdka25s4kmi3b34r.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.capston"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

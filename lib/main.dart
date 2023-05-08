@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_config/flutter_config.dart';
 import 'message.dart';
 import 'mypage.dart';
 import 'loginpage.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterConfig.loadEnvVariables(); //추가
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FlutterConfig.get('apiKey');
+  print("@");
   runApp(MyApp());
 }
 
@@ -23,7 +33,6 @@ class MyHomePage extends StatefulWidget {
 
 class GradientText extends StatelessWidget {
   const GradientText({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Text(
