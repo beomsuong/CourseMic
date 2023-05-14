@@ -1,3 +1,4 @@
+import 'chatting/main_screen.dart' as chat;
 import 'package:flutter/material.dart';
 import 'package:flutter_config/flutter_config.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Chatting app',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const LoginSignupScreen(),
+      home: const chat.LoginSignupScreen(),
     );
   }
 }
