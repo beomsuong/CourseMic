@@ -40,6 +40,10 @@ dependencies:
   firebase_core: ^2.11.0
   provider: ^6.0.5
   firebase_auth: ^4.6.0
+  flutter_chat_bubble: ^2.0.2
+  image_picker: ^0.8.7+5
+  firebase_storage: ^11.2.0
+  modal_progress_hud_nsn: ^0.4.0
 
 dev_dependencies:
   flutter_test:
