@@ -1,4 +1,6 @@
+import 'package:capston/provider/userdata.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'mainpage.dart';
 import 'palette.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,7 +20,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
   String userName = '';
   String userEmail = '';
   String userPassword = '';
-
+  late Userdata data;
   void _tryValidation() {
     final isValid = _formKey.currentState!.validate();
     if (isValid) {
@@ -28,6 +30,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    data = Provider.of<Userdata>(context);
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 183, 180, 183),
       body: GestureDetector(
@@ -75,10 +78,11 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
               ),
             ),
             //배경
+
             AnimatedPositioned(
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeIn,
-              top: 180,
+              top: 280,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 500),
                 curve: Curves.easeIn,
@@ -398,7 +402,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
             AnimatedPositioned(
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeIn,
-              top: isSignupScreen ? 430 : 390,
+              top: isSignupScreen ? 530 : 490,
               right: 0,
               left: 0,
               child: Center(
@@ -421,9 +425,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                           password: userPassword,
                         )
                             .then((newUser) {
-                          if (newUser.user != null) {
-                            print("잘됨");
-                          }
+                          if (newUser.user != null) {}
                         }).catchError((e) {
                           print(e);
                           ScaffoldMessenger.of(currentContext).showSnackBar(
@@ -442,6 +444,13 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                         )
                             .then((newUser) {
                           if (newUser.user != null) {
+                            FirebaseAuth.instance
+                                .authStateChanges()
+                                .listen((User? user) {
+                              if (user != null) {
+                                data.setUserUid(user.uid); //사용자 UID
+                              }
+                            });
                             Navigator.push(
                               currentContext,
                               MaterialPageRoute(
@@ -485,35 +494,6 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
               ),
             ),
             //전송버튼
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeIn,
-              top: isSignupScreen
-                  ? MediaQuery.of(context).size.height - 125
-                  : MediaQuery.of(context).size.height - 165,
-              right: 0,
-              left: 0,
-              child: Column(
-                children: [
-                  Text(isSignupScreen ? 'or Signup with' : 'or Signin with'),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  TextButton.icon(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(155, 40),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        backgroundColor: Palette.googleColor),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Google'),
-                  ),
-                ],
-              ),
-            ),
-            //구글 로그인 버튼
           ],
         ),
       ),
