@@ -4,7 +4,7 @@ import 'package:flutter_config/flutter_config.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
-import 'main_screen.dart';
+import 'chatting/main_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CourserMic',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const LoginSignupScreen(),
+      home: LoginSignupScreen1(),
     );
   }
 }

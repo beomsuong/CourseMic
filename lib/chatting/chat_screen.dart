@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat/message.dart';
 import 'chat/new_message.dart';
 
@@ -27,6 +26,9 @@ class _ChatScreenState extends State<ChatScreen> {
       final user = _authentication.currentUser;
       if (user != null) {
         loggedUser = user;
+        print("!@#");
+
+        print(loggedUser!.uid);
         print(loggedUser!.email);
       }
     } catch (e) {
