@@ -66,49 +66,33 @@ class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
                 top: 0,
                 right: 0,
                 left: 0,
-                child: Container(
+                child: SizedBox(
                   height: 300,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                        image: AssetImage('assets/image/logo.png'),
-                        fit: BoxFit.fill),
-                  ),
                   child: Container(
-                    padding: EdgeInsets.only(top: 90, left: 20),
-                    child: Column(
+                    padding: const EdgeInsets.only(top: 90, left: 20),
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        RichText(
-                          text: TextSpan(
-                            text: 'Welcome',
-                            style: TextStyle(
-                                letterSpacing: 1.0,
-                                fontSize: 25,
-                                color: Colors.white),
-                            children: [
-                              TextSpan(
-                                text:
-                                    isSignupScreen ? ' to CourseMic!' : ' back',
-                                style: TextStyle(
-                                  letterSpacing: 1.0,
-                                  fontSize: 25,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          height: 5.0,
+                        Image.asset(
+                          "assets/image/logo.png",
+                          scale: 5, // 이미지 크기를 그대로 유지합니다.
                         ),
                         Text(
-                          isSignupScreen
-                              ? 'Signup to continue'
-                              : 'Signin to continue',
+                          'CourseMic',
                           style: TextStyle(
-                            letterSpacing: 1.0,
-                            color: Colors.white,
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            foreground: Paint()
+                              ..shader = const LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.blue,
+                                  Color.fromARGB(142, 141, 5, 187)
+                                ],
+                              ).createShader(
+                                const Rect.fromLTWH(50.0, 0.0, 200.0, 0.0),
+                              ),
                           ),
                         ),
                       ],
@@ -120,7 +104,7 @@ class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
               AnimatedPositioned(
                 duration: Duration(milliseconds: 500),
                 curve: Curves.easeIn,
-                top: 180,
+                top: 280,
                 child: AnimatedContainer(
                   duration: Duration(milliseconds: 500),
                   curve: Curves.easeIn,
@@ -459,7 +443,7 @@ class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
               AnimatedPositioned(
                 duration: Duration(milliseconds: 500),
                 curve: Curves.easeIn,
-                top: isSignupScreen ? 430 : 390,
+                top: isSignupScreen ? 530 : 490,
                 right: 0,
                 left: 0,
                 child: Center(
@@ -518,14 +502,14 @@ class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
                             );
 
                             if (newUser.user != null) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return ChatScreen();
-                                  },
-                                ),
-                              );
+                              //Navigator.push(
+                              // context,
+                              //MaterialPageRoute(
+                              //  builder: (context) {
+                              //   return ChatScreen();
+                              // },
+//),
+                              // );
                               setState(() {
                                 showSpinner = false;
                               });
@@ -579,7 +563,10 @@ class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
                       child: Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                              colors: [Colors.orange, Colors.red],
+                              colors: [
+                                Colors.blue,
+                                Color.fromARGB(142, 141, 5, 187)
+                              ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight),
                           borderRadius: BorderRadius.circular(30),
@@ -602,35 +589,6 @@ class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
                 ),
               ),
               //전송버튼
-              AnimatedPositioned(
-                duration: Duration(milliseconds: 500),
-                curve: Curves.easeIn,
-                top: isSignupScreen
-                    ? MediaQuery.of(context).size.height - 125
-                    : MediaQuery.of(context).size.height - 165,
-                right: 0,
-                left: 0,
-                child: Column(
-                  children: [
-                    Text(isSignupScreen ? 'or Signup with' : 'or Signin with'),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    TextButton.icon(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          minimumSize: Size(155, 40),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20)),
-                          backgroundColor: Palette.googleColor),
-                      icon: Icon(Icons.add),
-                      label: Text('Google'),
-                    ),
-                  ],
-                ),
-              ),
-              //구글 로그인 버튼
             ],
           ),
         ),
