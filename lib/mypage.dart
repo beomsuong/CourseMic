@@ -1,8 +1,11 @@
+import 'package:capston/provider/userdata.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:provider/provider.dart';
 
 class Mypage extends StatelessWidget {
   Mypage({super.key});
+  late Userdata data;
   SizedBox print_info(String a, String b) {
     //기본 정보 출력 함수
     //파이어 베이스에서 해당 정보를 받아온다
@@ -21,6 +24,7 @@ class Mypage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    data = Provider.of<Userdata>(context);
     return Scaffold(
       body: ListView(
         children: <Widget>[
