@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:provider/provider.dart';
 
+import 'addDialog.dart';
+
 class Mypage extends StatefulWidget {
   Mypage({super.key});
 
@@ -121,9 +123,17 @@ class _MypageState extends State<Mypage> {
                             ),
                           ),
                           ElevatedButton(
-                            onPressed: () {
-                              // 버튼을 눌렀을 때 실행되는 코드
-                            },
+                            onPressed: () => showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AddDialog(
+                                  university: docSnapshot.get('대학'),
+                                  major: docSnapshot.get('학과'),
+                                  mbti: docSnapshot.get('MBTI'),
+                                  contacttime: docSnapshot.get('연락가능시간'),
+                                );
+                              },
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color.fromARGB(
                                   255, 148, 61, 255), // 버튼 배경색 지정
