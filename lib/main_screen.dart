@@ -55,7 +55,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                         scale: 5, // 이미지 크기를 그대로 유지합니다.
                       ),
                       Text(
-                        'CouserMic',
+                        'CourseMic',
                         style: TextStyle(
                           fontSize: 40,
                           fontWeight: FontWeight.bold,

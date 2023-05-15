@@ -15,7 +15,7 @@ class GradientText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      'CouserMic',
+      'CourseMic',
       style: TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.bold,
