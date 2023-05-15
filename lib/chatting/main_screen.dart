@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:capston/mainpage.dart';
 import 'package:flutter/material.dart';
 import 'config/palette.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -500,7 +501,7 @@ class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
                             final refImage = FirebaseStorage.instance
                                 .ref()
                                 .child('picked_image')
-                                .child(newUser.user!.uid + '.png');
+                                .child('${newUser.user!.uid}.png');
 
                             refImage.putFile(userPickedImage!);
                             final url = await refImage.getDownloadURL();
@@ -555,14 +556,14 @@ class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
                               password: userPassword,
                             );
                             if (newUser.user != null) {
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //     builder: (context) {
-                              //       return ChatScreen();
-                              //     },
-                              //   ),
-                              // );
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return MyHomePage();
+                                  },
+                                ),
+                              );
                               setState(() {
                                 showSpinner = false;
                               });
@@ -618,7 +619,7 @@ class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
                     TextButton.icon(
                       onPressed: () {},
                       style: TextButton.styleFrom(
-                          primary: Colors.white,
+                          foregroundColor: Colors.white,
                           minimumSize: Size(155, 40),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20)),

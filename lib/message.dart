@@ -1,22 +1,43 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class RoomList extends StatelessWidget {
-  RoomList({Key? key}) : super(key: key); // 수정된 생성자
-  final List<String> roomList = [
-    "즐거운 조별과제",
-    "화나는 조별과제",
-    "너무 미운 조별과제",
-    "즐거운 조별과제",
-    "화나는 조별과제",
-    "너무 미운 조별과제",
-    "즐거운 조별과제",
-    "화나는 조별과제",
-    "너무 미운 조별과제",
-    "즐거운 조별과제",
-    "화나는 조별과제",
-    "너무 미운 조별과제"
-  ]; //자신이 속한 톡방을 저장하는 리스트 파이어 베이스 연동 예정
+class RoomList extends StatefulWidget {
+  RoomList({Key? key}) : super(key: key);
+  @override
+  State<RoomList> createState() => _RoomListState();
+}
 
+class _RoomListState extends State<RoomList> {
+  @override
+  initState() {
+    // TODO: implement initState
+    super.initState();
+    loadingdata();
+  }
+
+  Future<void> loadingdata() async {
+    final authentication = FirebaseAuth.instance;
+
+    final user = authentication.currentUser;
+    print(user!.uid);
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // 최상위 컬렉션에서 하위 컬렉션까지 한 번에 지정하는 변수
+    DocumentReference docRef = firestore.collection('exuser').doc(user.uid);
+
+    // 문서의 데이터를 가져옵니다.
+    DocumentSnapshot docSnapshot = await docRef.get();
+
+    // 문서 내부의 사람리스트 필드를 가져옵니다.
+    List<dynamic> roomList1 = docSnapshot.get('톡방리스트');
+    print(roomList1);
+    roomList = roomList1;
+  }
+
+  // 수정된 생성자
+  late List<dynamic> roomList;
+  //자신이 속한 톡방을 저장하는 리스트 파이어 베이스 연동 예정
   Widget room(String a) {
     //톡방을 리스트를 보여주는 함수
     return InkWell(
@@ -59,10 +80,24 @@ class RoomList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView(
-        children: [
-          for (var data in roomList) room(data), // 자신이 속한 톡방의 갯수만큼 반복
-        ],
+      body: FutureBuilder(
+        future: loadingdata(),
+        builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator()); // 로딩 중일 때 표시될 위젯
+          } else {
+            if (snapshot.hasError) {
+              return Center(
+                  child: Text('Error: ${snapshot.error}')); // 오류 발생 시 표시될 위젯
+            } else {
+              return ListView(
+                children: [
+                  for (var data in roomList) room(data), // 자신이 속한 톡방의 갯수만큼 반복
+                ],
+              );
+            }
+          }
+        },
       ),
     );
   }
