@@ -1,5 +1,4 @@
 import 'package:capston/provider/userdata.dart';
-import 'chatting/main_screen.dart' as chat;
 import 'package:flutter/material.dart';
 import 'package:flutter_config/flutter_config.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -23,12 +22,14 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'CourserMic',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const chat.LoginSignupScreen(),
+      home: const LoginSignupScreen(),
     );
   }
 }
