@@ -8,14 +8,14 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-class LoginSignupScreen extends StatefulWidget {
-  const LoginSignupScreen({Key? key}) : super(key: key);
+class LoginSignupScreen1 extends StatefulWidget {
+  const LoginSignupScreen1({Key? key}) : super(key: key);
 
   @override
-  _LoginSignupScreenState createState() => _LoginSignupScreenState();
+  _LoginSignupScreenState1 createState() => _LoginSignupScreenState1();
 }
 
-class _LoginSignupScreenState extends State<LoginSignupScreen> {
+class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
   final _authentication = FirebaseAuth.instance;
 
   bool isSignupScreen = true;
@@ -502,7 +502,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                 .child('picked_image')
                                 .child(newUser.user!.uid + '.png');
 
-                            await refImage.putFile(userPickedImage!);
+                            refImage.putFile(userPickedImage!);
                             final url = await refImage.getDownloadURL();
 
                             await FirebaseFirestore.instance
