@@ -48,8 +48,8 @@ class _ChatScreenState extends State<ChatScreen> {
               color: Colors.white,
             ),
             onPressed: () {
-              _authentication.signOut();
-              //Navigator.pop(context);
+              //_authentication.signOut();
+              Navigator.pop(context);
             },
           )
         ],
