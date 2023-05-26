@@ -19,13 +19,16 @@ class LoginSignupScreen1 extends StatefulWidget {
 class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
   final _authentication = FirebaseAuth.instance;
 
-  bool isSignupScreen = true;
+  bool isSignupScreen = false;
   bool showSpinner = false;
   final _formKey = GlobalKey<FormState>();
   String userName = '';
   String userEmail = '';
   String userPassword = '';
   File? userPickedImage;
+
+  final email = 'test1@gmail.com';
+  final password = '123456';
 
   void pickedImage(File image) {
     userPickedImage = image;
@@ -204,6 +207,7 @@ class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
                             )
                           ],
                         ),
+                        // SIGNUP CONTAINER =====================================
                         if (isSignupScreen)
                           Container(
                             margin: EdgeInsets.only(top: 20),
@@ -341,6 +345,7 @@ class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
                               ),
                             ),
                           ),
+                        // LOGIN CONTAINER =====================================
                         if (!isSignupScreen)
                           Container(
                             margin: EdgeInsets.only(top: 20),
@@ -349,6 +354,7 @@ class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
                               child: Column(
                                 children: [
                                   TextFormField(
+                                    initialValue: email,
                                     key: ValueKey(4),
                                     validator: (value) {
                                       if (value!.isEmpty ||
@@ -392,6 +398,7 @@ class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
                                     height: 8.0,
                                   ),
                                   TextFormField(
+                                    initialValue: password,
                                     key: ValueKey(5),
                                     validator: (value) {
                                       if (value!.isEmpty || value.length < 6) {
