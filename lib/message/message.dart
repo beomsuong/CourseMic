@@ -1,8 +1,31 @@
+import 'package:capston/message/addmessage.dart';
+import 'package:capston/message/searchmessage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../chatting/chat_screen.dart';
 
-import 'chatting/chat_screen.dart';
+class GradientText extends StatelessWidget {
+  const GradientText({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'CourseMic',
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        foreground: Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.blue, Color.fromARGB(142, 141, 5, 187)],
+          ).createShader(
+            const Rect.fromLTWH(50.0, 0.0, 200.0, 0.0),
+          ),
+      ),
+    );
+  }
+}
 
 class RoomList extends StatefulWidget {
   RoomList({Key? key}) : super(key: key);
@@ -126,26 +149,64 @@ class _RoomListState extends State<RoomList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder(
-        future: loadingdata(),
-        builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator()); // 로딩 중일 때 표시될 위젯
-          } else {
-            if (snapshot.hasError) {
+        appBar: AppBar(
+          title: GradientText(),
+          centerTitle: false,
+          backgroundColor: Colors.white,
+          leading: IconButton(
+            onPressed: null,
+            icon: Image.asset(
+              "assets/image/logo.png",
+              fit: BoxFit.contain, // 이미지 크기를 그대로 유지합니다.
+            ),
+          ),
+          actions: [
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Searchmessage()),
+                );
+              },
+              icon: Icon(
+                Icons.search,
+                color: Colors.purple,
+                size: 30,
+              ), // 원하는 아이콘을 선택합니다.
+            ),
+          ],
+        ),
+        body: FutureBuilder(
+          future: loadingdata(),
+          builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
-                  child: Text('Error: ${snapshot.error}')); // 오류 발생 시 표시될 위젯
+                  child: CircularProgressIndicator()); // 로딩 중일 때 표시될 위젯
             } else {
-              return ListView(
-                children: [
-                  for (var data in roomList)
-                    room(data[0], data[1], data[2]), // 자신이 속한 톡방의 갯수만큼 반복
-                ],
-              );
+              if (snapshot.hasError) {
+                return Center(
+                    child: Text('Error: ${snapshot.error}')); // 오류 발생 시 표시될 위젯
+              } else {
+                return ListView(
+                  children: [
+                    for (var data in roomList)
+                      room(data[0], data[1], data[2]), // 자신이 속한 톡방의 갯수만큼 반복
+                  ],
+                );
+              }
             }
-          }
-        },
-      ),
-    );
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+            tooltip: '톡방 추가',
+            child: const Icon(Icons.add),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AddMessage();
+                },
+              );
+            }));
   }
 }

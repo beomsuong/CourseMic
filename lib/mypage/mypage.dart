@@ -7,6 +7,28 @@ import 'package:provider/provider.dart';
 
 import 'addDialog.dart';
 
+class GradientText extends StatelessWidget {
+  const GradientText({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'CourseMic',
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        foreground: Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.blue, Color.fromARGB(142, 141, 5, 187)],
+          ).createShader(
+            const Rect.fromLTWH(50.0, 0.0, 200.0, 0.0),
+          ),
+      ),
+    );
+  }
+}
+
 class Mypage extends StatefulWidget {
   Mypage({super.key});
 
@@ -60,6 +82,18 @@ class _MypageState extends State<Mypage> {
   Widget build(BuildContext context) {
     data = Provider.of<Userdata>(context);
     return Scaffold(
+      appBar: AppBar(
+        title: GradientText(),
+        centerTitle: false,
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          onPressed: null,
+          icon: Image.asset(
+            "assets/image/logo.png",
+            fit: BoxFit.contain, // 이미지 크기를 그대로 유지합니다.
+          ),
+        ),
+      ),
       body: FutureBuilder<DocumentSnapshot>(
           future: loadingdata(),
           builder:
