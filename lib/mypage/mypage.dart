@@ -123,17 +123,21 @@ class _MypageState extends State<Mypage> {
                             ),
                           ),
                           ElevatedButton(
-                            onPressed: () => showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AddDialog(
-                                  university: docSnapshot.get('대학'),
-                                  major: docSnapshot.get('학과'),
-                                  mbti: docSnapshot.get('MBTI'),
-                                  contacttime: docSnapshot.get('연락가능시간'),
-                                );
-                              },
-                            ),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AddDialog(
+                                    university: docSnapshot.get('대학'),
+                                    major: docSnapshot.get('학과'),
+                                    mbti: docSnapshot.get('MBTI'),
+                                    contacttime: docSnapshot.get('연락가능시간'),
+                                  );
+                                },
+                              ).then((value) {
+                                setState(() {});
+                              });
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color.fromARGB(
                                   255, 148, 61, 255), // 버튼 배경색 지정
