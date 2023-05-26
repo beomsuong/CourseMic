@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'message.dart';
+import 'message/message.dart';
 import 'mypage/mypage.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -49,18 +49,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: GradientText(),
-        centerTitle: false,
-        backgroundColor: Colors.white,
-        leading: IconButton(
-          onPressed: null,
-          icon: Image.asset(
-            "assets/image/logo.png",
-            fit: BoxFit.contain, // 이미지 크기를 그대로 유지합니다.
-          ),
-        ),
-      ),
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
