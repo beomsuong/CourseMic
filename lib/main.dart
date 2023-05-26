@@ -27,9 +27,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'CourserMic',
+      title: 'CourseMic',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: LoginSignupScreen1(),
+      home: LoginSignupScreen(),
     );
   }
 }

@@ -54,19 +54,18 @@ class _RoomListState extends State<RoomList> {
     DocumentSnapshot docSnapshot = await docRef.get();
 
     // 문서 내부의 사람리스트 필드를 가져옵니다.
-    List<dynamic> roomList1 = docSnapshot.get('톡방리스트');
+    List<dynamic> roomIdList = docSnapshot.get('톡방리스트');
     print("!");
 
-    print(roomList1.length);
     roomList = [];
-    for (var i in roomList1) {
-      DocumentReference roomRef = firestore.collection('exchat').doc(i);
+    for (var roomID in roomIdList) {
+      DocumentReference roomRef = firestore.collection('exchat').doc(roomID);
       DocumentSnapshot roomnameSnapshot = await roomRef.get();
       String roomname = roomnameSnapshot.get('톡방이름');
 
       final chatDocsSnapshot = await FirebaseFirestore.instance
           .collection('exchat')
-          .doc(i)
+          .doc(roomID)
           .collection('message')
           .orderBy('time', descending: true)
           .limit(1)
@@ -77,41 +76,39 @@ class _RoomListState extends State<RoomList> {
 
         roomList.add([
           roomname,
-          i,
+          roomID,
           lastMessage,
         ]);
       } else {
         roomList.add([
           roomname,
-          i,
+          roomID,
           '',
         ]);
       }
     }
-    roomList1 = [];
+    roomIdList = [];
   }
 
   late List<List<dynamic>> roomList; //톡방 이름, UID, 마지막 메시지 저장
-  Widget room(String a, String b, String c) {
+  Widget room(String name, String id, String message) {
     //UID는 onTap에서 톡방을 불러오기 위해 사용
     //톡방을 리스트를 보여주는 함수
     return InkWell(
       onTap: () {
-        print("해당 톡방이 클릭됬음 $b");
+        print("해당 톡방이 클릭됬음 $id");
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) {
               return ChatScreen(
-                roomname: b,
-                roomname1: b,
+                roomID: id,
               );
             },
           ),
         );
         ChatScreen(
-          roomname: b,
-          roomname1: b,
+          roomID: id,
         );
       },
       child: SizedBox(
@@ -131,12 +128,12 @@ class _RoomListState extends State<RoomList> {
                     crossAxisAlignment: CrossAxisAlignment.start, //글자 왼쪽 정렬
                     children: [
                       Text(
-                        a,
+                        name,
                         style: TextStyle(
                             fontSize: 15, fontWeight: FontWeight.w600),
                         // 톡방 제목은 굵게
                       ),
-                      Text(c),
+                      Text(message),
                     ]),
               ),
             ),

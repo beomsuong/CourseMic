@@ -4,19 +4,18 @@ import 'package:flutter/material.dart';
 import 'config/palette.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'add_image/add_image.dart';
-import 'chat_screen.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-class LoginSignupScreen1 extends StatefulWidget {
-  const LoginSignupScreen1({Key? key}) : super(key: key);
+class LoginSignupScreen extends StatefulWidget {
+  const LoginSignupScreen({Key? key}) : super(key: key);
 
   @override
-  _LoginSignupScreenState1 createState() => _LoginSignupScreenState1();
+  _LoginSignupScreenState createState() => _LoginSignupScreenState();
 }
 
-class _LoginSignupScreenState1 extends State<LoginSignupScreen1> {
+class _LoginSignupScreenState extends State<LoginSignupScreen> {
   final _authentication = FirebaseAuth.instance;
 
   bool isSignupScreen = false;
