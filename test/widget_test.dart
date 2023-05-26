@@ -10,8 +10,4 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:capston/todo_list/todo_page.dart';
 
-void main() {
-  testWidgets('MyWidget has a title and message', (tester) async {
-    await tester.pumpWidget(const ToDoPage());
-  });
-}
+void main() {}

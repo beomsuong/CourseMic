@@ -4,8 +4,8 @@ import 'chat_bubble.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class Messages extends StatefulWidget {
-  final String roomname;
-  Messages({Key? key, required this.roomname}) : super(key: key);
+  final String roomID;
+  Messages({Key? key, required this.roomID}) : super(key: key);
 
   @override
   State<Messages> createState() => _MessagesState();
@@ -22,7 +22,7 @@ class _MessagesState extends State<Messages> {
     userCollectionRef = FirebaseFirestore.instance.collection('exuser');
     messageCollectionStream = FirebaseFirestore.instance
         .collection('exchat')
-        .doc(widget.roomname)
+        .doc(widget.roomID)
         .collection('message')
         .orderBy('time', descending: true)
         .snapshots();

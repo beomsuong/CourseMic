@@ -4,9 +4,8 @@ import 'chat/message.dart';
 import 'chat/new_message.dart';
 
 class ChatScreen extends StatefulWidget {
-  final String roomname1;
-  ChatScreen({Key? key, required this.roomname1, required roomname})
-      : super(key: key);
+  final String roomID;
+  ChatScreen({Key? key, required this.roomID}) : super(key: key);
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -58,9 +57,9 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Column(
           children: [
             Expanded(
-              child: Messages(roomname: widget.roomname1),
+              child: Messages(roomID: widget.roomID),
             ),
-            NewMessage(roomname: widget.roomname1),
+            NewMessage(roomname: widget.roomID),
           ],
         ),
       ),
