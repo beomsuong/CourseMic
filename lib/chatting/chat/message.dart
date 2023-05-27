@@ -12,15 +12,15 @@ class Messages extends StatefulWidget {
 }
 
 class _MessagesState extends State<Messages> {
-  late final CollectionReference userCollectionRef;
-  late final Stream messageCollectionStream;
+  late final CollectionReference userRef;
+  late final Stream messageStream;
   Map<String, String> userMap = {};
 
   @override
   void initState() {
     super.initState();
-    userCollectionRef = FirebaseFirestore.instance.collection('exuser');
-    messageCollectionStream = FirebaseFirestore.instance
+    userRef = FirebaseFirestore.instance.collection('exuser');
+    messageStream = FirebaseFirestore.instance
         .collection('exchat')
         .doc(widget.roomID)
         .collection('message')
@@ -33,7 +33,7 @@ class _MessagesState extends State<Messages> {
     final user = FirebaseAuth.instance.currentUser;
 
     return StreamBuilder(
-      stream: messageCollectionStream,
+      stream: messageStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
@@ -66,7 +66,7 @@ class _MessagesState extends State<Messages> {
         userMap[userID] = userName;
       });
   Future<String> readUserName(String userID) async {
-    var docSnapshot = await userCollectionRef.doc(userID).get();
+    var docSnapshot = await userRef.doc(userID).get();
     if (docSnapshot.exists) {
       return docSnapshot.get('이름');
     }
