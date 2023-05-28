@@ -55,9 +55,9 @@ class _MessagesState extends State<Messages> {
                 chatDocs[index]['text'],
                 chatDocs[index]['userID'].toString() == user!.uid,
                 userMap[userID] ?? 'userName',
-                chatDocs[index]['userImage']);
+                chatDocs[index]['userImage'],
                 chatDocs[index]['time'],
-                chatDocs[index]['roomname']);
+                widget.roomID);
           },
         );
       },
