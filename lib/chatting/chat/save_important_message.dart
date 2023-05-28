@@ -22,30 +22,21 @@ Delete
 
 Future<void> saveImportantMessage(String messageDetail, String messageId,
     Timestamp sendTime, String userId, String roomId) async {
-  //TODO: roomID처리
-
   try {
-    final QuerySnapshot snapshot =
-        await FirebaseFirestore.instance.collection('exchat').get();
-    final List<QueryDocumentSnapshot> roomDocs = snapshot.docs;
-
-    for (final roomDoc in roomDocs) {
-      await FirebaseFirestore.instance
-          .collection('exchat')
-          .doc(roomDoc.id)
-          .collection('imp_msg')
-          .doc()
-          .set({
-        'msg_detail': messageDetail,
-        'msg_id': messageId,
-        'timeStamp': sendTime,
-        'user_id': userId,
-        'room_id': roomId, // roomId 값을 추가로 저장 -> 처리
-      });
-      print('중요한 메시지 저장 성공!');
-    }
+    await FirebaseFirestore.instance
+        .collection('exchat')
+        .doc(roomId)
+        .collection('imp_msg')
+        .doc()
+        .set({
+      'msg_detail': messageDetail,
+      'msg_id': messageId,
+      'timeStamp': sendTime,
+      'user_id': userId,
+      'room_id': roomId, // roomId 값을 추가로 저장 -> 처리
+    });
+    print('중요한 메시지 저장 성공!');
   } catch (error) {
     print('중요한 메시지 저장 실패: $error');
   }
 }
-//TODO: 중복처리?

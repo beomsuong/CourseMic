@@ -1,3 +1,4 @@
+import 'package:capston/message/addmessage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'chat_bubble.dart';
@@ -5,9 +6,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'save_important_message.dart';
 
 class ImportantMessagesPage extends StatelessWidget {
-  final String roomId;
+  final String roomname;
 
-  const ImportantMessagesPage({Key? key, required this.roomId})
+  const ImportantMessagesPage({Key? key, required this.roomname})
       : super(key: key);
 
   @override
@@ -19,9 +20,9 @@ class ImportantMessagesPage extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('exchat')
-            .doc(roomId)
+            .doc(roomname)
             .collection('imp_msg')
-            .orderBy('timeStamp', descending: true) // 시간 역순으로 정렬
+            .orderBy('timeStamp', descending: false) // 시간 역순으로 정렬
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
@@ -35,24 +36,45 @@ class ImportantMessagesPage extends StatelessWidget {
           final documents = snapshot.data!.docs;
 
           // 해당 채팅방의 중요한 메시지만 필터링하여 보여줌
-          final filteredDocuments =
-              documents.where((doc) => doc['room_id'] == roomId).toList();
 
           return ListView.builder(
-            itemCount: filteredDocuments.length,
+            itemCount: documents.length,
             itemBuilder: (context, index) {
-              final data =
-                  filteredDocuments[index].data() as Map<String, dynamic>;
+              final data = documents[index].data() as Map<String, dynamic>;
 
               final messageDetail = data['msg_detail'] ?? '';
-              final messageId = data['msg_id'] ?? '';
+              //final messageId = data['msg_id'] ?? '';
               final sendTime = data['timeStamp'] as Timestamp;
               final userId = data['user_id'] ?? '';
+              final impMsgId = documents[index].id;
 
-              return ListTile(
-                title: Text(messageDetail),
-                subtitle: Text('ID: $messageId, User ID: $userId'),
-                trailing: Text(sendTime.toDate().toString()),
+              return GestureDetector(
+                onLongPress: () => showDialog<String>(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: const Text('이 메시지에서 삭제하시겠습니까?'),
+                    content: Text(messageDetail),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('취소'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          print(documents[index].id);
+                          deleteImpMsg(roomname, impMsgId);
+                          Navigator.pop(context);
+                        },
+                        child: const Text('삭제'),
+                      ),
+                    ],
+                  ),
+                ),
+                child: ListTile(
+                  title: Text(messageDetail),
+                  subtitle: Text('User ID: $userId'),
+                  trailing: Text(sendTime.toDate().toString()),
+                ),
               );
             },
           );
@@ -62,4 +84,16 @@ class ImportantMessagesPage extends StatelessWidget {
   }
 }
 
-//TODO: roomID처리
+Future<void> deleteImpMsg(String roomname, String impMsgId) async {
+  try {
+    await FirebaseFirestore.instance
+        .collection('exchat')
+        .doc(roomname)
+        .collection('imp_msg')
+        .doc(impMsgId)
+        .delete();
+    print('중요한 메시지 삭제 완료!');
+  } catch (error) {
+    print('중요한 메시지 삭제 실패!: $error');
+  }
+}
