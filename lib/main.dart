@@ -23,7 +23,7 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  static const testID = 'mH2pTd2HcfRFSAO9dPVU';
+  // static const testID = 'mH2pTd2HcfRFSAO9dPVU';
   const MyApp({super.key});
 
   @override
@@ -31,9 +31,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CourseMic',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: ToDoPage(
-        roomID: testID,
-      ),
+      home: LoginSignupScreen(),
     );
   }
 }
