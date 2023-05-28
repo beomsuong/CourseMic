@@ -482,7 +482,6 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                           _tryValidation();
 
                           try {
-                            print("!@#!@#!@#!@#");
                             final newUser = await _authentication
                                 .createUserWithEmailAndPassword(
                               email: userEmail,
@@ -497,8 +496,16 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                             refImage.putFile(userPickedImage!);
                             final url = await refImage.getDownloadURL();
 
-                           
-                                   );
+                            await FirebaseFirestore.instance
+                                .collection('exuser')
+                                .doc(newUser.user!.uid)
+                                .set(
+                              {
+                                'userName': userName,
+                                'email': userEmail,
+                                'picked_image': url
+                              },
+                            );
 
                             if (newUser.user != null) {
                               //Navigator.push(
@@ -560,7 +567,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                         }
                       },
                       child: Container(
-                        decoration = BoxDecoration(
+                        decoration: BoxDecoration(
                           gradient: LinearGradient(
                               colors: [
                                 Colors.blue,
@@ -578,7 +585,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                             ),
                           ],
                         ),
-                        child = Icon(
+                        child: Icon(
                           Icons.arrow_forward,
                           color: Colors.white,
                         ),
