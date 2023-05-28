@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum ToDoState {
@@ -12,15 +14,19 @@ class ToDo {
   final String task;
   User users = {};
   bool bDeadline;
-  DateTime? deadline;
+  Timestamp? deadline;
   ToDoState state;
+  int score, index;
 
   ToDo(
       {required this.task,
       required this.users,
       required this.bDeadline,
+      // ignore: avoid_init_to_null
       this.deadline = null,
-      this.state = ToDoState.ToDo});
+      this.state = ToDoState.ToDo,
+      this.score = 10,
+      this.index = 1});
 
   ToDo.fromJson(QueryDocumentSnapshot<Object?> json)
       : this(
@@ -28,6 +34,9 @@ class ToDo {
           users: json['users']! as User,
           bDeadline: json['bDeadline']! as bool,
           state: ToDoState.values[json['state']!],
+          deadline: json['deadline'] as Timestamp,
+          score: json['score'] as int,
+          index: json['index'] as int,
         );
 
   Map<String, Object?> toJson() {
@@ -37,6 +46,8 @@ class ToDo {
       'bDeadline': bDeadline,
       'deadline': deadline,
       'state': state.index,
+      'score': score,
+      'index': index,
     };
   }
 }

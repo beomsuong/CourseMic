@@ -4,8 +4,8 @@ import 'package:flutter_config/flutter_config.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
-import 'chatting/main_screen.dart';
-import 'todo_list/todo_page.dart';
+import 'package:capston/chatting/main_screen.dart';
+import 'package:capston/todo_list/todo_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +23,7 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  // static const testID = 'mH2pTd2HcfRFSAO9dPVU';
+  static const testID = 'mH2pTd2HcfRFSAO9dPVU';
   const MyApp({super.key});
 
   @override
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CourseMic',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: LoginSignupScreen(),
+      home: ToDoPage(roomID: testID),
     );
   }
 }
