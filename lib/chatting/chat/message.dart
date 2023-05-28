@@ -57,7 +57,7 @@ class _MessagesState extends State<Messages> {
                 userMap[userID] ?? 'userName',
                 chatDocs[index]['userImage'],
                 chatDocs[index]['time'],
-                chatDocs[index]['roomname']);
+                widget.roomID);
           },
         );
       },
