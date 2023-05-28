@@ -493,7 +493,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                 .child('picked_image')
                                 .child('${newUser.user!.uid}.png');
 
-                            refImage.putFile(userPickedImage!);
+                            await refImage.putFile(userPickedImage!);
                             final url = await refImage.getDownloadURL();
 
                             await FirebaseFirestore.instance
