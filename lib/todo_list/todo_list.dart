@@ -1,139 +1,141 @@
-import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class ListTileExample extends StatefulWidget {
-  const ListTileExample({
-    Key? key,
-  }) : super(key: key);
+import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
+
+import 'package:capston/widgets/CircularContainer.dart';
+
+import 'package:capston/todo_list/todo_node.dart';
+import 'package:capston/todo_list/todo.dart';
+
+import 'package:capston/palette.dart';
+
+// ignore: must_be_immutable
+class ToDoList extends StatefulWidget {
+  String roomID;
+  ToDoList({Key? key, required this.roomID}) : super(key: key);
 
   @override
-  State createState() => _ListTileExample();
+  State createState() => _ToDoListState();
 }
 
-class _ListTileExample extends State<ListTileExample> {
-  late List<DragAndDropList> _contents;
+class _ToDoListState extends State<ToDoList> {
+  late final CollectionReference toDoRef;
+  // ignore: prefer_final_fields
+  List<DragAndDropList> _contents = List.empty(growable: true);
 
   @override
   void initState() {
     super.initState();
-
-    _contents = List.generate(4, (index) {
-      return DragAndDropList(
-        header: Column(
-          children: <Widget>[
-            ListTile(
-              title: Text(
-                'Header $index',
-              ),
-              subtitle: Text('Header $index subtitle'),
-            ),
-            const Divider(),
-          ],
-        ),
-        // footer: Column(
-        //   children: <Widget>[
-        //     const Divider(),
-        //     ListTile(
-        //       title: Text(
-        //         'Footer $index',
-        //       ),
-        //       subtitle: Text('Footer $index subtitle'),
-        //     ),
-        //   ],
-        // ),
-        children: <DragAndDropItem>[
-          DragAndDropItem(
-            child: Card(
-              child: ListTile(
-                title: Text(
-                  'Sub $index.1',
-                ),
-                trailing: const Icon(Icons.access_alarm),
-              ),
-            ),
-          ),
-          DragAndDropItem(
-            child: ListTile(
-              title: Text(
-                'Sub $index.2',
-              ),
-              trailing: const Icon(Icons.alarm_off),
-            ),
-          ),
-          DragAndDropItem(
-            child: ListTile(
-              title: Text(
-                'Sub $index.3',
-              ),
-              trailing: const Icon(Icons.alarm_on),
-            ),
-          ),
-        ],
-      );
-    });
+    toDoRef = FirebaseFirestore.instance
+        .collection('exchat')
+        .doc(widget.roomID)
+        .collection('todo');
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('List Tiles'),
-      ),
-      body: DragAndDropLists(
-        children: _contents,
-        onItemReorder: _onItemReorder,
-        onListReorder: _onListReorder,
-        listGhost: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 30.0),
-          child: Center(
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 40.0, horizontal: 100.0),
-              decoration: BoxDecoration(
-                border: Border.all(),
-                borderRadius: BorderRadius.circular(7.0),
+    return FutureBuilder(
+        future: getToDoNodes(),
+        builder: (context, AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Text('대기중');
+          }
+          final toDoDocs = snapshot.data!.docs;
+          _contents.clear();
+          for (var data in toDoDocs) {
+            var todo = ToDo.fromJson(data);
+            print('todo_list.dart : ${todo.state.index}');
+            _contents.add(DragAndDropList(
+              header: Container(
+                padding: EdgeInsets.fromLTRB(10, 8, 0, 8),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Palette.pastelPurple,
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    ToDoElement(
+                      circleColor: Palette.pastelPurple,
+                      content: todo.state.name,
+                      fontColor: Colors.white,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12.0),
+                      child: ShortCircularContainer(
+                        child: Text(
+                          '10',
+                          textAlign: TextAlign.center,
+                          style:
+                              TextStyle(color: Palette.darkGray, height: 2.5),
+                          textHeightBehavior: textHeightBehavior,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: const Icon(Icons.add_box),
+              children: <DragAndDropItem>[
+                DragAndDropItem(
+                  child: ToDoNode(
+                    toDo: todo,
+                  ),
+                ),
+              ],
+            ));
+          }
+
+          return DragAndDropLists(
+            lastItemTargetHeight: 0,
+            children: _contents,
+            onItemReorder: _onItemReorder,
+            onListReorder: _onListReorder,
+            listPadding: const EdgeInsets.only(top: 12, left: 24, right: 24),
+            listDraggingWidth: 365,
+            // contentsWhenEmpty: Row(
+            //   children: <Widget>[
+            //     const Expanded(
+            //       child: Padding(
+            //         padding: EdgeInsets.only(left: 40, right: 10),
+            //         child: Divider(),
+            //       ),
+            //     ),
+            //     Text(
+            //       'Empty List',
+            //       style: TextStyle(
+            //           color: Theme.of(context).textTheme.bodySmall!.color,
+            //           fontStyle: FontStyle.italic),
+            //     ),
+            //     const Expanded(
+            //       child: Padding(
+            //         padding: EdgeInsets.only(left: 20, right: 40),
+            //         child: Divider(),
+            //       ),
+            //     ),
+            //   ],
+            // ),
+            listSizeAnimationDurationMilliseconds: 150,
+            listGhost: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 40.0),
             ),
-          ),
-        ),
-        listPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
-        contentsWhenEmpty: Row(
-          children: <Widget>[
-            const Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(left: 40, right: 10),
-                child: Divider(),
-              ),
+            listDecoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.all(Radius.circular(20)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 2,
+                  blurRadius: 3,
+                  offset: const Offset(0, 3), // changes position of shadow
+                ),
+              ],
             ),
-            Text(
-              'Empty List',
-              style: TextStyle(
-                  color: Theme.of(context).textTheme.bodySmall!.color,
-                  fontStyle: FontStyle.italic),
-            ),
-            const Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(left: 20, right: 40),
-                child: Divider(),
-              ),
-            ),
-          ],
-        ),
-        listDecoration: BoxDecoration(
-          color: Theme.of(context).canvasColor,
-          borderRadius: const BorderRadius.all(Radius.circular(6.0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
-              spreadRadius: 2,
-              blurRadius: 3,
-              offset: const Offset(0, 3), // changes position of shadow
-            ),
-          ],
-        ),
-      ),
-    );
+          );
+        });
   }
 
   _onItemReorder(
@@ -150,4 +152,7 @@ class _ListTileExample extends State<ListTileExample> {
       _contents.insert(newListIndex, movedList);
     });
   }
+
+  Future<QuerySnapshot<Object?>> getToDoNodes() async =>
+      await toDoRef.orderBy('state').get();
 }
