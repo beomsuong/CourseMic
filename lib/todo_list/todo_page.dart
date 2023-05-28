@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:capston/todo_list/todo_list.dart';
 import 'package:flutter/material.dart';
-import 'todo.dart';
+
+import 'package:capston/todo_list/todo_list.dart';
+import 'package:capston/todo_list/todo.dart';
+
+import 'package:capston/palette.dart';
 
 class ToDoPage extends StatefulWidget {
   final roomID;
@@ -23,33 +26,27 @@ class _ToDoPageState extends State<ToDoPage> {
         .doc(widget.roomID)
         .collection('todo');
     // toDoRef.withConverter<ToDo>(fromFirestore: (snapshot, _) => ToDo.fromJson(snapshot.data()!), toFirestore: (toDo, _) => toDo.toJson(),);
-
-    toDoRef.get().then(
-      (snapshot) {
-        snapshot.docs.forEach((ss) {
-          print(ss['task']);
-        });
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          TextField(
-            controller: addTodoControl,
-            decoration:
-                InputDecoration(labelText: '할 일', hintText: '할일을 추가하세요.'),
+        backgroundColor: Palette.lightGray,
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(100),
+          child: AppBar(
+            toolbarHeight: 100,
+            centerTitle: true,
+            title: const Text(
+              '팀프로젝트',
+              style: TextStyle(color: Colors.black, fontSize: 24),
+            ),
+            backgroundColor: Colors.white,
           ),
-          ElevatedButton(onPressed: addTodo, child: Text('추가하기')),
-          Expanded(child: ListTileExample()),
-        ],
-      ),
-    );
+        ),
+        body: ToDoList(
+          roomID: widget.roomID,
+        ));
   }
 
   Future<void> addTodo() {
