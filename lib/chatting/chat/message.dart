@@ -56,6 +56,8 @@ class _MessagesState extends State<Messages> {
                 chatDocs[index]['userID'].toString() == user!.uid,
                 userMap[userID] ?? 'userName',
                 chatDocs[index]['userImage']);
+                chatDocs[index]['time'],
+                chatDocs[index]['roomname']);
           },
         );
       },
@@ -73,3 +75,5 @@ class _MessagesState extends State<Messages> {
     return '알수없음';
   }
 }
+
+//TODO: chatDocs-roomname필요한지 확인하기
