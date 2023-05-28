@@ -23,6 +23,8 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
   late Userdata data;
   void _tryValidation() {
     final isValid = _formKey.currentState!.validate();
+
+    print("!@3");
     if (isValid) {
       _formKey.currentState!.save();
     }
@@ -415,6 +417,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                       borderRadius: BorderRadius.circular(50)),
                   child: GestureDetector(
                     onTap: () {
+                      print("회원가입 완료");
                       final BuildContext currentContext = context;
                       _tryValidation();
 
@@ -425,9 +428,11 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                           password: userPassword,
                         )
                             .then((newUser) {
+                          print("회원가입 완료");
                           if (newUser.user != null) {}
                         }).catchError((e) {
                           print(e);
+                          print("회원가입 완료");
                           ScaffoldMessenger.of(currentContext).showSnackBar(
                             const SnackBar(
                               content:
@@ -437,13 +442,16 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                           );
                         });
                       } else {
+                        print("회원가입 완료");
                         _authentication
                             .signInWithEmailAndPassword(
                           email: userEmail,
                           password: userPassword,
                         )
                             .then((newUser) {
+                          print("회원가입 완료");
                           if (newUser.user != null) {
+                            print("회원가입 완료");
                             FirebaseAuth.instance
                                 .authStateChanges()
                                 .listen((User? user) {
@@ -461,6 +469,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                             );
                           }
                         }).catchError((e) {
+                          print("회원가입 완료");
                           print(e);
                         });
                       }
