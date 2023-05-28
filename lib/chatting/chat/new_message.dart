@@ -33,7 +33,7 @@ class _NewMessageState extends State<NewMessage> {
       'time': Timestamp.now(),
       'userID': user.uid,
       'userName': userData.data()!['이름'],
-      'userImage': userData['이미지']
+      'userImage': userData['이미지'],
     });
     _controller.clear();
   }
@@ -87,7 +87,9 @@ class _NewMessageState extends State<NewMessage> {
             ],
           ),
           block
-              ? ChatPlusFunc()
+              ? ChatPlusFunc(
+                  roomId: widget.roomname,
+                )
               : SizedBox(
                   width: 0, height: 0) //TODO: roomID를 처리하지 않거나, roomID를 가져오는 방법
         ],
