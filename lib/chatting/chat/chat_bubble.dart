@@ -3,6 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
 import 'save_important_message.dart';
+import 'message.dart';
+import 'save_important_message.dart';
 
 class ChatBubbles extends StatelessWidget {
   const ChatBubbles(this.message, this.isMe, this.userName, this.userImage,

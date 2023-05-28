@@ -1,4 +1,5 @@
 import 'package:capston/chatting/chat/view_important_message.dart';
+import 'package:capston/message/addmessage.dart';
 import 'package:flutter/material.dart';
 
 class ChatPlusFunc extends StatelessWidget {
@@ -37,13 +38,13 @@ class ChatPlusFunc extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {
                     print('중요한 메세지? 모아보기');
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) =>
-                    //         ImportantMessagesPage(),
-                    //   ),
-                    // );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ImportantMessagesPage(roomname: roomId),
+                      ),
+                    );
                   },
                   child: const Text('중요한 일'),
                 ),
