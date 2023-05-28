@@ -22,6 +22,32 @@ Future<DocumentSnapshot> loadingdata(
   return docSnapshot;
 }
 
+String roomname = '';
+void addroom() async {
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  CollectionReference exchats = firestore.collection('exchat');
+  final authentication = FirebaseAuth.instance;
+  final user = authentication.currentUser;
+
+  exchats.add({
+    '톡방이름': roomname,
+  }).then((DocumentReference doc) {
+    CollectionReference exusers = firestore.collection('exuser');
+
+    exusers.doc(user!.uid).update({
+      '톡방리스트': FieldValue.arrayUnion([doc.id]),
+    }).then((value) {
+      print("Value Added to Array");
+    }).catchError((error) {
+      print("Failed to add value to array: $error");
+    });
+    print("Document Added, ID: ${doc.id}"); // 문서의 ID를 출력합니다.
+  }).catchError((error) {
+    print("Failed to add document: $error");
+  });
+}
+
 class _AddMessageState extends State<AddMessage> {
   @override
   Widget build(BuildContext context) {
@@ -53,9 +79,10 @@ class _AddMessageState extends State<AddMessage> {
                       color: Colors.white,
                       iconSize: 30,
                       onPressed: () {
+                        addroom();
                         Navigator.of(context).pop();
                       },
-                      icon: Icon(Icons.cancel))
+                      icon: Icon(Icons.check))
                 ],
               ),
             ),
@@ -76,7 +103,11 @@ class _AddMessageState extends State<AddMessage> {
                       width: 150,
                       height: 30,
                       child: TextField(
-                        onChanged: (value) {},
+                        onChanged: (value) {
+                          setState(() {
+                            roomname = value;
+                          });
+                        },
                       ),
                     ),
                   ),
