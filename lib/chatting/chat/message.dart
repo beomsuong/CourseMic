@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class Messages extends StatefulWidget {
   final String roomID;
-  Messages({Key? key, required this.roomID}) : super(key: key);
+  const Messages({Key? key, required this.roomID}) : super(key: key);
 
   @override
   State<Messages> createState() => _MessagesState();
@@ -36,7 +36,7 @@ class _MessagesState extends State<Messages> {
       stream: messageStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         }

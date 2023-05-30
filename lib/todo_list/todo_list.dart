@@ -23,6 +23,7 @@ class _ToDoListState extends State<ToDoList> {
   late final CollectionReference toDoRef;
   // ignore: prefer_final_fields
   List<DragAndDropList> _contents = List.empty(growable: true);
+  late Stream<StateWithToDo> todoStream;
 
   @override
   void initState() {
@@ -31,18 +32,38 @@ class _ToDoListState extends State<ToDoList> {
         .collection('exchat')
         .doc(widget.roomID)
         .collection('todo');
+
+    todoStream = initToDoNodes();
   }
+
+  // Stream<StateWithToDo> updateToDoNodes() async* {
+  //   StateWithToDo stateWithTodo = {};
+
+  //   for (ToDoState state in ToDoState.values) {
+  //     toDoRef
+  //         .where('state', isEqualTo: state.index)
+  //         .snapshots(includeMetadataChanges: true)
+  //         .listen((event) {
+  //       for (var change in event.docChanges) {
+  //         if (change.type == DocumentChangeType.removed) {
+  //           stateWithTodo[state.name] = event;
+  //         }
+  //       }
+  //     });
+  //   }
+
+  //   yield stateWithTodo;
+  // }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-        stream: initToDoNodes(),
+        stream: todoStream,
         builder: (context, AsyncSnapshot<StateWithToDo> snapshot) {
-          // if (snapshot.connectionState == ConnectionState.waiting) {
-          //   return Align(
-          //       alignment: Alignment.center,
-          //       child: CircularProgressIndicator());
-          // }
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
           StateWithToDo data = snapshot.data as StateWithToDo;
 
           _contents.clear();
@@ -51,9 +72,9 @@ class _ToDoListState extends State<ToDoList> {
 
             _contents.add(DragAndDropList(
               header: Container(
-                padding: EdgeInsets.fromLTRB(10, 8, 0, 8),
+                padding: const EdgeInsets.fromLTRB(10, 8, 0, 8),
                 width: double.infinity,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Palette.pastelPurple,
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
@@ -75,8 +96,8 @@ class _ToDoListState extends State<ToDoList> {
                         child: Text(
                           (toDoDocs?.length).toString(),
                           textAlign: TextAlign.center,
-                          style:
-                              TextStyle(color: Palette.darkGray, height: 2.5),
+                          style: const TextStyle(
+                              color: Palette.darkGray, height: 2.5),
                           textHeightBehavior: textHeightBehavior,
                         ),
                       ),
@@ -87,22 +108,28 @@ class _ToDoListState extends State<ToDoList> {
               children: <DragAndDropItem>[
                 DragAndDropItem(
                   canDrag: false,
-                  child: AddToDoNode(),
+                  child: ToDoNode(
+                    bDelete: false,
+                  ),
                 ),
               ],
             ));
 
+            if (toDoDocs == null) break;
+
             // index 로 정렬
-            toDoDocs!.sort(
+            toDoDocs.sort(
                 (a, b) => (a['index'] as int).compareTo(b['index'] as int));
 
             for (var doc in toDoDocs) {
               ToDo todo = ToDo.fromJson(doc);
-              print(todo.index);
               _contents[state.index].children.add(DragAndDropItem(
                     child: ToDoNode(
+                      task: doc.id,
                       toDo: todo,
-                      onTapDelete: () => deleteToDo(doc.id),
+                      onTapButton: () {
+                        deleteToDo(doc.id);
+                      },
                     ),
                   ));
             }
@@ -116,8 +143,8 @@ class _ToDoListState extends State<ToDoList> {
             listPadding: const EdgeInsets.only(top: 12, left: 24, right: 24),
             listDraggingWidth: 365,
             listSizeAnimationDurationMilliseconds: 150,
-            listGhost: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 40.0),
+            listGhost: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 40.0),
             ),
             listDecoration: BoxDecoration(
               color: Colors.white,
@@ -161,8 +188,8 @@ class _ToDoListState extends State<ToDoList> {
     yield stateWithTodo;
   }
 
-  void deleteToDo(String task) {
-    toDoRef.doc(task).delete();
+  void deleteToDo(String todoID) {
+    toDoRef.doc(todoID).delete();
   }
 }
 
