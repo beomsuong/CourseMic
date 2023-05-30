@@ -1,6 +1,5 @@
 // ignore_for_file: avoid_init_to_null
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:capston/widgets/CircularContainer.dart';
@@ -10,12 +9,18 @@ import 'package:capston/todo_list/todo.dart';
 const TextHeightBehavior textHeightBehavior = TextHeightBehavior(
     applyHeightToFirstAscent: false, applyHeightToLastDescent: true);
 
-// ignore: must_be_immutable
 class ToDoNode extends StatefulWidget {
-  ToDo toDo;
-  void Function()? onTapDelete;
+  bool bDelete;
+  String? task;
+  ToDo? toDo;
+  void Function()? onTapButton;
 
-  ToDoNode({super.key, required this.toDo, this.onTapDelete = null});
+  ToDoNode(
+      {super.key,
+      this.bDelete = true,
+      this.task,
+      this.toDo,
+      this.onTapButton = null});
 
   @override
   State<ToDoNode> createState() => _ToDoNodeState();
@@ -24,33 +29,67 @@ class ToDoNode extends StatefulWidget {
 class _ToDoNodeState extends State<ToDoNode> {
   @override
   Widget build(BuildContext context) {
-    return ToDoContainer(toDo: widget.toDo, onTapDelete: widget.onTapDelete);
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: ToDoElement(
+              bDelete: widget.bDelete,
+              content: widget.bDelete ? widget.task! : '새로운 할 일을 추가해주세요.',
+              onTapButton: widget.onTapButton,
+            ),
+          ),
+          // User Choose
+          Padding(
+            padding: const EdgeInsets.only(bottom: 14.0, left: 12, right: 12),
+            child: CircularContainer(
+                child: Row(
+              children: <Widget>[
+                if (widget.bDelete)
+                  for (var userID in widget.toDo!.users.keys)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 6.0),
+                      child: Text(
+                        '${widget.toDo!.users[userID]} ',
+                        style: const TextStyle(
+                            fontSize: 10, color: Palette.darkGray, height: 2.5),
+                        textHeightBehavior: textHeightBehavior,
+                      ),
+                    ),
+              ],
+            )),
+          ),
+        ],
+      ),
+    );
   }
 }
 
-// ignore: must_be_immutable
 class ToDoElement extends StatefulWidget {
-  double width;
-  bool bAdd;
-  bool bDelete;
+  bool bDelete; // reverse is AddToDo
   String content;
-  Color iconColor;
-  Color fontColor;
   void Function()? onTapDone;
   void Function()? onTapText;
-  void Function()? onTapDelete;
+  void Function()? onTapButton;
+  double width;
+  Color iconColor;
+  Color fontColor;
 
   ToDoElement({
     super.key,
+    this.bDelete = true,
     required this.content,
-    this.iconColor = Palette.lightGray,
-    this.fontColor = Palette.lightBlack,
-    this.bAdd = false,
     this.onTapDone = null,
     this.onTapText = null,
-    this.width = 275,
-    this.bDelete = true,
-    this.onTapDelete = null,
+    this.onTapButton = null, // Button that process todo
+    this.width = 260,
+    this.iconColor = Palette.lightGray,
+    this.fontColor = Palette.lightBlack,
   });
 
   @override
@@ -64,7 +103,7 @@ class _ToDoElementState extends State<ToDoElement> {
   @override
   void initState() {
     super.initState();
-    controller.text = widget.bAdd ? '' : widget.content;
+    controller.text = widget.bDelete ? widget.content : '';
   }
 
   @override
@@ -92,12 +131,12 @@ class _ToDoElementState extends State<ToDoElement> {
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: widget.content,
-                    hintStyle: TextStyle(
+                    hintStyle: const TextStyle(
                       fontSize: 14,
                       color: Palette.lightGray,
                     ),
                   ),
-                  style: TextStyle(fontSize: 14),
+                  style: const TextStyle(fontSize: 14),
                   keyboardType: TextInputType.text,
                 ),
               ),
@@ -106,113 +145,9 @@ class _ToDoElementState extends State<ToDoElement> {
         ),
         if (widget.bDelete)
           GestureDetector(
-              onTap: widget.onTapDelete,
+              onTap: widget.onTapButton,
               child: Icon(Icons.delete, color: widget.iconColor)),
       ],
-    );
-  }
-}
-
-// ignore: must_be_immutable
-class ToDoContainer extends StatefulWidget {
-  ToDo toDo;
-  void Function()? onTapDelete;
-
-  ToDoContainer({super.key, required this.toDo, this.onTapDelete = null});
-
-  @override
-  State<ToDoContainer> createState() => _ToDoContainerState();
-}
-
-class _ToDoContainerState extends State<ToDoContainer> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: ToDoElement(
-              content: widget.toDo.task,
-              onTapDelete: widget.onTapDelete,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 14.0, left: 12, right: 12),
-            child: CircularContainer(
-                child: Row(
-              children: <Widget>[
-                for (var userID in widget.toDo.users.keys)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 6.0),
-                    child: Text(
-                      '${widget.toDo.users[userID]} ',
-                      style: TextStyle(
-                          fontSize: 10, color: Palette.darkGray, height: 2.5),
-                      textHeightBehavior: textHeightBehavior,
-                    ),
-                  ),
-              ],
-            )),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class AddToDoNode extends StatefulWidget {
-  AddToDoNode({super.key});
-
-  @override
-  State<AddToDoNode> createState() => _AddToDoNodeState();
-}
-
-class _AddToDoNodeState extends State<AddToDoNode> {
-  @override
-  Widget build(BuildContext context) {
-    return AddToDoContainer();
-  }
-}
-
-// ignore: must_be_immutable
-class AddToDoContainer extends StatefulWidget {
-  AddToDoContainer({super.key});
-
-  @override
-  State<AddToDoContainer> createState() => _AddToDoContainerState();
-}
-
-class _AddToDoContainerState extends State<AddToDoContainer> {
-  late ToDo? toDo = null;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: ToDoElement(
-              bAdd: true,
-              content: '새로운 할 일을 추가해주세요.',
-              bDelete: false,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 14.0, left: 12, right: 12),
-            child: CircularContainer(),
-          ),
-        ],
-      ),
     );
   }
 }

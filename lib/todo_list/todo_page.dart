@@ -6,9 +6,11 @@ import 'package:capston/todo_list/todo.dart';
 
 import 'package:capston/palette.dart';
 
+import 'dart:math';
+
 class ToDoPage extends StatefulWidget {
   final roomID;
-  ToDoPage({super.key, required this.roomID});
+  const ToDoPage({super.key, required this.roomID});
 
   @override
   State<ToDoPage> createState() => _ToDoPageState();
@@ -26,6 +28,24 @@ class _ToDoPageState extends State<ToDoPage> {
         .doc(widget.roomID)
         .collection('todo');
     // toDoRef.withConverter<ToDo>(fromFirestore: (snapshot, _) => ToDo.fromJson(snapshot.data()!), toFirestore: (toDo, _) => toDo.toJson(),);
+
+    var task = [
+      'study',
+      'dance',
+      'sing',
+      'run',
+      'drink',
+      'coding',
+      'lecture',
+      'clean',
+      'wash',
+      'eat'
+    ];
+
+    for (int i = 0; i < 10; i++) {
+      addTodoControl.text = task[i];
+      addTodo(ToDoState.values[Random().nextInt(3)]);
+    }
   }
 
   @override
@@ -33,7 +53,7 @@ class _ToDoPageState extends State<ToDoPage> {
     return Scaffold(
         backgroundColor: Palette.lightGray,
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(100),
+          preferredSize: const Size.fromHeight(100),
           child: AppBar(
             toolbarHeight: 100,
             centerTitle: true,
@@ -49,11 +69,11 @@ class _ToDoPageState extends State<ToDoPage> {
         ));
   }
 
-  Future<void> addTodo() {
+  Future<void> addTodo(ToDoState state) async {
     var toDo = ToDo(
-        task: addTodoControl.text,
-        users: {'Oy5sYPc10EXbuAFMvGtzYt2R7V13': 'ㅋㅋ', 'testid': '고길동'},
+        state: state,
+        users: {'Oy5sYPc10EXbuAFMvGtzYt2R7V13': '홍길동', 'testid': '홍길순'},
         bDeadline: false);
-    return toDoRef.doc(toDo.task).set(toDo.toJson());
+    await toDoRef.doc(addTodoControl.text).set(toDo.toJson());
   }
 }

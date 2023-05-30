@@ -4,7 +4,6 @@ import 'package:flutter_config/flutter_config.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
-import 'package:capston/chatting/main_screen.dart';
 import 'package:capston/todo_list/todo_page.dart';
 
 Future<void> main() async {
@@ -17,7 +16,7 @@ Future<void> main() async {
   runApp(
     ChangeNotifierProvider(
       create: (context) => Userdata(),
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }
@@ -31,7 +30,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CourseMic',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: ToDoPage(roomID: testID),
+      home: const ToDoPage(roomID: testID),
     );
   }
 }

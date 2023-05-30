@@ -11,43 +11,45 @@ enum ToDoState {
 typedef User = Map<String, dynamic>;
 
 class ToDo {
-  final String task;
-  User users = {};
+  late int index;
+  late ToDoState state;
+  late String detail;
   bool bDeadline;
-  Timestamp? deadline;
-  ToDoState state;
-  int score, index;
+  // Timestamp? deadline = Timestamp.now();
+  late User users = {};
+  late int score;
 
-  ToDo(
-      {required this.task,
-      required this.users,
-      required this.bDeadline,
-      // ignore: avoid_init_to_null
-      this.deadline = null,
-      this.state = ToDoState.ToDo,
-      this.score = 10,
-      this.index = 1});
+  ToDo({
+    this.index = 1,
+    this.state = ToDoState.ToDo,
+    this.detail = '',
+    required this.bDeadline,
+    // ignore: avoid_init_to_null
+    // this.deadline,
+    required this.users,
+    this.score = 10,
+  });
 
   ToDo.fromJson(QueryDocumentSnapshot<Object?> json)
       : this(
-          task: json['task']! as String,
-          users: json['users']! as User,
-          bDeadline: json['bDeadline']! as bool,
-          state: ToDoState.values[json['state']!],
-          deadline: json['deadline'] as Timestamp,
-          score: json['score'] as int,
           index: json['index'] as int,
+          state: ToDoState.values[json['state']!],
+          detail: json['detail']! as String,
+          bDeadline: json['bDeadline']! as bool,
+          // deadline: json['deadline'] as Timestamp,
+          users: json['users']! as User,
+          score: json['score'] as int,
         );
 
   Map<String, Object?> toJson() {
     return {
-      'task': task,
-      'users': users,
-      'bDeadline': bDeadline,
-      'deadline': deadline,
-      'state': state.index,
-      'score': score,
       'index': index,
+      'state': state.index,
+      'detail': detail,
+      'bDeadline': bDeadline,
+      // 'deadline': deadline,
+      'users': users,
+      'score': score,
     };
   }
 }
