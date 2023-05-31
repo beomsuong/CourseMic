@@ -61,7 +61,8 @@ class _ToDoListState extends State<ToDoList> {
         stream: todoStream,
         builder: (context, AsyncSnapshot<StateWithToDo> snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+                child: CircularProgressIndicator(color: Palette.pastelPurple));
           }
 
           StateWithToDo data = snapshot.data as StateWithToDo;
@@ -94,7 +95,7 @@ class _ToDoListState extends State<ToDoList> {
                       padding: const EdgeInsets.only(right: 12.0),
                       child: ShortCircularContainer(
                         child: Text(
-                          (toDoDocs?.length).toString(),
+                          toDoDocs == null ? '0' : (toDoDocs.length).toString(),
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               color: Palette.darkGray, height: 2.5),
@@ -188,8 +189,15 @@ class _ToDoListState extends State<ToDoList> {
     yield stateWithTodo;
   }
 
+  @override
+  void setState(fn) {
+    super.setState(fn);
+    todoStream = initToDoNodes();
+  }
+
   void deleteToDo(String todoID) {
     toDoRef.doc(todoID).delete();
+    setState(() {});
   }
 }
 
