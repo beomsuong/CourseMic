@@ -129,11 +129,16 @@ class _RoomListState extends State<RoomList> {
                     children: [
                       Text(
                         name,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 15, fontWeight: FontWeight.w600),
                         // 톡방 제목은 굵게
                       ),
-                      Text(message),
+                      Text(
+                        message,
+                        softWrap: true,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
                     ]),
               ),
             ),
