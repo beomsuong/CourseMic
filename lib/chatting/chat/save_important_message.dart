@@ -1,9 +1,3 @@
-// import 'dart:math';
-
-// import 'package:capston/chatting/chat_screen.dart';
-// import 'package:capston/message.dart';
-// import 'chat_plus_func.dart';
-// import 'chat_bubble.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /*
