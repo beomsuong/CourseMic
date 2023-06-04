@@ -36,7 +36,7 @@ class _MessagesState extends State<Messages> {
       stream: messageStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         }
