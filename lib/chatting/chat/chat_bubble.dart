@@ -1,15 +1,15 @@
+import 'package:capston/chatting/chat/viewuserprofile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
 import 'save_important_message.dart';
 
 class ChatBubbles extends StatelessWidget {
-  const ChatBubbles(this.message, this.isMe, this.userName, this.userImage,
-      this.sendTime, this.roomID,
+  const ChatBubbles(this.message, this.isMe, this.userid, this.userName,
+      this.userImage, this.sendTime, this.roomID,
       {Key? key})
       : super(key: key);
-
+  final String userid;
   final String message;
   final String userName;
   final bool isMe;
@@ -36,6 +36,20 @@ class ChatBubbles extends StatelessWidget {
                   const SizedBox(height: 15), //공백용. 나중에 처리
                   Column(
                     children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return Viewuserprofile(userid: userid);
+                              },
+                            ),
+                          );
+                          //Navigator.pop(context);
+                        },
+                        child: const Text('프로필'),
+                      ),
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
@@ -82,7 +96,7 @@ class ChatBubbles extends StatelessWidget {
                 child: ChatBubble(
                   clipper: ChatBubbleClipper8(type: BubbleType.sendBubble),
                   alignment: Alignment.topRight,
-                  margin: EdgeInsets.only(top: 20),
+                  margin: const EdgeInsets.only(top: 20),
                   backGroundColor: Colors.blue,
                   child: Container(
                     constraints: BoxConstraints(
@@ -95,12 +109,12 @@ class ChatBubbles extends StatelessWidget {
                       children: [
                         Text(
                           userName,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         Text(
                           message,
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                         ),
                       ],
                     ),
@@ -112,8 +126,8 @@ class ChatBubbles extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(45, 10, 0, 0),
                 child: ChatBubble(
                   clipper: ChatBubbleClipper8(type: BubbleType.receiverBubble),
-                  backGroundColor: Color(0xffE7E7ED),
-                  margin: EdgeInsets.only(top: 20),
+                  backGroundColor: const Color(0xffE7E7ED),
+                  margin: const EdgeInsets.only(top: 20),
                   child: Container(
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.7,
@@ -125,14 +139,14 @@ class ChatBubbles extends StatelessWidget {
                       children: [
                         Text(
                           userName,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
                         ),
                         Text(
                           message,
-                          style: TextStyle(color: Colors.black),
+                          style: const TextStyle(color: Colors.black),
                         ),
                       ],
                     ),

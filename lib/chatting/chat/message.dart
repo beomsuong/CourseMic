@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class Messages extends StatefulWidget {
   final String roomID;
-  Messages({Key? key, required this.roomID}) : super(key: key);
+  const Messages({Key? key, required this.roomID}) : super(key: key);
 
   @override
   State<Messages> createState() => _MessagesState();
@@ -54,6 +54,7 @@ class _MessagesState extends State<Messages> {
             return ChatBubbles(
                 chatDocs[index]['text'],
                 chatDocs[index]['userID'].toString() == user!.uid,
+                chatDocs[index]['userID'],
                 userMap[userID] ?? 'userName',
                 chatDocs[index]['userImage'],
                 chatDocs[index]['time'],
