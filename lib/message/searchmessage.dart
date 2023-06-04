@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Searchmessage extends StatefulWidget {
   const Searchmessage({super.key});
@@ -15,13 +16,15 @@ class _SearchmessageState extends State<Searchmessage> {
   String groupmember = '맴버 불명??';
   String groupmessage = '';
   bool btn = false;
+  String userinput = '';
+  String roomcode = '';
   searchdata(String a) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     QuerySnapshot querySnapshot = await firestore.collection('exchat').get();
 
     for (var doc in querySnapshot.docs) {
-      if ("mH2p" == doc.id.substring(0, 4)) {
+      if (a == doc.id.substring(0, 4)) {
         print(doc['톡방이름'].toString());
         groupname = doc['톡방이름'].toString();
         final chatDocsSnapshot = await FirebaseFirestore.instance
@@ -31,7 +34,7 @@ class _SearchmessageState extends State<Searchmessage> {
             .orderBy('time', descending: true)
             .limit(1)
             .get();
-
+        roomcode = doc.id;
         if (chatDocsSnapshot.docs.isNotEmpty) {
           Timestamp timestamp = chatDocsSnapshot.docs[0]['time'];
           DateTime dateTime = timestamp.toDate();
@@ -45,6 +48,17 @@ class _SearchmessageState extends State<Searchmessage> {
     }
     btn = false;
     setState(() {});
+  }
+
+  addroom() async {
+    final authentication = FirebaseAuth.instance;
+    final user = authentication.currentUser;
+    await FirebaseFirestore.instance
+        .collection('exuser')
+        .doc(user!.uid)
+        .update({
+      '톡방리스트': FieldValue.arrayUnion([roomcode]),
+    });
   }
 
   @override
@@ -108,15 +122,17 @@ class _SearchmessageState extends State<Searchmessage> {
             SizedBox(
                 width: 200,
                 child: TextField(
-                  textAlign: TextAlign.center,
-                  decoration: InputDecoration(
-                    hintText: '코드를 입력하세요',
-                  ),
-                )),
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      hintText: '코드를 입력하세요',
+                    ),
+                    onChanged: (value) {
+                      userinput = value;
+                    })),
             IconButton(
               onPressed: () {
                 FocusManager.instance.primaryFocus?.unfocus();
-                searchdata("a");
+                searchdata(userinput);
               },
               icon: Icon(
                 Icons.search,
@@ -296,7 +312,11 @@ class _SearchmessageState extends State<Searchmessage> {
                   height: 30,
                 ),
                 ElevatedButton(
-                  onPressed: btn ? () {} : null,
+                  onPressed: btn
+                      ? () {
+                          addroom();
+                        }
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
                         Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
