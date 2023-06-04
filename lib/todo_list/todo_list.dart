@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
+import 'package:capston/todo_list/drag_and_drop_list/drag_and_drop_lists.dart';
 
 import 'package:capston/widgets/CircularContainer.dart';
 
@@ -16,10 +16,10 @@ class ToDoList extends StatefulWidget {
   ToDoList({Key? key, required this.roomID}) : super(key: key);
 
   @override
-  State createState() => _ToDoListState();
+  State createState() => ToDoListState();
 }
 
-class _ToDoListState extends State<ToDoList> {
+class ToDoListState extends State<ToDoList> {
   late final CollectionReference toDoRef;
   // ignore: prefer_final_fields
   List<DragAndDropList> _contents = List.empty(growable: true);
@@ -84,12 +84,11 @@ class _ToDoListState extends State<ToDoList> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    ToDoElement(
+                    ToDoCategory(
+                      content: state.name,
                       width: 100,
                       iconColor: Palette.pastelPurple,
-                      content: state.name,
                       fontColor: Colors.white,
-                      bDelete: false,
                     ),
                     Padding(
                       padding: const EdgeInsets.only(right: 12.0),
@@ -109,8 +108,12 @@ class _ToDoListState extends State<ToDoList> {
               children: <DragAndDropItem>[
                 DragAndDropItem(
                   canDrag: false,
+                  // AddToDo
                   child: ToDoNode(
+                    toDoRef: toDoRef,
                     bDelete: false,
+                    task: '새로운 할 일을 추가해주세요',
+                    toDo: ToDo(state: state),
                   ),
                 ),
               ],
@@ -126,11 +129,10 @@ class _ToDoListState extends State<ToDoList> {
               ToDo todo = ToDo.fromJson(doc);
               _contents[state.index].children.add(DragAndDropItem(
                     child: ToDoNode(
+                      key: ValueKey(doc.id),
+                      toDoRef: toDoRef,
                       task: doc.id,
                       toDo: todo,
-                      onTapButton: () {
-                        deleteToDo(doc.id);
-                      },
                     ),
                   ));
             }
@@ -189,15 +191,10 @@ class _ToDoListState extends State<ToDoList> {
     yield stateWithTodo;
   }
 
-  @override
-  void setState(fn) {
-    super.setState(fn);
-    todoStream = initToDoNodes();
-  }
-
-  void deleteToDo(String todoID) {
-    toDoRef.doc(todoID).delete();
-    setState(() {});
+  void updateToDo() {
+    setState(() {
+      todoStream = initToDoNodes();
+    });
   }
 }
 
