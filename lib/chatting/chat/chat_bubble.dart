@@ -46,7 +46,7 @@ class ChatBubbles extends StatelessWidget {
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        child: const Text('답장'),
+                        child: const Text('답장'), // 구현 미정
                       ),
                       TextButton(
                         onPressed: () {
@@ -54,7 +54,7 @@ class ChatBubbles extends StatelessWidget {
                           saveImportantMessage(
                             //중요한 메세지 컬렉션에 저장
                             message,
-                            userName,
+                            message,
                             sendTime,
                             userName,
                             roomID,
