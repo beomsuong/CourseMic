@@ -228,7 +228,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                     onChanged: (value) {
                                       userName = value;
                                     },
-                                    decoration: InputDecoration(
+                                    decoration: const InputDecoration(
                                         prefixIcon: Icon(
                                           Icons.account_circle,
                                           color: Palette.iconColor,
@@ -272,7 +272,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                     onChanged: (value) {
                                       userEmail = value;
                                     },
-                                    decoration: InputDecoration(
+                                    decoration: const InputDecoration(
                                         prefixIcon: Icon(
                                           Icons.email,
                                           color: Palette.iconColor,
@@ -297,7 +297,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                             color: Palette.textColor1),
                                         contentPadding: EdgeInsets.all(10)),
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 8,
                                   ),
                                   TextFormField(
@@ -315,7 +315,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                     onChanged: (value) {
                                       userPassword = value;
                                     },
-                                    decoration: InputDecoration(
+                                    decoration: const InputDecoration(
                                         prefixIcon: Icon(
                                           Icons.lock,
                                           color: Palette.iconColor,
@@ -347,7 +347,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                         // LOGIN CONTAINER =====================================
                         if (!isSignupScreen)
                           Container(
-                            margin: EdgeInsets.only(top: 20),
+                            margin: const EdgeInsets.only(top: 20),
                             child: Form(
                               key: _formKey,
                               child: Column(
@@ -368,7 +368,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                     onChanged: (value) {
                                       userEmail = value;
                                     },
-                                    decoration: InputDecoration(
+                                    decoration: const InputDecoration(
                                         prefixIcon: Icon(
                                           Icons.email,
                                           color: Palette.iconColor,
@@ -393,7 +393,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                             color: Palette.textColor1),
                                         contentPadding: EdgeInsets.all(10)),
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 8.0,
                                   ),
                                   TextFormField(
@@ -411,7 +411,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                     onChanged: (value) {
                                       userPassword = value;
                                     },
-                                    decoration: InputDecoration(
+                                    decoration: const InputDecoration(
                                         prefixIcon: Icon(
                                           Icons.lock,
                                           color: Palette.iconColor,
@@ -447,14 +447,14 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
               ),
               //텍스트 폼 필드
               AnimatedPositioned(
-                duration: Duration(milliseconds: 500),
+                duration: const Duration(milliseconds: 500),
                 curve: Curves.easeIn,
                 top: isSignupScreen ? 530 : 490,
                 right: 0,
                 left: 0,
                 child: Center(
                   child: Container(
-                    padding: EdgeInsets.all(15),
+                    padding: const EdgeInsets.all(15),
                     height: 90,
                     width: 90,
                     decoration: BoxDecoration(
@@ -472,7 +472,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                             });
 
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
+                              const SnackBar(
                                 content: Text('Please pick your image'),
                                 backgroundColor: Colors.blue,
                               ),
@@ -530,7 +530,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                             print(e);
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
+                                const SnackBar(
                                   content: Text(
                                       'Please check your email and password'),
                                   backgroundColor: Colors.blue,
