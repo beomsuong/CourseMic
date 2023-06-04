@@ -493,17 +493,23 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                 .child('picked_image')
                                 .child('${newUser.user!.uid}.png');
 
-                            refImage.putFile(userPickedImage!);
+                            await refImage.putFile(userPickedImage!);
                             final url = await refImage.getDownloadURL();
+                            FirebaseFirestore firestore =
+                                FirebaseFirestore.instance;
 
                             await FirebaseFirestore.instance
-                                .collection('user')
+                                .collection('exuser')
                                 .doc(newUser.user!.uid)
                                 .set(
                               {
-                                'userName': userName,
-                                'email': userEmail,
-                                'picked_image': url
+                                '이름': userName,
+                                '대학': '???',
+                                '연락가능시간': '???',
+                                'MBTI': '???',
+                                '학과': '???',
+                                '톡방리스트': [],
+                                '이미지': url
                               },
                             );
 
