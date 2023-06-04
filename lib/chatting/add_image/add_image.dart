@@ -30,7 +30,7 @@ class _AddImageState extends State<AddImage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.only(top: 10),
       width: 150,
       height: 300,
       child: Column(
@@ -41,25 +41,25 @@ class _AddImageState extends State<AddImage> {
             backgroundImage:
                 pickedImage != null ? FileImage(pickedImage!) : null,
           ),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           OutlinedButton.icon(
             onPressed: () {
               _pickImage();
             },
-            icon: Icon(Icons.image),
-            label: Text('Add image'),
+            icon: const Icon(Icons.image),
+            label: const Text('Add image'),
           ),
-          SizedBox(
+          const SizedBox(
             height: 80,
           ),
           TextButton.icon(
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: Icon(Icons.close),
-            label: Text('Close'),
+            icon: const Icon(Icons.close),
+            label: const Text('Close'),
           ),
         ],
       ),
