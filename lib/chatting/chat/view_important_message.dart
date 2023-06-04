@@ -110,9 +110,10 @@ Future<void> deleteImpMsg(String roomname, String impMsgId) async {
 }
 
 //----------------------------------------------------------------------------------------------------
-class simpleImportantMessage extends StatelessWidget {
-  //TODO: ui 변경 + 기능없음 + 폰트 크기
-  const simpleImportantMessage({Key? key});
+class SimpleImportantMessage extends StatelessWidget {
+  final String roomname;
+  const SimpleImportantMessage({Key? key, required this.roomname})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
