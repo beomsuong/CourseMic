@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'message/message.dart';
+import 'package:capston/chatting/chat/chat_list.dart';
 import 'mypage/mypage.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -36,8 +36,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<Widget> _pages = [
     //각 페이지 이동 시 사용하는 리스트형 위젯 각 페이지 클래스를 실행한다
     // ChatScreen(),
-    RoomList(),
-    Mypage(),
+    const RoomList(),
+    const Mypage(),
   ];
 
   void _onItemTapped(int index) {

@@ -1,11 +1,8 @@
 import 'package:capston/chatting/main_screen.dart';
-import 'package:capston/provider/userdata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_config/flutter_config.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:provider/provider.dart';
 import 'firebase_options.dart';
-import 'package:capston/todo_list/todo_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,10 +12,7 @@ Future<void> main() async {
   );
   FlutterConfig.get('apiKey');
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => Userdata(),
-      child: const MyApp(),
-    ),
+    const MyApp(),
   );
 }
 

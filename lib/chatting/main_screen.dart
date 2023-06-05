@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:capston/mainpage.dart';
 import 'package:flutter/material.dart';
-import 'config/palette.dart';
+import 'package:capston/palette.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'add_image/add_image.dart';
+import 'package:capston/chatting/add_image/add_image.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -104,16 +104,16 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
               ),
               //배경
               AnimatedPositioned(
-                duration: Duration(milliseconds: 500),
+                duration: const Duration(milliseconds: 500),
                 curve: Curves.easeIn,
                 top: 280,
                 child: AnimatedContainer(
-                  duration: Duration(milliseconds: 500),
+                  duration: const Duration(milliseconds: 500),
                   curve: Curves.easeIn,
-                  padding: EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.all(20.0),
                   height: isSignupScreen ? 280.0 : 250.0,
                   width: MediaQuery.of(context).size.width - 40,
-                  margin: EdgeInsets.symmetric(horizontal: 20.0),
+                  margin: const EdgeInsets.symmetric(horizontal: 20.0),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(15.0),
@@ -125,7 +125,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                     ],
                   ),
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.only(bottom: 20),
+                    padding: const EdgeInsets.only(bottom: 20),
                     child: Column(
                       children: [
                         Row(
@@ -150,7 +150,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                   ),
                                   if (!isSignupScreen)
                                     Container(
-                                      margin: EdgeInsets.only(top: 3),
+                                      margin: const EdgeInsets.only(top: 3),
                                       height: 2,
                                       width: 55,
                                       color: Colors.orange,
@@ -177,7 +177,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                                 ? Palette.activeColor
                                                 : Palette.textColor1),
                                       ),
-                                      SizedBox(
+                                      const SizedBox(
                                         width: 15,
                                       ),
                                       if (isSignupScreen)
@@ -196,7 +196,8 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                   ),
                                   if (isSignupScreen)
                                     Container(
-                                      margin: EdgeInsets.fromLTRB(0, 3, 35, 0),
+                                      margin: const EdgeInsets.fromLTRB(
+                                          0, 3, 35, 0),
                                       height: 2,
                                       width: 55,
                                       color: Colors.orange,
@@ -209,13 +210,13 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                         // SIGNUP CONTAINER =====================================
                         if (isSignupScreen)
                           Container(
-                            margin: EdgeInsets.only(top: 20),
+                            margin: const EdgeInsets.only(top: 20),
                             child: Form(
                               key: _formKey,
                               child: Column(
                                 children: [
                                   TextFormField(
-                                    key: ValueKey(1),
+                                    key: const ValueKey(1),
                                     validator: (value) {
                                       if (value!.isEmpty || value.length < 4) {
                                         return 'Please enter at least 4 characters';
@@ -253,12 +254,12 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                             color: Palette.textColor1),
                                         contentPadding: EdgeInsets.all(10)),
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 8,
                                   ),
                                   TextFormField(
                                     keyboardType: TextInputType.emailAddress,
-                                    key: ValueKey(2),
+                                    key: const ValueKey(2),
                                     validator: (value) {
                                       if (value!.isEmpty ||
                                           !value.contains('@')) {
@@ -302,7 +303,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                   ),
                                   TextFormField(
                                     obscureText: true,
-                                    key: ValueKey(3),
+                                    key: const ValueKey(3),
                                     validator: (value) {
                                       if (value!.isEmpty || value.length < 6) {
                                         return 'Password must be at least 7 characters long.';
@@ -354,7 +355,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                 children: [
                                   TextFormField(
                                     initialValue: email,
-                                    key: ValueKey(4),
+                                    key: const ValueKey(4),
                                     validator: (value) {
                                       if (value!.isEmpty ||
                                           !value.contains('@')) {
@@ -398,7 +399,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                   ),
                                   TextFormField(
                                     initialValue: password,
-                                    key: ValueKey(5),
+                                    key: const ValueKey(5),
                                     validator: (value) {
                                       if (value!.isEmpty || value.length < 6) {
                                         return 'Password must be at least 7 characters long.';
@@ -556,7 +557,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) {
-                                    return MyHomePage();
+                                    return const MyHomePage();
                                   },
                                 ),
                               );
@@ -574,7 +575,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
+                          gradient: const LinearGradient(
                               colors: [
                                 Colors.blue,
                                 Color.fromARGB(142, 141, 5, 187)
@@ -587,11 +588,11 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                               color: Colors.black.withOpacity(0.3),
                               spreadRadius: 1,
                               blurRadius: 1,
-                              offset: Offset(0, 1),
+                              offset: const Offset(0, 1),
                             ),
                           ],
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.arrow_forward,
                           color: Colors.white,
                         ),

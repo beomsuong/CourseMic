@@ -39,25 +39,25 @@ class _AddDialog1State extends State<AddDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(30.0)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.purple,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(30.0),
                 topRight: Radius.circular(30.0),
               ),
             ),
-            padding: EdgeInsets.only(left: 15.0),
+            padding: const EdgeInsets.only(left: 15.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("수정하기",
+                const Text("수정하기",
                     style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w500,
@@ -69,18 +69,18 @@ class _AddDialog1State extends State<AddDialog> {
                       Navigator.of(context).pop();
                       setState(() {});
                     },
-                    icon: Icon(Icons.check))
+                    icon: const Icon(Icons.check))
               ],
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(left: 15.0, right: 15),
+            padding: const EdgeInsets.only(left: 15.0, right: 15),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(widget.university,
-                    style:
-                        TextStyle(fontWeight: FontWeight.w500, fontSize: 20)),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w500, fontSize: 20)),
                 ElevatedButton(
                   onPressed: () {
                     showDialog(
@@ -99,9 +99,9 @@ class _AddDialog1State extends State<AddDialog> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
+                        const Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
                   ),
-                  child: Text(
+                  child: const Text(
                     '변경',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
@@ -115,13 +115,13 @@ class _AddDialog1State extends State<AddDialog> {
             color: Colors.purple,
           ),
           Padding(
-            padding: EdgeInsets.only(left: 15.0, right: 15),
+            padding: const EdgeInsets.only(left: 15.0, right: 15),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(widget.major,
-                    style:
-                        TextStyle(fontWeight: FontWeight.w500, fontSize: 20)),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w500, fontSize: 20)),
                 ElevatedButton(
                   onPressed: () {
                     showDialog(
@@ -140,9 +140,9 @@ class _AddDialog1State extends State<AddDialog> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
+                        const Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
                   ),
-                  child: Text(
+                  child: const Text(
                     '변경',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
@@ -156,22 +156,22 @@ class _AddDialog1State extends State<AddDialog> {
             color: Colors.purple,
           ),
           Padding(
-            padding: EdgeInsets.only(left: 15.0, right: 15),
+            padding: const EdgeInsets.only(left: 15.0, right: 15),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(widget.mbti,
-                    style:
-                        TextStyle(fontWeight: FontWeight.w500, fontSize: 20)),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w500, fontSize: 20)),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
+                        const Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
                   ),
-                  child: Text(
+                  child: const Text(
                     '변경',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
@@ -185,13 +185,13 @@ class _AddDialog1State extends State<AddDialog> {
             color: Colors.purple,
           ),
           Padding(
-            padding: EdgeInsets.only(left: 15.0, right: 15),
+            padding: const EdgeInsets.only(left: 15.0, right: 15),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(widget.contacttime,
-                    style:
-                        TextStyle(fontWeight: FontWeight.w500, fontSize: 20)),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w500, fontSize: 20)),
                 ElevatedButton(
                   onPressed: () {
                     showDialog(
@@ -210,9 +210,9 @@ class _AddDialog1State extends State<AddDialog> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
+                        const Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
                   ),
-                  child: Text(
+                  child: const Text(
                     '변경',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
@@ -220,7 +220,7 @@ class _AddDialog1State extends State<AddDialog> {
               ],
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 30,
           )
         ],

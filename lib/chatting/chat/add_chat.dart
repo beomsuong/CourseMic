@@ -2,13 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class AddMessage extends StatefulWidget {
-  AddMessage({
+class AddChat extends StatefulWidget {
+  const AddChat({
     Key? key,
   }) : super(key: key);
 
   @override
-  State<AddMessage> createState() => _AddMessageState();
+  State<AddChat> createState() => _AddChatState();
 }
 
 Future<DocumentSnapshot> loadingdata(
@@ -48,29 +48,29 @@ void addroom() async {
   });
 }
 
-class _AddMessageState extends State<AddMessage> {
+class _AddChatState extends State<AddChat> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(30.0)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.purple,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(30.0),
                   topRight: Radius.circular(30.0),
                 ),
               ),
-              padding: EdgeInsets.only(left: 15.0),
+              padding: const EdgeInsets.only(left: 15.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("톡방 생성",
+                  const Text("톡방 생성",
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
@@ -82,16 +82,16 @@ class _AddMessageState extends State<AddMessage> {
                         addroom();
                         Navigator.of(context).pop();
                       },
-                      icon: Icon(Icons.check))
+                      icon: const Icon(Icons.check))
                 ],
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(left: 15.0, right: 15),
+              padding: const EdgeInsets.only(left: 15.0, right: 15),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("그룹 이름 :",
+                  const Text("그룹 이름 :",
                       style:
                           TextStyle(fontWeight: FontWeight.w500, fontSize: 20)),
                   ElevatedButton(
@@ -120,11 +120,11 @@ class _AddMessageState extends State<AddMessage> {
               color: Colors.purple,
             ),
             Padding(
-              padding: EdgeInsets.only(left: 15.0, right: 15),
+              padding: const EdgeInsets.only(left: 15.0, right: 15),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("그룹 코드 :",
+                  const Text("그룹 코드 :",
                       style:
                           TextStyle(fontWeight: FontWeight.w500, fontSize: 20)),
                   ElevatedButton(
@@ -148,7 +148,7 @@ class _AddMessageState extends State<AddMessage> {
               width: 500.0,
               color: Colors.purple,
             ),
-            SizedBox(
+            const SizedBox(
               height: 30,
             )
           ],

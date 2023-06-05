@@ -32,25 +32,25 @@ class _ModifyDialogState extends State<ModifyDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(30.0)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.purple,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(30.0),
                   topRight: Radius.circular(30.0),
                 ),
               ),
-              padding: EdgeInsets.only(left: 15.0),
+              padding: const EdgeInsets.only(left: 15.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("수정하기",
+                  const Text("수정하기",
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
@@ -61,12 +61,12 @@ class _ModifyDialogState extends State<ModifyDialog> {
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
-                      icon: Icon(Icons.cancel))
+                      icon: const Icon(Icons.cancel))
                 ],
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(left: 15.0, right: 15),
+              padding: const EdgeInsets.only(left: 15.0, right: 15),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -88,9 +88,9 @@ class _ModifyDialogState extends State<ModifyDialog> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
-                          Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
+                          const Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
                     ),
-                    child: Text(
+                    child: const Text(
                       '변경',
                       style:
                           TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
@@ -99,7 +99,7 @@ class _ModifyDialogState extends State<ModifyDialog> {
                 ],
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 30,
             )
           ],

@@ -32,8 +32,8 @@ class _NewMessageState extends State<NewMessage> {
       'text': _userEnterMessage,
       'time': Timestamp.now(),
       'userID': user.uid,
-      'userName': userData.data()!['userName'],
-      'userImage': userData['picked_image'],
+      'userName': userData.data()!['이름'],
+      'userImage': userData['이미지'],
     });
     _controller.clear();
   }
@@ -41,8 +41,8 @@ class _NewMessageState extends State<NewMessage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(top: 8),
-      padding: EdgeInsets.all(8),
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(8),
       child: Column(
         children: [
           Row(
@@ -58,14 +58,15 @@ class _NewMessageState extends State<NewMessage> {
                     // Scaffold.of(context).showBottomSheet<void>(
                     //     (BuildContext context) => ChatPlusFunc());
                   },
-                  icon: Icon(Icons.add),
+                  icon: const Icon(Icons.add),
                   color: Colors.blue),
               Expanded(
                 child: TextField(
                   //메세지 입력 칸
                   maxLines: null,
                   controller: _controller,
-                  decoration: InputDecoration(labelText: 'Send a message...'),
+                  decoration:
+                      const InputDecoration(labelText: 'Send a message...'),
                   onTap: () {
                     setState(() {
                       block = false;
@@ -81,7 +82,7 @@ class _NewMessageState extends State<NewMessage> {
               IconButton(
                 onPressed:
                     _userEnterMessage.trim().isEmpty ? null : _sendMessage,
-                icon: Icon(Icons.send),
+                icon: const Icon(Icons.send),
                 color: Colors.blue,
               ),
             ],
@@ -90,7 +91,7 @@ class _NewMessageState extends State<NewMessage> {
               ? ChatPlusFunc(
                   roomId: widget.roomname,
                 )
-              : SizedBox(
+              : const SizedBox(
                   width: 0, height: 0) //TODO: roomID를 처리하지 않거나, roomID를 가져오는 방법
         ],
       ),
