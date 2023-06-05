@@ -36,25 +36,6 @@ class ToDoListState extends State<ToDoList> {
     todoStream = initToDoNodes();
   }
 
-  // Stream<StateWithToDo> updateToDoNodes() async* {
-  //   StateWithToDo stateWithTodo = {};
-
-  //   for (ToDoState state in ToDoState.values) {
-  //     toDoRef
-  //         .where('state', isEqualTo: state.index)
-  //         .snapshots(includeMetadataChanges: true)
-  //         .listen((event) {
-  //       for (var change in event.docChanges) {
-  //         if (change.type == DocumentChangeType.removed) {
-  //           stateWithTodo[state.name] = event;
-  //         }
-  //       }
-  //     });
-  //   }
-
-  //   yield stateWithTodo;
-  // }
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -112,7 +93,6 @@ class ToDoListState extends State<ToDoList> {
                   child: ToDoNode(
                     toDoRef: toDoRef,
                     bDelete: false,
-                    task: '새로운 할 일을 추가해주세요',
                     toDo: ToDo(state: state),
                   ),
                 ),
@@ -131,7 +111,6 @@ class ToDoListState extends State<ToDoList> {
                     child: ToDoNode(
                       key: ValueKey(doc.id),
                       toDoRef: toDoRef,
-                      task: doc.id,
                       toDo: todo,
                     ),
                   ));
@@ -191,7 +170,7 @@ class ToDoListState extends State<ToDoList> {
     yield stateWithTodo;
   }
 
-  void updateToDo() {
+  void rebuildToDo() {
     setState(() {
       todoStream = initToDoNodes();
     });
