@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:capston/chatting/chat/user.dart';
 
 class SearchChat extends StatefulWidget {
   const SearchChat({super.key});
@@ -18,6 +19,7 @@ class _SearchChatState extends State<SearchChat> {
   bool btn = false;
   String userinput = '';
   String roomcode = '';
+
   searchdata(String a) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -52,12 +54,15 @@ class _SearchChatState extends State<SearchChat> {
 
   addroom() async {
     final authentication = FirebaseAuth.instance;
+    final firebase = FirebaseFirestore.instance;
     final user = authentication.currentUser;
-    await FirebaseFirestore.instance
-        .collection('exuser')
-        .doc(user!.uid)
-        .update({
+    await firebase.collection('exuser').doc(user!.uid).update({
       '톡방리스트': FieldValue.arrayUnion([roomcode]),
+    });
+
+    // add user into userList field
+    firebase.collection('exchat').doc(roomcode).update({
+      'userList': FieldValue.arrayUnion([MyUser(userID: user.uid).toJson()])
     });
   }
 
