@@ -8,15 +8,13 @@ enum ToDoState {
   Done,
 }
 
-typedef User = Map<String, dynamic>;
-
 class ToDo {
   late int index;
   late ToDoState state;
   late String task;
   late String detail;
   // Timestamp? deadline = Timestamp.now();
-  late User users;
+  late List<String> userIDs;
   late int score;
 
   ToDo({
@@ -25,7 +23,7 @@ class ToDo {
     this.task = '새로운 할 일을 추가해주세요',
     this.detail = '',
     // this.deadline,
-    this.users = const {},
+    this.userIDs = const <String>[],
     this.score = 10,
   });
 
@@ -36,17 +34,17 @@ class ToDo {
           task: json.id,
           detail: json['detail'],
           // deadline: json['deadline'] as Timestamp,
-          users: json['users']! as User,
+          userIDs: json['users']! as List<String>,
           score: json['score'] as int,
         );
 
-  Map<String, Object?> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'index': index,
       'state': state.index,
       'detail': detail,
       // 'deadline': deadline,
-      'users': users,
+      'userIDs': userIDs,
       'score': score,
     };
   }
@@ -56,7 +54,7 @@ class ToDo {
     // task = '새로운 할 일을 추가해주세요';
     detail = '';
     // this.deadline,
-    users = const {};
+    userIDs.clear();
     score = 10;
   }
 }
