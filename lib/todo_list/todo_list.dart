@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
+import 'package:capston/todo_list/drag_and_drop_list/drag_and_drop_lists.dart';
 
 import 'package:capston/widgets/CircularContainer.dart';
 
@@ -16,13 +16,14 @@ class ToDoList extends StatefulWidget {
   ToDoList({Key? key, required this.roomID}) : super(key: key);
 
   @override
-  State createState() => _ToDoListState();
+  State createState() => ToDoListState();
 }
 
-class _ToDoListState extends State<ToDoList> {
+class ToDoListState extends State<ToDoList> {
   late final CollectionReference toDoRef;
   // ignore: prefer_final_fields
   List<DragAndDropList> _contents = List.empty(growable: true);
+  late Stream<StateWithToDo> todoStream;
 
   @override
   void initState() {
@@ -31,26 +32,31 @@ class _ToDoListState extends State<ToDoList> {
         .collection('exchat')
         .doc(widget.roomID)
         .collection('todo');
+
+    todoStream = initToDoNodes();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: getToDoNodes(),
-        builder: (context, AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Text('대기중');
+    return StreamBuilder(
+        stream: todoStream,
+        builder: (context, AsyncSnapshot<StateWithToDo> snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(
+                child: CircularProgressIndicator(color: Palette.pastelPurple));
           }
-          final toDoDocs = snapshot.data!.docs;
+
+          StateWithToDo data = snapshot.data as StateWithToDo;
+
           _contents.clear();
-          for (var data in toDoDocs) {
-            var todo = ToDo.fromJson(data);
-            print('todo_list.dart : ${todo.state.index}');
+          for (ToDoState state in ToDoState.values) {
+            var toDoDocs = data[state.name]?.docs;
+
             _contents.add(DragAndDropList(
               header: Container(
-                padding: EdgeInsets.fromLTRB(10, 8, 0, 8),
+                padding: const EdgeInsets.fromLTRB(10, 8, 0, 8),
                 width: double.infinity,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Palette.pastelPurple,
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
@@ -59,19 +65,20 @@ class _ToDoListState extends State<ToDoList> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    ToDoElement(
-                      circleColor: Palette.pastelPurple,
-                      content: todo.state.name,
+                    ToDoCategory(
+                      content: state.name,
+                      width: 100,
+                      iconColor: Palette.pastelPurple,
                       fontColor: Colors.white,
                     ),
                     Padding(
                       padding: const EdgeInsets.only(right: 12.0),
                       child: ShortCircularContainer(
                         child: Text(
-                          '10',
+                          toDoDocs == null ? '0' : (toDoDocs.length).toString(),
                           textAlign: TextAlign.center,
-                          style:
-                              TextStyle(color: Palette.darkGray, height: 2.5),
+                          style: const TextStyle(
+                              color: Palette.darkGray, height: 2.5),
                           textHeightBehavior: textHeightBehavior,
                         ),
                       ),
@@ -81,12 +88,33 @@ class _ToDoListState extends State<ToDoList> {
               ),
               children: <DragAndDropItem>[
                 DragAndDropItem(
+                  canDrag: false,
+                  // AddToDo
                   child: ToDoNode(
-                    toDo: todo,
+                    toDoRef: toDoRef,
+                    bDelete: false,
+                    toDo: ToDo(state: state),
                   ),
                 ),
               ],
             ));
+
+            if (toDoDocs == null) break;
+
+            // index 로 정렬
+            toDoDocs.sort(
+                (a, b) => (a['index'] as int).compareTo(b['index'] as int));
+
+            for (var doc in toDoDocs) {
+              ToDo todo = ToDo.fromJson(doc);
+              _contents[state.index].children.add(DragAndDropItem(
+                    child: ToDoNode(
+                      key: ValueKey(doc.id),
+                      toDoRef: toDoRef,
+                      toDo: todo,
+                    ),
+                  ));
+            }
           }
 
           return DragAndDropLists(
@@ -96,31 +124,9 @@ class _ToDoListState extends State<ToDoList> {
             onListReorder: _onListReorder,
             listPadding: const EdgeInsets.only(top: 12, left: 24, right: 24),
             listDraggingWidth: 365,
-            // contentsWhenEmpty: Row(
-            //   children: <Widget>[
-            //     const Expanded(
-            //       child: Padding(
-            //         padding: EdgeInsets.only(left: 40, right: 10),
-            //         child: Divider(),
-            //       ),
-            //     ),
-            //     Text(
-            //       'Empty List',
-            //       style: TextStyle(
-            //           color: Theme.of(context).textTheme.bodySmall!.color,
-            //           fontStyle: FontStyle.italic),
-            //     ),
-            //     const Expanded(
-            //       child: Padding(
-            //         padding: EdgeInsets.only(left: 20, right: 40),
-            //         child: Divider(),
-            //       ),
-            //     ),
-            //   ],
-            // ),
             listSizeAnimationDurationMilliseconds: 150,
-            listGhost: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 40.0),
+            listGhost: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 40.0),
             ),
             listDecoration: BoxDecoration(
               color: Colors.white,
@@ -153,6 +159,22 @@ class _ToDoListState extends State<ToDoList> {
     });
   }
 
-  Future<QuerySnapshot<Object?>> getToDoNodes() async =>
-      await toDoRef.orderBy('state').get();
+  Stream<StateWithToDo> initToDoNodes() async* {
+    StateWithToDo stateWithTodo = {};
+
+    for (ToDoState state in ToDoState.values) {
+      stateWithTodo[state.name] =
+          await toDoRef.where('state', isEqualTo: state.index).get();
+    }
+
+    yield stateWithTodo;
+  }
+
+  void rebuildToDo() {
+    setState(() {
+      todoStream = initToDoNodes();
+    });
+  }
 }
+
+typedef StateWithToDo = Map<String, QuerySnapshot<Object?>>;
