@@ -7,6 +7,7 @@ import 'package:capston/widgets/CircularContainer.dart';
 import 'package:capston/palette.dart';
 import 'package:capston/todo_list/todo.dart';
 import 'package:capston/todo_list/todo_list.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
 const TextHeightBehavior textHeightBehavior = TextHeightBehavior(
     applyHeightToFirstAscent: false, applyHeightToLastDescent: true);
@@ -16,17 +17,6 @@ class ToDoNode extends StatefulWidget {
 
   bool bDelete;
   ToDo toDo;
-
-  // ToDoUpper(task)
-  // void Function()? onTapDone;
-  // void Function()? onTapText;
-  // void Function()? onTapButton;
-  // void Function()? onTapDeadline;
-
-  // ToDoLower(user)
-  // void Function()? onTapMember;
-  // void Function()? onTapScore;
-
   double width;
   Color iconColor;
   Color fontColor;
@@ -36,14 +26,6 @@ class ToDoNode extends StatefulWidget {
     required this.toDoRef,
     this.bDelete = true,
     required this.toDo,
-    // ToDoUpper(task)
-    // this.onTapDone,
-    // this.onTapText,
-    // this.onTapButton, // Button that process todo
-    // this.onTapDeadline,
-    // ToDoLower(user)
-    // this.onTapMember,
-    // this.onTapScore,
     this.width = 220,
     this.iconColor = Palette.lightGray,
     this.fontColor = Palette.lightBlack,
@@ -60,14 +42,15 @@ class _ToDoNodeState extends State<ToDoNode> {
   FocusNode focusNode = FocusNode();
   // ToDoLower(user)
   List<Widget> users = List.empty(growable: true);
+  late CollectionReference userRef;
 
   @override
   void initState() {
     super.initState();
     parent = context.findAncestorStateOfType<ToDoListState>();
     controller.text = widget.bDelete ? widget.toDo.task : '';
+    userRef = FirebaseFirestore.instance.collection('exuser');
     users = setUsers();
-
     if (widget.bDelete) {
       focusNode.addListener(() {
         if (!focusNode.hasFocus) {
@@ -138,7 +121,7 @@ class _ToDoNodeState extends State<ToDoNode> {
                     Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: GestureDetector(
-                          onTap: () => _selectDayAndTime,
+                          onTap: showDeadline,
                           child:
                               Icon(Icons.date_range, color: widget.iconColor),
                         )),
@@ -242,37 +225,14 @@ class _ToDoNodeState extends State<ToDoNode> {
   // ToDo
   // 1. showDeadline
   // 2.
-  void showDeadline() {
+  void showDeadline() async {
     DateTime now = DateTime.now();
 
-    showWidget(
-        title: const Text('마감기한을 정해주세요'),
-        widget: Column(children: const <Widget>[]),
-        actions: [
-          TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('확인'))
-        ]);
-  }
-
-  Future _selectDayAndTime(BuildContext context) async {
-    DateTime? selectedDay = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2018),
-        lastDate: DateTime(2030),
-        builder: (BuildContext context, Widget? child) => child!);
-
-    TimeOfDay? selectedTime = await showTimePicker(
+    DateTime? dateTime = await showOmniDateTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      firstDate: DateTime(now.year),
+      lastDate: DateTime(now.year + 5),
     );
-
-    if (selectedDay != null && selectedTime != null) {
-      //a little check
-    }
   }
 
   void showUser() {
@@ -284,19 +244,21 @@ class _ToDoNodeState extends State<ToDoNode> {
       return List.empty();
     }
 
-    return <Widget>[
-      for (var userID in widget.toDo.userIDs)
-        const Padding(
-          padding: EdgeInsets.only(left: 10.0),
-          child: Text(
-            // '${widget.toDo.users[userID]} ',
-            'userName',
-            style:
-                TextStyle(fontSize: 10, color: Palette.darkGray, height: 2.5),
-            textHeightBehavior: textHeightBehavior,
-          ),
-        ),
-    ];
+    List<Widget> userList = List<Widget>.empty(growable: true);
+
+    for (var userID in widget.toDo.userIDs) {
+      userRef.doc(userID).get().then((value) => userList.add(Padding(
+            padding: const EdgeInsets.only(left: 10.0),
+            child: Text(
+              (value.data() as Map<String, dynamic>)['이름'],
+              style: const TextStyle(
+                  fontSize: 10, color: Palette.darkGray, height: 2.5),
+              textHeightBehavior: textHeightBehavior,
+            ),
+          )));
+    }
+
+    return userList;
   }
 
   void showScore() {
