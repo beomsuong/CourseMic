@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'chat/message.dart';
-import 'chat/new_message.dart';
+import 'package:capston/chatting/chat/message/message.dart';
+import 'package:capston/chatting/chat/message/new_message.dart';
 
 class ChatScreen extends StatefulWidget {
   final String roomID;
-  ChatScreen({Key? key, required this.roomID}) : super(key: key);
+  const ChatScreen({Key? key, required this.roomID}) : super(key: key);
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -39,10 +39,10 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chat screen'),
+        title: const Text('Chat screen'),
         actions: [
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.exit_to_app_sharp,
               color: Colors.white,
             ),

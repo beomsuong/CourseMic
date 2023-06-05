@@ -1,9 +1,9 @@
-import 'package:capston/message/addmessage.dart';
-import 'package:capston/message/searchmessage.dart';
+import 'package:capston/chatting/chat/add_chat.dart';
+import 'package:capston/chatting/chat/search_chat.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../chatting/chat_screen.dart';
+import 'package:capston/chatting/chat_screen.dart';
 
 class GradientText extends StatelessWidget {
   const GradientText({super.key});
@@ -28,7 +28,7 @@ class GradientText extends StatelessWidget {
 }
 
 class RoomList extends StatefulWidget {
-  RoomList({Key? key}) : super(key: key);
+  const RoomList({Key? key}) : super(key: key);
   @override
   State<RoomList> createState() => _RoomListState();
 }
@@ -152,7 +152,7 @@ class _RoomListState extends State<RoomList> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: GradientText(),
+          title: const GradientText(),
           centerTitle: false,
           backgroundColor: Colors.white,
           leading: IconButton(
@@ -167,10 +167,10 @@ class _RoomListState extends State<RoomList> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Searchmessage()),
+                  MaterialPageRoute(builder: (context) => const SearchChat()),
                 );
               },
-              icon: Icon(
+              icon: const Icon(
                 Icons.search,
                 color: Colors.purple,
                 size: 30,
@@ -182,7 +182,7 @@ class _RoomListState extends State<RoomList> {
           future: loadingdata(),
           builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
+              return const Center(
                   child: CircularProgressIndicator()); // 로딩 중일 때 표시될 위젯
             } else {
               if (snapshot.hasError) {
@@ -206,7 +206,7 @@ class _RoomListState extends State<RoomList> {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  return AddMessage();
+                  return const AddChat();
                 },
               );
             }));

@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class Searchmessage extends StatefulWidget {
-  const Searchmessage({super.key});
+class SearchChat extends StatefulWidget {
+  const SearchChat({super.key});
 
   @override
-  State<Searchmessage> createState() => _SearchmessageState();
+  State<SearchChat> createState() => _SearchChatState();
 }
 
-class _SearchmessageState extends State<Searchmessage> {
+class _SearchChatState extends State<SearchChat> {
   String groupname = '';
   String groupcode = '코드 불명??';
   String groupmember = '맴버 불명??';
@@ -70,7 +70,7 @@ class _SearchmessageState extends State<Searchmessage> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_ios,
             color: Colors.black,
             size: 30,
@@ -89,7 +89,7 @@ class _SearchmessageState extends State<Searchmessage> {
                   width: 150.0,
                   color: Colors.black,
                 ),
-                Text(
+                const Text(
                   "톡방 검색",
                   style: TextStyle(
                     color: Colors.black,
@@ -97,7 +97,7 @@ class _SearchmessageState extends State<Searchmessage> {
                     fontSize: 30,
                   ),
                 ),
-                SizedBox(height: 3.0),
+                const SizedBox(height: 3.0),
                 Container(
                   height: 3.0,
                   width: 150.0,
@@ -105,25 +105,25 @@ class _SearchmessageState extends State<Searchmessage> {
                 ),
               ],
             ),
-            SizedBox(width: 60),
+            const SizedBox(width: 60),
           ],
         ),
       ),
       body: Column(children: [
-        SizedBox(
+        const SizedBox(
           height: 20,
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
+            const SizedBox(
               width: 30,
             ),
             SizedBox(
                 width: 200,
                 child: TextField(
                     textAlign: TextAlign.center,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: '코드를 입력하세요',
                     ),
                     onChanged: (value) {
@@ -134,7 +134,7 @@ class _SearchmessageState extends State<Searchmessage> {
                 FocusManager.instance.primaryFocus?.unfocus();
                 searchdata(userinput);
               },
-              icon: Icon(
+              icon: const Icon(
                 Icons.search,
                 color: Colors.purple,
                 size: 30,
@@ -145,8 +145,8 @@ class _SearchmessageState extends State<Searchmessage> {
         Container(
             width: 370,
             height: 400,
-            margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
-            padding: EdgeInsets.all(20),
+            margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               border: Border.all(
                 color: Colors.black,
@@ -156,7 +156,7 @@ class _SearchmessageState extends State<Searchmessage> {
             ),
             child: Column(
               children: [
-                Text(
+                const Text(
                   "선택한 톡방 정보",
                   style: TextStyle(
                     color: Colors.black,
@@ -164,7 +164,7 @@ class _SearchmessageState extends State<Searchmessage> {
                     fontSize: 25,
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 Container(
@@ -172,7 +172,7 @@ class _SearchmessageState extends State<Searchmessage> {
                   width: 250.0,
                   color: Colors.black,
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 Row(children: [
@@ -183,7 +183,7 @@ class _SearchmessageState extends State<Searchmessage> {
                         child: Container(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.end, // 오른쪽 정렬
-                            children: [
+                            children: const [
                               SizedBox(
                                 width: 120,
                                 height: 35,
@@ -255,7 +255,7 @@ class _SearchmessageState extends State<Searchmessage> {
                                 child: Text(
                                   groupname,
                                   textAlign: TextAlign.left,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.grey,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 20,
@@ -268,7 +268,7 @@ class _SearchmessageState extends State<Searchmessage> {
                                 child: Text(
                                   groupcode,
                                   textAlign: TextAlign.left,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.grey,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 20,
@@ -281,7 +281,7 @@ class _SearchmessageState extends State<Searchmessage> {
                                 child: Text(
                                   groupmember,
                                   textAlign: TextAlign.left,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.grey,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 20,
@@ -294,7 +294,7 @@ class _SearchmessageState extends State<Searchmessage> {
                                 child: Text(
                                   groupmessage,
                                   textAlign: TextAlign.left,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.grey,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 20,
@@ -308,7 +308,7 @@ class _SearchmessageState extends State<Searchmessage> {
                     ],
                   ),
                 ]),
-                SizedBox(
+                const SizedBox(
                   height: 30,
                 ),
                 ElevatedButton(
@@ -319,9 +319,9 @@ class _SearchmessageState extends State<Searchmessage> {
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
+                        const Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
                   ),
-                  child: Text(
+                  child: const Text(
                     '입장',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),

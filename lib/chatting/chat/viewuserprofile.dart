@@ -1,8 +1,6 @@
-import 'package:capston/provider/userdata.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
-import 'package:provider/provider.dart';
 
 class GradientText extends StatelessWidget {
   const GradientText({super.key});
@@ -35,8 +33,6 @@ class Viewuserprofile extends StatefulWidget {
 }
 
 class _ViewuserprofileState extends State<Viewuserprofile> {
-  late Userdata data;
-
   @override
   void initState() {
     // TODO: implement initState
@@ -75,7 +71,6 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
 
   @override
   Widget build(BuildContext context) {
-    data = Provider.of<Userdata>(context);
     return Scaffold(
       appBar: AppBar(
         title: const GradientText(),
@@ -139,11 +134,11 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
                         ),
                       ],
                     ),
-                    const Padding(
-                      padding: EdgeInsets.only(right: 30, left: 30),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 30, left: 30),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
+                        children: const [
                           SizedBox(
                             child: Text(
                               '기본 정보',
@@ -208,13 +203,13 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
                         ],
                       ),
                     ),
-                    const Align(
+                    Align(
                       alignment: Alignment.bottomLeft,
                       child: Padding(
-                        padding: EdgeInsets.only(right: 25, left: 25),
+                        padding: const EdgeInsets.only(right: 25, left: 25),
                         child: Column(
                           children: [
-                            Divider(
+                            const Divider(
                               thickness: 2,
                               height: 3,
                               color: Colors.black,
@@ -222,7 +217,7 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
                             SizedBox(
                               height: 30,
                               child: Row(
-                                children: [
+                                children: const [
                                   Text(
                                     '현재 참여중인 과제 : ' '갯수 변수' '(개)',
                                     style: TextStyle(
@@ -235,7 +230,7 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
                             SizedBox(
                               height: 30,
                               child: Row(
-                                children: [
+                                children: const [
                                   Text(
                                     '완료한 과제 : ' '갯수 변수' '(개)',
                                     style: TextStyle(
@@ -245,7 +240,7 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
                                 ],
                               ),
                             ),
-                            Divider(
+                            const Divider(
                               thickness: 2,
                               height: 10,
                               color: Colors.black,
@@ -254,10 +249,10 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
                         ),
                       ),
                     ),
-                    const SizedBox(
+                    SizedBox(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                        children: const [
                           Padding(
                             padding: EdgeInsets.only(top: 7, bottom: 7),
                             child: Text(

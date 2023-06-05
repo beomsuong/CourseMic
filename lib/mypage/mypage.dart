@@ -1,11 +1,9 @@
-import 'package:capston/provider/userdata.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
-import 'package:provider/provider.dart';
 
-import 'addDialog.dart';
+import 'package:capston/mypage/addDialog.dart';
 
 class GradientText extends StatelessWidget {
   const GradientText({super.key});
@@ -30,15 +28,13 @@ class GradientText extends StatelessWidget {
 }
 
 class Mypage extends StatefulWidget {
-  Mypage({super.key});
+  const Mypage({super.key});
 
   @override
   State<Mypage> createState() => _MypageState();
 }
 
 class _MypageState extends State<Mypage> {
-  late Userdata data;
-
   @override
   void initState() {
     // TODO: implement initState
@@ -71,7 +67,7 @@ class _MypageState extends State<Mypage> {
         children: [
           Text(
             ' $a : $b',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
           ),
         ],
       ),
@@ -80,10 +76,9 @@ class _MypageState extends State<Mypage> {
 
   @override
   Widget build(BuildContext context) {
-    data = Provider.of<Userdata>(context);
     return Scaffold(
       appBar: AppBar(
-        title: GradientText(),
+        title: const GradientText(),
         centerTitle: false,
         backgroundColor: Colors.white,
         leading: IconButton(
@@ -99,7 +94,7 @@ class _MypageState extends State<Mypage> {
           builder:
               (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             } else {
               if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
@@ -128,18 +123,18 @@ class _MypageState extends State<Mypage> {
                       children: [
                         Text(
                           docSnapshot.get('이름'),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 30,
                           ),
                         ),
-                        Divider(
+                        const Divider(
                           thickness: 2,
                           height: 10,
                           indent: 70,
                           endIndent: 70,
                           color: Colors.black,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                         ),
                       ],
@@ -149,7 +144,7 @@ class _MypageState extends State<Mypage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          SizedBox(
+                          const SizedBox(
                             child: Text(
                               '기본 정보',
                               style: TextStyle(
@@ -173,10 +168,10 @@ class _MypageState extends State<Mypage> {
                               });
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Color.fromARGB(
+                              backgroundColor: const Color.fromARGB(
                                   255, 148, 61, 255), // 버튼 배경색 지정
                             ),
-                            child: Text(
+                            child: const Text(
                               '+ 수정',
                               style: TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.w700),
@@ -215,7 +210,7 @@ class _MypageState extends State<Mypage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          SizedBox(
+                          const SizedBox(
                             child: Text(
                               '활동 이력',
                               style: TextStyle(
@@ -227,10 +222,10 @@ class _MypageState extends State<Mypage> {
                               // 버튼을 눌렀을 때 실행되는 코드
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Color.fromARGB(
+                              backgroundColor: const Color.fromARGB(
                                   255, 148, 61, 255), // 버튼 배경색 지정
                             ),
-                            child: Text(
+                            child: const Text(
                               '+ 조회',
                               style: TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.w700),
@@ -307,26 +302,27 @@ class _MypageState extends State<Mypage> {
                           LinearPercentIndicator(
                             width: 200.0,
                             lineHeight: 20.0,
-                            leading: Text(
+                            leading: const Text(
                               //좌측 문자열 Leading
                               "EXP",
                               style: TextStyle(
                                   fontSize: 12, fontWeight: FontWeight.w900),
                             ),
-                            trailing: Text(
+                            trailing: const Text(
                               //우측 문자열 trailing
                               "% 변수",
                               style: TextStyle(
                                   fontSize: 12, fontWeight: FontWeight.w900),
                             ),
                             percent: 0.8,
-                            center: Text("80.0%"),
+                            center: const Text("80.0%"),
                             backgroundColor:
                                 const Color.fromARGB(255, 198, 198, 198),
-                            progressColor: Color.fromRGBO(237, 145, 255, 1),
+                            progressColor:
+                                const Color.fromRGBO(237, 145, 255, 1),
                             animation: true,
                             animationDuration: 2500,
-                            barRadius: Radius.circular(30.0),
+                            barRadius: const Radius.circular(30.0),
                           ),
                         ],
                       ),

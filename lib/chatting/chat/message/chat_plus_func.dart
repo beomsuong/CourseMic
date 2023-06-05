@@ -75,8 +75,8 @@
 // }
 //                                      *OLD CODE*
 
-import 'package:capston/chatting/chat/view_important_message.dart';
-import 'package:capston/message/addmessage.dart';
+import 'package:capston/chatting/chat/message/view_important_message.dart';
+import 'package:capston/chatting/chat/add_chat.dart';
 import 'package:flutter/material.dart';
 
 class ChatPlusFunc extends StatefulWidget {

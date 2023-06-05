@@ -71,7 +71,7 @@ class _MessagesState extends State<Messages> {
   Future<String> readUserName(String userID) async {
     var docSnapshot = await userRef.doc(userID).get();
     if (docSnapshot.exists) {
-      return docSnapshot.get('userName');
+      return docSnapshot.get('이름');
     }
     return '알수없음';
   }
