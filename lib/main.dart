@@ -1,3 +1,4 @@
+import 'package:capston/chatting/main_screen.dart';
 import 'package:capston/provider/userdata.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_config/flutter_config.dart';
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CourseMic',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const ToDoPage(roomID: testID),
+      home: const LoginSignupScreen(),
     );
   }
 }

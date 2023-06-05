@@ -13,6 +13,7 @@ typedef User = Map<String, dynamic>;
 class ToDo {
   late int index;
   late ToDoState state;
+  late String task;
   late String detail;
   // Timestamp? deadline = Timestamp.now();
   late User users;
@@ -21,8 +22,8 @@ class ToDo {
   ToDo({
     this.index = 1,
     this.state = ToDoState.ToDo,
+    this.task = '새로운 할 일을 추가해주세요',
     this.detail = '',
-    // ignore: avoid_init_to_null
     // this.deadline,
     this.users = const {},
     this.score = 10,
@@ -32,7 +33,8 @@ class ToDo {
       : this(
           index: json['index'] as int,
           state: ToDoState.values[json['state']!],
-          detail: json['detail']! as String,
+          task: json.id,
+          detail: json['detail'],
           // deadline: json['deadline'] as Timestamp,
           users: json['users']! as User,
           score: json['score'] as int,
@@ -51,8 +53,8 @@ class ToDo {
 
   void resetToDo() {
     index = 1;
+    // task = '새로운 할 일을 추가해주세요';
     detail = '';
-    // ignore: avoid_init_to_null
     // this.deadline,
     users = const {};
     score = 10;

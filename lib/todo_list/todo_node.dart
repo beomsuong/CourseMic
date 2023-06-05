@@ -15,7 +15,6 @@ class ToDoNode extends StatefulWidget {
   final CollectionReference<Object?> toDoRef;
 
   bool bDelete;
-  String? task;
   ToDo toDo;
 
   // ToDoUpper(task)
@@ -36,7 +35,6 @@ class ToDoNode extends StatefulWidget {
     super.key,
     required this.toDoRef,
     this.bDelete = true,
-    this.task,
     required this.toDo,
     // ToDoUpper(task)
     // this.onTapDone,
@@ -46,7 +44,7 @@ class ToDoNode extends StatefulWidget {
     // ToDoLower(user)
     // this.onTapMember,
     // this.onTapScore,
-    this.width = 230,
+    this.width = 220,
     this.iconColor = Palette.lightGray,
     this.fontColor = Palette.lightBlack,
   });
@@ -59,7 +57,7 @@ class _ToDoNodeState extends State<ToDoNode> {
   late ToDoListState? parent;
   // ToDoUpper(task)
   TextEditingController controller = TextEditingController();
-  FocusNode node = FocusNode();
+  FocusNode focusNode = FocusNode();
   // ToDoLower(user)
   List<Widget> users = List.empty(growable: true);
 
@@ -67,8 +65,16 @@ class _ToDoNodeState extends State<ToDoNode> {
   void initState() {
     super.initState();
     parent = context.findAncestorStateOfType<ToDoListState>();
-    controller.text = widget.bDelete ? widget.task! : '';
+    controller.text = widget.bDelete ? widget.toDo.task : '';
     users = setUsers();
+
+    if (widget.bDelete) {
+      focusNode.addListener(() {
+        if (!focusNode.hasFocus) {
+          updateToDo();
+        }
+      });
+    }
   }
 
   @override
@@ -97,19 +103,19 @@ class _ToDoNodeState extends State<ToDoNode> {
                         width: widget.width,
                         child: InkWell(
                           onTap: () {
-                            node.requestFocus();
+                            focusNode.requestFocus();
                             controller.selection = TextSelection(
                                 baseOffset: 0,
                                 extentOffset: controller.value.text.length);
                           },
                           child: AbsorbPointer(
                             child: TextField(
-                              focusNode: node,
+                              focusNode: focusNode,
                               controller: controller,
                               decoration: InputDecoration(
                                 // border: InputBorder.none,
                                 border: const OutlineInputBorder(),
-                                hintText: widget.task,
+                                hintText: widget.toDo.task,
                                 hintStyle: const TextStyle(
                                   fontSize: 14,
                                   color: Palette.lightGray,
@@ -192,8 +198,10 @@ class _ToDoNodeState extends State<ToDoNode> {
   }
 
   void doneToDo() {
-    widget.toDoRef.doc(widget.task).update({'state': ToDoState.Done.index});
-    parent!.updateToDo();
+    widget.toDoRef
+        .doc(widget.toDo.task)
+        .update({'state': ToDoState.Done.index});
+    parent!.rebuildToDo();
   }
 
   void addToDo() {
@@ -210,12 +218,25 @@ class _ToDoNodeState extends State<ToDoNode> {
     controller.text = '';
     widget.toDo.resetToDo();
 
-    parent!.updateToDo();
+    parent!.rebuildToDo();
+  }
+
+  void updateToDo() {
+    if (controller.text == widget.toDo.task && controller.text.isEmpty) return;
+
+    // create new document
+    widget.toDoRef.doc(controller.text).set(widget.toDo.toJson());
+    // delete old document
+    widget.toDoRef.doc(widget.toDo.task).delete();
+    // replace old to new
+    widget.toDo.task = controller.text;
+
+    parent!.rebuildToDo();
   }
 
   void deleteToDo() {
-    widget.toDoRef.doc(widget.task).delete();
-    parent!.updateToDo();
+    widget.toDoRef.doc(widget.toDo.task).delete();
+    parent!.rebuildToDo();
   }
 
   // ToDo
@@ -313,6 +334,12 @@ class _ToDoNodeState extends State<ToDoNode> {
           TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
+                // ToDoNode 일 경우에만 update
+                if (widget.bDelete) {
+                  widget.toDoRef
+                      .doc(widget.toDo.task)
+                      .update({'score': widget.toDo.score});
+                }
               },
               child: const Text('확인'))
         ]);
