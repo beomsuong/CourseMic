@@ -280,18 +280,19 @@ class _ToDoNodeState extends State<ToDoNode> {
   }
 
   List<Widget> setUsers() {
-    if (widget.toDo.users.isEmpty) {
+    if (widget.toDo.userIDs.isEmpty) {
       return List.empty();
     }
 
     return <Widget>[
-      for (var userID in widget.toDo.users.keys)
-        Padding(
-          padding: const EdgeInsets.only(left: 10.0),
+      for (var userID in widget.toDo.userIDs)
+        const Padding(
+          padding: EdgeInsets.only(left: 10.0),
           child: Text(
-            '${widget.toDo.users[userID]} ',
-            style: const TextStyle(
-                fontSize: 10, color: Palette.darkGray, height: 2.5),
+            // '${widget.toDo.users[userID]} ',
+            'userName',
+            style:
+                TextStyle(fontSize: 10, color: Palette.darkGray, height: 2.5),
             textHeightBehavior: textHeightBehavior,
           ),
         ),

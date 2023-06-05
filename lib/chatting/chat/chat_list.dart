@@ -30,10 +30,10 @@ class GradientText extends StatelessWidget {
 class RoomList extends StatefulWidget {
   const RoomList({Key? key}) : super(key: key);
   @override
-  State<RoomList> createState() => _RoomListState();
+  State<RoomList> createState() => RoomListState();
 }
 
-class _RoomListState extends State<RoomList> {
+class RoomListState extends State<RoomList> {
   @override
   initState() {
     // TODO: implement initState
