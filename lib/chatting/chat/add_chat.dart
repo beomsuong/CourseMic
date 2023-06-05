@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:capston/chatting/chat/user.dart';
 
 class AddChat extends StatefulWidget {
   const AddChat({
@@ -11,44 +12,52 @@ class AddChat extends StatefulWidget {
   State<AddChat> createState() => _AddChatState();
 }
 
-Future<DocumentSnapshot> loadingdata(
-    String datatype, String universistyname) async {
-  final authentication = FirebaseAuth.instance;
-  final user = authentication.currentUser;
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  DocumentReference docRef = firestore.collection('exuser').doc(user?.uid);
-  DocumentSnapshot docSnapshot = await docRef.get();
-  await docRef.update({datatype: universistyname});
-  return docSnapshot;
-}
-
 String roomname = '';
-void addroom() async {
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-  CollectionReference exchats = firestore.collection('exchat');
-  final authentication = FirebaseAuth.instance;
-  final user = authentication.currentUser;
-
-  exchats.add({
-    '톡방이름': roomname,
-  }).then((DocumentReference doc) {
-    CollectionReference exusers = firestore.collection('exuser');
-
-    exusers.doc(user!.uid).update({
-      '톡방리스트': FieldValue.arrayUnion([doc.id]),
-    }).then((value) {
-      print("Value Added to Array");
-    }).catchError((error) {
-      print("Failed to add value to array: $error");
-    });
-    print("Document Added, ID: ${doc.id}"); // 문서의 ID를 출력합니다.
-  }).catchError((error) {
-    print("Failed to add document: $error");
-  });
-}
 
 class _AddChatState extends State<AddChat> {
+  Future<DocumentSnapshot> loadingdata(
+      String datatype, String universistyname) async {
+    final authentication = FirebaseAuth.instance;
+    final user = authentication.currentUser;
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    DocumentReference docRef = firestore.collection('exuser').doc(user?.uid);
+    DocumentSnapshot docSnapshot = await docRef.get();
+    await docRef.update({datatype: universistyname});
+    return docSnapshot;
+  }
+
+// Add chatting room
+  void addroom() async {
+    // 입력된 문자가 없을 경우 리턴
+    if (roomname.isEmpty) return;
+
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    CollectionReference exchats = firestore.collection('exchat');
+    final authentication = FirebaseAuth.instance;
+    final user = authentication.currentUser;
+
+    // add user to chatting room field
+    exchats.add({
+      '톡방이름': roomname,
+      'commanderID': '',
+      'userList': <Map<String, dynamic>>[MyUser(userID: user!.uid).toJson()],
+    }).then((DocumentReference doc) {
+      CollectionReference exusers = firestore.collection('exuser');
+
+      exusers.doc(user.uid).update({
+        '톡방리스트': FieldValue.arrayUnion([doc.id]),
+      }).then((value) {
+        print("Value Added to Array");
+      }).catchError((error) {
+        print("Failed to add value to array: $error");
+      });
+      print("Document Added, ID: ${doc.id}"); // 문서의 ID를 출력합니다.
+    }).catchError((error) {
+      print("Failed to add document: $error");
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
