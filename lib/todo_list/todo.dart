@@ -34,7 +34,9 @@ class ToDo {
           task: json.id,
           detail: json['detail'],
           // deadline: json['deadline'] as Timestamp,
-          userIDs: json['users']! as List<String>,
+          userIDs: <String>[
+            for (var jsonData in json['userIDs']! as List<dynamic>) jsonData,
+          ],
           score: json['score'] as int,
         );
 
