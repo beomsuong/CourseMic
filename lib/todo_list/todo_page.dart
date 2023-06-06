@@ -1,3 +1,5 @@
+import 'package:capston/chatting/chat/chat.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:capston/todo_list/todo_list.dart';
@@ -9,10 +11,32 @@ class ToDoPage extends StatefulWidget {
   const ToDoPage({super.key, required this.roomID});
 
   @override
-  State<ToDoPage> createState() => _ToDoPageState();
+  State<ToDoPage> createState() => ToDoPageState();
 }
 
-class _ToDoPageState extends State<ToDoPage> {
+// 추후 수정
+class ToDoPageState extends State<ToDoPage> {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  late Chat chat;
+  Map<String, String> userNameList = {};
+  // 추후에 옮길 예정 (chat_screen || new_message)
+  @override
+  void initState() {
+    super.initState();
+    loadingData();
+  }
+
+  Future<void> loadingData() async {
+    await firestore.collection('exchat').doc(widget.roomID).get().then((value) {
+      chat = Chat.fromJson(value);
+    });
+    for (var user in chat.userList) {
+      firestore.collection('exuser').doc(user.userID).get().then((value) {
+        userNameList[user.userID] = value.data()!['이름'];
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,6 +55,7 @@ class _ToDoPageState extends State<ToDoPage> {
         ),
         body: ToDoList(
           roomID: widget.roomID,
+          dataState: this,
         ));
   }
 }
