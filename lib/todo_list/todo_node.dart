@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_init_to_null
 
+import 'package:capston/todo_list/todo_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -20,6 +21,8 @@ class ToDoNode extends StatefulWidget {
   double width;
   Color iconColor;
   Color fontColor;
+  ToDoPageState dataParent;
+  ToDoListState buildParent;
 
   ToDoNode({
     super.key,
@@ -29,6 +32,8 @@ class ToDoNode extends StatefulWidget {
     this.width = 220,
     this.iconColor = Palette.lightGray,
     this.fontColor = Palette.lightBlack,
+    required this.dataParent,
+    required this.buildParent,
   });
 
   @override
@@ -36,7 +41,6 @@ class ToDoNode extends StatefulWidget {
 }
 
 class _ToDoNodeState extends State<ToDoNode> {
-  late ToDoListState? parent;
   // ToDoUpper(task)
   TextEditingController controller = TextEditingController();
   FocusNode focusNode = FocusNode();
@@ -47,10 +51,8 @@ class _ToDoNodeState extends State<ToDoNode> {
   @override
   void initState() {
     super.initState();
-    parent = context.findAncestorStateOfType<ToDoListState>();
     controller.text = widget.bDelete ? widget.toDo.task : '';
     userRef = FirebaseFirestore.instance.collection('exuser');
-    users = setUsers();
     if (widget.bDelete) {
       focusNode.addListener(() {
         if (!focusNode.hasFocus) {
@@ -58,7 +60,13 @@ class _ToDoNodeState extends State<ToDoNode> {
         }
       });
     }
+    users = setUsers();
   }
+
+  // @override
+  // void didChangeDependencies() {
+  //   users = setUsers();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -119,12 +127,17 @@ class _ToDoNodeState extends State<ToDoNode> {
                 Row(
                   children: [
                     Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: GestureDetector(
-                          onTap: showDeadline,
-                          child:
-                              Icon(Icons.date_range, color: widget.iconColor),
-                        )),
+                      padding: const EdgeInsets.only(right: 14.0),
+                      child: GestureDetector(
+                        onTap: showScore,
+                        child: Text(
+                          "+${widget.toDo.score}",
+                          style: const TextStyle(
+                            color: Palette.pastelBlue,
+                          ),
+                        ),
+                      ),
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(right: 10),
                       child: widget.bDelete
@@ -158,11 +171,11 @@ class _ToDoNodeState extends State<ToDoNode> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: showScore,
+                  onTap: showDeadline,
                   child: Padding(
                     padding: const EdgeInsets.only(right: 14.0),
                     child: Text(
-                      widget.toDo.score.toString(),
+                      widget.toDo.deadline.toDate().toString(),
                       style: const TextStyle(
                           fontSize: 10,
                           color: Palette.pastelPurple,
@@ -184,7 +197,7 @@ class _ToDoNodeState extends State<ToDoNode> {
     widget.toDoRef
         .doc(widget.toDo.task)
         .update({'state': ToDoState.Done.index});
-    parent!.rebuildToDo();
+    widget.buildParent.rebuildToDo();
   }
 
   void addToDo() {
@@ -201,7 +214,7 @@ class _ToDoNodeState extends State<ToDoNode> {
     controller.text = '';
     widget.toDo.resetToDo();
 
-    parent!.rebuildToDo();
+    widget.buildParent.rebuildToDo();
   }
 
   void updateToDo() {
@@ -214,12 +227,12 @@ class _ToDoNodeState extends State<ToDoNode> {
     // replace old to new
     widget.toDo.task = controller.text;
 
-    parent!.rebuildToDo();
+    widget.buildParent.rebuildToDo();
   }
 
   void deleteToDo() {
     widget.toDoRef.doc(widget.toDo.task).delete();
-    parent!.rebuildToDo();
+    widget.buildParent.rebuildToDo();
   }
 
   // ToDo
@@ -233,6 +246,16 @@ class _ToDoNodeState extends State<ToDoNode> {
       firstDate: DateTime(now.year),
       lastDate: DateTime(now.year + 5),
     );
+
+    setState(() {
+      widget.toDo.deadline = Timestamp.fromDate(dateTime!);
+    });
+
+    if (widget.bDelete) {
+      widget.toDoRef
+          .doc(widget.toDo.task)
+          .update({'deadline': widget.toDo.deadline});
+    }
   }
 
   void showUser() {
@@ -244,21 +267,18 @@ class _ToDoNodeState extends State<ToDoNode> {
       return List.empty();
     }
 
-    List<Widget> userList = List<Widget>.empty(growable: true);
-
-    for (var userID in widget.toDo.userIDs) {
-      userRef.doc(userID).get().then((value) => userList.add(Padding(
-            padding: const EdgeInsets.only(left: 10.0),
-            child: Text(
-              (value.data() as Map<String, dynamic>)['이름'],
-              style: const TextStyle(
-                  fontSize: 10, color: Palette.darkGray, height: 2.5),
-              textHeightBehavior: textHeightBehavior,
-            ),
-          )));
-    }
-
-    return userList;
+    return <Widget>[
+      for (var userID in widget.toDo.userIDs)
+        Padding(
+          padding: const EdgeInsets.only(left: 10.0),
+          child: Text(
+            widget.dataParent.userNameList[userID]!,
+            style: const TextStyle(
+                fontSize: 10, color: Palette.darkGray, height: 2.5),
+            textHeightBehavior: textHeightBehavior,
+          ),
+        )
+    ];
   }
 
   void showScore() {

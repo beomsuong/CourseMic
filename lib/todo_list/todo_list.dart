@@ -1,3 +1,4 @@
+import 'package:capston/todo_list/todo_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +14,10 @@ import 'package:capston/palette.dart';
 // ignore: must_be_immutable
 class ToDoList extends StatefulWidget {
   String roomID;
-  ToDoList({Key? key, required this.roomID}) : super(key: key);
+  ToDoPageState dataState;
+
+  ToDoList({Key? key, required this.roomID, required this.dataState})
+      : super(key: key);
 
   @override
   State createState() => ToDoListState();
@@ -93,7 +97,9 @@ class ToDoListState extends State<ToDoList> {
                   child: ToDoNode(
                     toDoRef: toDoRef,
                     bDelete: false,
-                    toDo: ToDo(state: state),
+                    toDo: ToDo(state: state, deadline: Timestamp.now()),
+                    dataParent: widget.dataState,
+                    buildParent: this,
                   ),
                 ),
               ],
@@ -112,6 +118,8 @@ class ToDoListState extends State<ToDoList> {
                       key: ValueKey(doc.id),
                       toDoRef: toDoRef,
                       toDo: todo,
+                      dataParent: widget.dataState,
+                      buildParent: this,
                     ),
                   ));
             }
