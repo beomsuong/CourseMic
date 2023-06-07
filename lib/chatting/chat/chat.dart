@@ -30,4 +30,12 @@ class Chat {
       ]
     };
   }
+
+  int getIndexOfUser({required String userID}) {
+    for (int i = 0; i < userList.length; i++) {
+      if (userList[i].userID == userID) return i;
+    }
+    // non-exist : false
+    return -1;
+  }
 }
