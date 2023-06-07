@@ -99,7 +99,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 height: 30,
               )
             else if (userrole >= 2)
-              Image.asset("assets/image/communicater.png",
+              Image.asset("assets/image/communicator.png",
                   width: 30, height: 30, color: Colors.purple)
             else if (userrole >= 1)
               Image.asset(
