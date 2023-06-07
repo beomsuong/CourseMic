@@ -57,7 +57,6 @@ class RoomListState extends State<RoomList> {
       String roomname = roomnameSnapshot.get('톡방이름');
       int userrole = 0;
       userList = roomnameSnapshot.get('userList');
-
       for (var user1 in userList) {
         if (user1['userID'] == user.uid) {
           userrole = user1['role'];
@@ -71,7 +70,6 @@ class RoomListState extends State<RoomList> {
           .orderBy('time', descending: true)
           .limit(1)
           .get();
-
       if (chatDocsSnapshot.docs.isNotEmpty) {
         final lastMessage = chatDocsSnapshot.docs[0]['text'];
         roomList.add([
@@ -81,7 +79,6 @@ class RoomListState extends State<RoomList> {
           userrole,
           chatDocsSnapshot.docs[0]['time']
         ]);
-        print(chatDocsSnapshot.docs[0]['time']);
       } else {
         roomList.add(
           [roomname, roomID, '', userrole, ''],
@@ -97,8 +94,6 @@ class RoomListState extends State<RoomList> {
   }
 
   Widget room(String name, String id, String message, int role) {
-    //UID는 onTap에서 톡방을 불러오기 위해 사용
-    //톡방을 리스트를 보여주는 함수
     return InkWell(
       onTap: () async {
         await Navigator.push(
@@ -111,7 +106,6 @@ class RoomListState extends State<RoomList> {
             },
           ),
         );
-
         setState(() {});
       },
       child: SizedBox(
@@ -141,7 +135,7 @@ class RoomListState extends State<RoomList> {
               )
             else if (role >= 2)
               Image.asset(
-                "assets/image/communicater.png",
+                "assets/image/communicator.png",
                 fit: BoxFit.contain,
               )
             else if (role >= 1)
