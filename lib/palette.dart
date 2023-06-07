@@ -12,6 +12,7 @@ class Palette {
   // GrayScale
   static const Color lightBlack = Color(0xFF2B2626);
   static const Color lightGray = Color(0xFFE9E9E9);
+  static const Color transparencylightGray = Color.fromARGB(200, 233, 233, 233);
   static const Color darkGray = Color(0xFF8F8F8F);
 
   // Pastel

@@ -1,6 +1,4 @@
-import 'package:capston/chatting/chat/chat.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:capston/chatting/chat_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:capston/todo_list/todo_list.dart';
@@ -9,7 +7,13 @@ import 'package:capston/palette.dart';
 
 class ToDoPage extends StatefulWidget {
   final roomID;
-  const ToDoPage({super.key, required this.roomID});
+  final ChatScreenState chatScreenState;
+  bool bMini;
+  ToDoPage(
+      {super.key,
+      required this.roomID,
+      required this.chatScreenState,
+      this.bMini = false});
 
   @override
   State<ToDoPage> createState() => ToDoPageState();
@@ -17,50 +21,58 @@ class ToDoPage extends StatefulWidget {
 
 // 추후 수정
 class ToDoPageState extends State<ToDoPage> {
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  final FirebaseAuth authentication = FirebaseAuth.instance;
-  late DocumentReference chatRef;
-  final String user = "A2LAVYZQgXZcX0m5q50l6ixV1mx1";
-  late Chat chat;
-  Map<String, String> userNameList = {};
-  // 추후에 옮길 예정 (chat_screen || new_message)
-  @override
-  void initState() {
-    super.initState();
-    loadingData();
-  }
-
-  Future<void> loadingData() async {
-    chatRef = firestore.collection('exchat').doc(widget.roomID);
-    await chatRef.get().then((value) {
-      chat = Chat.fromJson(value);
-    });
-    for (var user in chat.userList) {
-      firestore.collection('exuser').doc(user.userID).get().then((value) {
-        userNameList[user.userID] = value.data()!['이름'];
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Palette.lightGray,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(100),
-          child: AppBar(
-            toolbarHeight: 100,
-            centerTitle: true,
-            title: const Text(
-              '팀프로젝트',
-              style: TextStyle(color: Colors.black, fontSize: 24),
+    return widget.bMini
+        ? Column(
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ToDoPage(
+                          roomID: widget.roomID,
+                          chatScreenState: widget.chatScreenState,
+                        ),
+                      ),
+                    ),
+                    child: const Text("+ 할 일 목록 크게 보기",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                            color: Palette.pastelPurple)),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ToDoList(
+                  roomID: widget.roomID,
+                  chatDataState: widget.chatScreenState,
+                ),
+              ),
+            ],
+          )
+        : Scaffold(
+            backgroundColor: Palette.lightGray,
+            appBar: PreferredSize(
+              preferredSize: const Size.fromHeight(100),
+              child: AppBar(
+                toolbarHeight: 100,
+                centerTitle: true,
+                title: Text(
+                  widget.chatScreenState.chat.roomName,
+                  style: const TextStyle(color: Colors.black, fontSize: 24),
+                ),
+                backgroundColor: Colors.white,
+              ),
             ),
-            backgroundColor: Colors.white,
-          ),
-        ),
-        body: ToDoList(
-          roomID: widget.roomID,
-          dataState: this,
-        ));
+            body: ToDoList(
+              roomID: widget.roomID,
+              chatDataState: widget.chatScreenState,
+            ));
   }
 }

@@ -17,7 +17,6 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  static const testID = 'mH2pTd2HcfRFSAO9dPVU';
   const MyApp({super.key});
 
   @override

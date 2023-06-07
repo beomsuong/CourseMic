@@ -1,8 +1,7 @@
-import 'package:capston/todo_list/todo_page.dart';
+import 'package:capston/chatting/chat_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
 import 'package:flutter/material.dart';
-
-import 'package:capston/todo_list/drag_and_drop_list/drag_and_drop_lists.dart';
 
 import 'package:capston/widgets/CircularContainer.dart';
 
@@ -14,9 +13,9 @@ import 'package:capston/palette.dart';
 // ignore: must_be_immutable
 class ToDoList extends StatefulWidget {
   String roomID;
-  ToDoPageState dataState;
+  final ChatScreenState chatDataState;
 
-  ToDoList({Key? key, required this.roomID, required this.dataState})
+  ToDoList({Key? key, required this.roomID, required this.chatDataState})
       : super(key: key);
 
   @override
@@ -107,7 +106,7 @@ class ToDoListState extends State<ToDoList> {
                           state: state,
                           deadline: Timestamp.now(),
                           userIDs: List<String>.empty(growable: true)),
-                      dataParent: widget.dataState,
+                      chatDataParent: widget.chatDataState,
                       buildParent: this,
                     ),
                   ),
@@ -128,7 +127,7 @@ class ToDoListState extends State<ToDoList> {
                       key: ValueKey(doc.id),
                       toDoRef: toDoRef,
                       toDo: todo,
-                      dataParent: widget.dataState,
+                      chatDataParent: widget.chatDataState,
                       buildParent: this,
                     ),
                   ));
@@ -136,6 +135,7 @@ class ToDoListState extends State<ToDoList> {
           }
 
           return DragAndDropLists(
+            lastListTargetSize: 0,
             lastItemTargetHeight: 0,
             children: _contents,
             onItemReorder: _onItemReorder,

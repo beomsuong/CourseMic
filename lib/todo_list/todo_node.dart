@@ -1,6 +1,6 @@
 // ignore_for_file: avoid_init_to_null
 
-import 'package:capston/todo_list/todo_page.dart';
+import 'package:capston/chatting/chat_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -24,8 +24,9 @@ class ToDoNode extends StatefulWidget {
   double width;
   Color iconColor;
   Color fontColor;
-  ToDoPageState dataParent;
-  ToDoListState buildParent;
+
+  final ChatScreenState chatDataParent;
+  final ToDoListState buildParent;
 
   ToDoNode({
     super.key,
@@ -35,7 +36,7 @@ class ToDoNode extends StatefulWidget {
     this.width = 200,
     this.iconColor = Palette.lightGray,
     this.fontColor = Palette.lightBlack,
-    required this.dataParent,
+    required this.chatDataParent,
     required this.buildParent,
   });
 
@@ -65,11 +66,6 @@ class _ToDoNodeState extends State<ToDoNode> {
     }
     users = setUsers();
   }
-
-  // @override
-  // void didChangeDependencies() {
-  //   users = setUsers();
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -202,14 +198,19 @@ class _ToDoNodeState extends State<ToDoNode> {
 
   void doneToDo() {
     int bonusScore = 0;
-    String userName = widget.dataParent.userNameList[widget.dataParent.user]!;
-    String resultUser = widget.toDo.userIDs.contains(widget.dataParent.user)
-        ? "성실한 "
-        : "솔선수범한 ";
+    String userName = widget
+        .chatDataParent.userNameList[widget.chatDataParent.loggedUser!.uid]!;
+    String resultUser =
+        widget.toDo.userIDs.contains(widget.chatDataParent.loggedUser!.uid)
+            ? "성실한 "
+            : "솔선수범한 ";
 
     late String additionalString;
 
-    bonusScore += widget.toDo.userIDs.contains(widget.dataParent.user) ? 0 : 20;
+    bonusScore +=
+        widget.toDo.userIDs.contains(widget.chatDataParent.loggedUser!.uid)
+            ? 0
+            : 20;
     int diffDay = getDeadlineDiff().inDays;
     bonusScore += diffDay >= 0 ? diffDay * 2 : diffDay * 5;
 
@@ -293,8 +294,8 @@ class _ToDoNodeState extends State<ToDoNode> {
                   onPressed: () {
                     List<int> userIndexs = List<int>.empty(growable: true);
                     for (String userID in widget.toDo.userIDs) {
-                      int userIndex =
-                          widget.dataParent.chat.getIndexOfUser(userID: userID);
+                      int userIndex = widget.chatDataParent.chat
+                          .getIndexOfUser(userID: userID);
                       if (userIndex == -1) continue;
                       userIndexs.add(userIndex);
                     }
@@ -311,12 +312,14 @@ class _ToDoNodeState extends State<ToDoNode> {
                     });
 
                     for (int userIndex in userIndexs) {
-                      widget.dataParent.chat.userList[userIndex]
+                      widget.chatDataParent.chat.userList[userIndex]
                           .participation += widget.toDo.score;
+                      widget
+                          .chatDataParent.chat.userList[userIndex].doneCount++;
                     }
                     // 혹시 성능에 문제가 있을 경우, 부분적으로 업데이트 되도록 수정 필요
-                    widget.dataParent.chatRef
-                        .update(widget.dataParent.chat.toJson());
+                    widget.chatDataParent.chatRef
+                        .update(widget.chatDataParent.chat.toJson());
 
                     widget.buildParent.rebuildToDo();
                     Navigator.of(context).pop();
@@ -342,6 +345,7 @@ class _ToDoNodeState extends State<ToDoNode> {
     widget.toDo.resetToDo();
 
     widget.buildParent.rebuildToDo();
+    widget.chatDataParent.updateProgressPercent();
   }
 
   void updateToDo() {
@@ -357,14 +361,14 @@ class _ToDoNodeState extends State<ToDoNode> {
     widget.buildParent.rebuildToDo();
   }
 
+  // TODO : Add delete dialog
   void deleteToDo() {
     widget.toDoRef.doc(widget.toDo.task).delete();
+
     widget.buildParent.rebuildToDo();
+    widget.chatDataParent.updateProgressPercent();
   }
 
-  // ToDo
-  // 1. showDeadline
-  // 2.
   void showDeadline() async {
     DateTime now = DateTime.now();
 
@@ -443,20 +447,20 @@ class _ToDoNodeState extends State<ToDoNode> {
 
   void showUser() {
     // user 선택창 구현
-    widget.dataParent.loadingData();
+    widget.chatDataParent.readInitChatData();
     List<String> currentUserIDs = widget.toDo.userIDs;
 
     showWidget(
         title: const Text("일할 사람을 선택해주세요"),
         widget: Wrap(children: [
-          for (var userID in widget.dataParent.userNameList.keys)
+          for (var userID in widget.chatDataParent.userNameList.keys)
             StatefulBuilder(builder: (context, state) {
               return Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: ChoiceChip(
                   // 추후 아바타 추가
                   // avatar: ,
-                  label: Text(widget.dataParent.userNameList[userID]!),
+                  label: Text(widget.chatDataParent.userNameList[userID]!),
                   labelStyle: const TextStyle(color: Colors.white),
                   selected: widget.toDo.userIDs.contains(userID),
                   selectedColor: Palette.pastelPurple,
@@ -529,7 +533,7 @@ class _ToDoNodeState extends State<ToDoNode> {
         Padding(
           padding: const EdgeInsets.only(left: 10.0),
           child: Text(
-            widget.dataParent.userNameList[userID]!,
+            widget.chatDataParent.userNameList[userID]!,
             style: const TextStyle(
                 fontSize: 10, color: Palette.darkGray, height: 2.5),
             textHeightBehavior: textHeightBehavior,
