@@ -23,7 +23,7 @@ class ToDo {
     this.task = '새로운 할 일을 추가해주세요',
     this.detail = '',
     required this.deadline,
-    this.userIDs = const <String>[],
+    required this.userIDs,
     this.score = 10,
   });
 

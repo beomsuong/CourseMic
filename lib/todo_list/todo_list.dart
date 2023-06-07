@@ -28,6 +28,11 @@ class ToDoListState extends State<ToDoList> {
   // ignore: prefer_final_fields
   List<DragAndDropList> _contents = List.empty(growable: true);
   late Stream<StateWithToDo> todoStream;
+  List<Color> colors = <Color>[
+    Palette.brightViolet,
+    Palette.pastelPurple,
+    Palette.brightBlue
+  ];
 
   @override
   void initState() {
@@ -60,9 +65,9 @@ class ToDoListState extends State<ToDoList> {
               header: Container(
                 padding: const EdgeInsets.fromLTRB(10, 8, 0, 8),
                 width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Palette.pastelPurple,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: colors[state.index],
+                  borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20)),
                 ),
@@ -72,7 +77,7 @@ class ToDoListState extends State<ToDoList> {
                     ToDoCategory(
                       content: state.name,
                       width: 100,
-                      iconColor: Palette.pastelPurple,
+                      iconColor: colors[state.index],
                       fontColor: Colors.white,
                     ),
                     Padding(
@@ -91,17 +96,21 @@ class ToDoListState extends State<ToDoList> {
                 ),
               ),
               children: <DragAndDropItem>[
-                DragAndDropItem(
-                  canDrag: false,
-                  // AddToDo
-                  child: ToDoNode(
-                    toDoRef: toDoRef,
-                    bDelete: false,
-                    toDo: ToDo(state: state, deadline: Timestamp.now()),
-                    dataParent: widget.dataState,
-                    buildParent: this,
+                if (state != ToDoState.Done)
+                  DragAndDropItem(
+                    canDrag: false,
+                    // AddToDo
+                    child: ToDoNode(
+                      toDoRef: toDoRef,
+                      bDelete: false,
+                      toDo: ToDo(
+                          state: state,
+                          deadline: Timestamp.now(),
+                          userIDs: List<String>.empty(growable: true)),
+                      dataParent: widget.dataState,
+                      buildParent: this,
+                    ),
                   ),
-                ),
               ],
             ));
 
@@ -114,6 +123,7 @@ class ToDoListState extends State<ToDoList> {
             for (var doc in toDoDocs) {
               ToDo todo = ToDo.fromJson(doc);
               _contents[state.index].children.add(DragAndDropItem(
+                    canDrag: state != ToDoState.Done,
                     child: ToDoNode(
                       key: ValueKey(doc.id),
                       toDoRef: toDoRef,
