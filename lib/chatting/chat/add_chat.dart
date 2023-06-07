@@ -123,42 +123,8 @@ class _AddChatState extends State<AddChat> {
                 ],
               ),
             ),
-            Container(
-              height: 3.0,
-              width: 500.0,
-              color: Colors.purple,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 15.0, right: 15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("그룹 코드 :",
-                      style:
-                          TextStyle(fontWeight: FontWeight.w500, fontSize: 20)),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white, // 버튼 배경색 지정
-                    ),
-                    child: SizedBox(
-                      width: 150,
-                      height: 30,
-                      child: TextField(
-                        onChanged: (value) {},
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              height: 3.0,
-              width: 500.0,
-              color: Colors.purple,
-            ),
             const SizedBox(
-              height: 30,
+              height: 15,
             )
           ],
         ));

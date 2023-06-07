@@ -13,13 +13,13 @@ class SearchChat extends StatefulWidget {
 
 class _SearchChatState extends State<SearchChat> {
   String groupname = '';
-  String groupcode = '코드 불명??';
-  String groupmember = '맴버 불명??';
+  List<dynamic> groupmember = [];
   String groupmessage = '';
   bool btn = false;
   String userinput = '';
   String roomcode = '';
-
+  late final user;
+  late final firebase;
   searchdata(String a) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -29,6 +29,12 @@ class _SearchChatState extends State<SearchChat> {
       if (a == doc.id.substring(0, 4)) {
         print(doc['톡방이름'].toString());
         groupname = doc['톡방이름'].toString();
+        groupmember = doc['userList'];
+
+        DocumentReference docRef = firestore.collection('exchat').doc(doc.id);
+        DocumentSnapshot docSnapshot = await docRef.get();
+        groupmember = docSnapshot.get('userList');
+
         final chatDocsSnapshot = await FirebaseFirestore.instance
             .collection('exchat')
             .doc(doc.id)
@@ -42,14 +48,28 @@ class _SearchChatState extends State<SearchChat> {
           DateTime dateTime = timestamp.toDate();
           String formattedDate = DateFormat('M월d일').format(dateTime);
           groupmessage = formattedDate;
-          btn = true;
-          setState(() {});
-          return;
         }
+        for (var member in groupmember) {
+          if (member['userID'] == user!.uid) {
+            setState(() {});
+            return;
+          }
+        }
+        btn = true;
+        setState(() {});
+        return;
       }
     }
     btn = false;
     setState(() {});
+  }
+
+  @override
+  void initState() {
+    final authentication = FirebaseAuth.instance;
+    user = authentication.currentUser;
+    // TODO: implement initState
+    super.initState();
   }
 
   addroom() async {
@@ -186,27 +206,14 @@ class _SearchChatState extends State<SearchChat> {
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: Container(
-                          child: Column(
+                          child: const Column(
                             mainAxisAlignment: MainAxisAlignment.end, // 오른쪽 정렬
-                            children: const [
+                            children: [
                               SizedBox(
                                 width: 120,
                                 height: 35,
                                 child: Text(
                                   "그룹 이름 :",
-                                  textAlign: TextAlign.right,
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                width: 120,
-                                height: 35,
-                                child: Text(
-                                  "그룹 코드 :",
                                   textAlign: TextAlign.right,
                                   style: TextStyle(
                                     color: Colors.grey,
@@ -271,20 +278,9 @@ class _SearchChatState extends State<SearchChat> {
                                 width: 120,
                                 height: 35,
                                 child: Text(
-                                  groupcode,
-                                  textAlign: TextAlign.left,
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                width: 120,
-                                height: 35,
-                                child: Text(
-                                  groupmember,
+                                  groupmember.isNotEmpty
+                                      ? groupmember.length.toString()
+                                      : ' ',
                                   textAlign: TextAlign.left,
                                   style: const TextStyle(
                                     color: Colors.grey,
@@ -320,6 +316,8 @@ class _SearchChatState extends State<SearchChat> {
                   onPressed: btn
                       ? () {
                           addroom();
+
+                          Navigator.of(context).pop();
                         }
                       : null,
                   style: ElevatedButton.styleFrom(

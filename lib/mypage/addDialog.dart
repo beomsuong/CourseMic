@@ -21,17 +21,11 @@ void initState() {}
 
 Future<DocumentSnapshot> loadingdata() async {
   final authentication = FirebaseAuth.instance;
-
   final user = authentication.currentUser;
   print(user!.uid);
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-  // 최상위 컬렉션에서 하위 컬렉션까지 한 번에 지정하는 변수
   DocumentReference docRef = firestore.collection('exuser').doc(user.uid);
-
-  // 문서의 데이터를 가져옵니다.
   DocumentSnapshot docSnapshot = await docRef.get();
-
   return docSnapshot;
 }
 
