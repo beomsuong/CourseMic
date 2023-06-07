@@ -58,7 +58,7 @@ class _NewMessageState extends State<NewMessage> {
                     // Scaffold.of(context).showBottomSheet<void>(
                     //     (BuildContext context) => ChatPlusFunc());
                   },
-                  icon: const Icon(Icons.add),
+                  icon: Icon(block ? Icons.close_rounded : Icons.add_rounded),
                   color: Colors.blue),
               Expanded(
                 child: TextField(
@@ -82,7 +82,7 @@ class _NewMessageState extends State<NewMessage> {
               IconButton(
                 onPressed:
                     _userEnterMessage.trim().isEmpty ? null : _sendMessage,
-                icon: const Icon(Icons.send),
+                icon: const Icon(Icons.rocket_launch_rounded),
                 color: Colors.blue,
               ),
             ],
