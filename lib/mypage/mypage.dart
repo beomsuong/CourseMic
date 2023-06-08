@@ -45,22 +45,14 @@ class _MypageState extends State<Mypage> {
     final authentication = FirebaseAuth.instance;
 
     final user = authentication.currentUser;
-    print(user!.uid);
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-    // 최상위 컬렉션에서 하위 컬렉션까지 한 번에 지정하는 변수
-    DocumentReference docRef = firestore.collection('exuser').doc(user.uid);
-
-    // 문서의 데이터를 가져옵니다.
+    DocumentReference docRef = firestore.collection('exuser').doc(user!.uid);
     DocumentSnapshot docSnapshot = await docRef.get();
 
     return docSnapshot;
   }
 
   SizedBox print_info(String a, String b) {
-    //기본 정보 출력 함수
-    //파이어 베이스에서 해당 정보를 받아온다
-
     return SizedBox(
       height: 30,
       child: Row(
@@ -234,13 +226,13 @@ class _MypageState extends State<Mypage> {
                         ],
                       ),
                     ),
-                    Align(
+                    const Align(
                       alignment: Alignment.bottomLeft,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 25, left: 25),
+                        padding: EdgeInsets.only(right: 25, left: 25),
                         child: Column(
                           children: [
-                            const Divider(
+                            Divider(
                               thickness: 2,
                               height: 3,
                               color: Colors.black,
@@ -248,7 +240,7 @@ class _MypageState extends State<Mypage> {
                             SizedBox(
                               height: 30,
                               child: Row(
-                                children: const [
+                                children: [
                                   Text(
                                     '현재 참여중인 과제 : ' '갯수 변수' '(개)',
                                     style: TextStyle(
@@ -261,7 +253,7 @@ class _MypageState extends State<Mypage> {
                             SizedBox(
                               height: 30,
                               child: Row(
-                                children: const [
+                                children: [
                                   Text(
                                     '완료한 과제 : ' '갯수 변수' '(개)',
                                     style: TextStyle(
@@ -271,7 +263,7 @@ class _MypageState extends State<Mypage> {
                                 ],
                               ),
                             ),
-                            const Divider(
+                            Divider(
                               thickness: 2,
                               height: 10,
                               color: Colors.black,
@@ -280,10 +272,10 @@ class _MypageState extends State<Mypage> {
                         ),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Padding(
                             padding: EdgeInsets.only(top: 7, bottom: 7),
                             child: Text(

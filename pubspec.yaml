@@ -73,6 +73,12 @@ flutter:
   assets:
       - assets\image\logo.png
       - assets/image/logo.png
+      - assets/image/artist.png
+      - assets/image/commander.png
+      - assets/image/communicator.png
+      - assets/image/engineer.png
+      - assets\image\engineer.png
+      - assets/image/explorer.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
