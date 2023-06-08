@@ -1,7 +1,7 @@
+import 'package:capston/chatting/chat_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
 import 'package:flutter/material.dart';
-
-import 'package:capston/todo_list/drag_and_drop_list/drag_and_drop_lists.dart';
 
 import 'package:capston/widgets/CircularContainer.dart';
 
@@ -13,26 +13,28 @@ import 'package:capston/palette.dart';
 // ignore: must_be_immutable
 class ToDoList extends StatefulWidget {
   String roomID;
-  ToDoList({Key? key, required this.roomID}) : super(key: key);
+  final ChatScreenState chatDataState;
+
+  ToDoList({Key? key, required this.roomID, required this.chatDataState})
+      : super(key: key);
 
   @override
   State createState() => ToDoListState();
 }
 
 class ToDoListState extends State<ToDoList> {
-  late final CollectionReference toDoRef;
   // ignore: prefer_final_fields
   List<DragAndDropList> _contents = List.empty(growable: true);
   late Stream<StateWithToDo> todoStream;
+  List<Color> colors = <Color>[
+    Palette.brightViolet,
+    Palette.pastelPurple,
+    Palette.brightBlue
+  ];
 
   @override
   void initState() {
     super.initState();
-    toDoRef = FirebaseFirestore.instance
-        .collection('exchat')
-        .doc(widget.roomID)
-        .collection('todo');
-
     todoStream = initToDoNodes();
   }
 
@@ -56,9 +58,9 @@ class ToDoListState extends State<ToDoList> {
               header: Container(
                 padding: const EdgeInsets.fromLTRB(10, 8, 0, 8),
                 width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Palette.pastelPurple,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: colors[state.index],
+                  borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20)),
                 ),
@@ -68,7 +70,7 @@ class ToDoListState extends State<ToDoList> {
                     ToDoCategory(
                       content: state.name,
                       width: 100,
-                      iconColor: Palette.pastelPurple,
+                      iconColor: colors[state.index],
                       fontColor: Colors.white,
                     ),
                     Padding(
@@ -87,15 +89,20 @@ class ToDoListState extends State<ToDoList> {
                 ),
               ),
               children: <DragAndDropItem>[
-                DragAndDropItem(
-                  canDrag: false,
-                  // AddToDo
-                  child: ToDoNode(
-                    toDoRef: toDoRef,
-                    bDelete: false,
-                    toDo: ToDo(state: state),
+                if (state != ToDoState.Done)
+                  DragAndDropItem(
+                    canDrag: false,
+                    // AddToDo
+                    child: ToDoNode(
+                      bDelete: false,
+                      toDo: ToDo(
+                          state: state,
+                          deadline: Timestamp.now(),
+                          userIDs: List<String>.empty(growable: true)),
+                      chatDataParent: widget.chatDataState,
+                      buildParent: this,
+                    ),
                   ),
-                ),
               ],
             ));
 
@@ -108,16 +115,19 @@ class ToDoListState extends State<ToDoList> {
             for (var doc in toDoDocs) {
               ToDo todo = ToDo.fromJson(doc);
               _contents[state.index].children.add(DragAndDropItem(
+                    canDrag: state != ToDoState.Done,
                     child: ToDoNode(
                       key: ValueKey(doc.id),
-                      toDoRef: toDoRef,
                       toDo: todo,
+                      chatDataParent: widget.chatDataState,
+                      buildParent: this,
                     ),
                   ));
             }
           }
 
           return DragAndDropLists(
+            lastListTargetSize: 0,
             lastItemTargetHeight: 0,
             children: _contents,
             onItemReorder: _onItemReorder,
@@ -163,8 +173,9 @@ class ToDoListState extends State<ToDoList> {
     StateWithToDo stateWithTodo = {};
 
     for (ToDoState state in ToDoState.values) {
-      stateWithTodo[state.name] =
-          await toDoRef.where('state', isEqualTo: state.index).get();
+      stateWithTodo[state.name] = await widget.chatDataState.toDoColRef
+          .where('state', isEqualTo: state.index)
+          .get();
     }
 
     yield stateWithTodo;

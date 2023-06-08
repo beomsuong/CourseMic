@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_init_to_null
 
+import 'package:capston/chatting/chat_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -7,46 +8,33 @@ import 'package:capston/widgets/CircularContainer.dart';
 import 'package:capston/palette.dart';
 import 'package:capston/todo_list/todo.dart';
 import 'package:capston/todo_list/todo_list.dart';
+import 'package:intl/intl.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
 const TextHeightBehavior textHeightBehavior = TextHeightBehavior(
     applyHeightToFirstAscent: false, applyHeightToLastDescent: true);
 
-class ToDoNode extends StatefulWidget {
-  final CollectionReference<Object?> toDoRef;
+const TextStyle purpleText = TextStyle(color: Palette.pastelPurple);
 
+class ToDoNode extends StatefulWidget {
   bool bDelete;
   ToDo toDo;
-
-  // ToDoUpper(task)
-  // void Function()? onTapDone;
-  // void Function()? onTapText;
-  // void Function()? onTapButton;
-  // void Function()? onTapDeadline;
-
-  // ToDoLower(user)
-  // void Function()? onTapMember;
-  // void Function()? onTapScore;
-
   double width;
   Color iconColor;
   Color fontColor;
 
+  final ChatScreenState chatDataParent;
+  final ToDoListState buildParent;
+
   ToDoNode({
     super.key,
-    required this.toDoRef,
     this.bDelete = true,
     required this.toDo,
-    // ToDoUpper(task)
-    // this.onTapDone,
-    // this.onTapText,
-    // this.onTapButton, // Button that process todo
-    // this.onTapDeadline,
-    // ToDoLower(user)
-    // this.onTapMember,
-    // this.onTapScore,
-    this.width = 220,
+    this.width = 200,
     this.iconColor = Palette.lightGray,
     this.fontColor = Palette.lightBlack,
+    required this.chatDataParent,
+    required this.buildParent,
   });
 
   @override
@@ -54,7 +42,6 @@ class ToDoNode extends StatefulWidget {
 }
 
 class _ToDoNodeState extends State<ToDoNode> {
-  late ToDoListState? parent;
   // ToDoUpper(task)
   TextEditingController controller = TextEditingController();
   FocusNode focusNode = FocusNode();
@@ -64,10 +51,7 @@ class _ToDoNodeState extends State<ToDoNode> {
   @override
   void initState() {
     super.initState();
-    parent = context.findAncestorStateOfType<ToDoListState>();
     controller.text = widget.bDelete ? widget.toDo.task : '';
-    users = setUsers();
-
     if (widget.bDelete) {
       focusNode.addListener(() {
         if (!focusNode.hasFocus) {
@@ -75,6 +59,7 @@ class _ToDoNodeState extends State<ToDoNode> {
         }
       });
     }
+    users = setUsers();
   }
 
   @override
@@ -95,8 +80,15 @@ class _ToDoNodeState extends State<ToDoNode> {
                 Row(
                   children: <Widget>[
                     GestureDetector(
-                        onTap: widget.bDelete ? doneToDo : null,
-                        child: Icon(Icons.circle, color: widget.iconColor)),
+                        onTap: widget.bDelete &&
+                                widget.toDo.state != ToDoState.Done
+                            ? doneToDo
+                            : null,
+                        child: Icon(
+                            widget.toDo.state == ToDoState.Done
+                                ? Icons.check_circle_rounded
+                                : Icons.circle_outlined,
+                            color: widget.iconColor)),
                     Padding(
                       padding: const EdgeInsets.only(left: 12.0),
                       child: SizedBox(
@@ -110,11 +102,12 @@ class _ToDoNodeState extends State<ToDoNode> {
                           },
                           child: AbsorbPointer(
                             child: TextField(
+                              enabled: widget.toDo.state != ToDoState.Done,
                               focusNode: focusNode,
                               controller: controller,
                               decoration: InputDecoration(
-                                // border: InputBorder.none,
-                                border: const OutlineInputBorder(),
+                                border: InputBorder.none,
+                                // border: const OutlineInputBorder(),
                                 hintText: widget.toDo.task,
                                 hintStyle: const TextStyle(
                                   fontSize: 14,
@@ -136,12 +129,19 @@ class _ToDoNodeState extends State<ToDoNode> {
                 Row(
                   children: [
                     Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: GestureDetector(
-                          onTap: () => _selectDayAndTime,
-                          child:
-                              Icon(Icons.date_range, color: widget.iconColor),
-                        )),
+                      padding: const EdgeInsets.only(right: 14.0),
+                      child: GestureDetector(
+                        onTap: widget.toDo.state != ToDoState.Done
+                            ? showScore
+                            : null,
+                        child: Text(
+                          "${widget.toDo.score > 0 ? "+" : ""}${widget.toDo.score}",
+                          style: const TextStyle(
+                            color: Palette.pastelGreen,
+                          ),
+                        ),
+                      ),
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(right: 10),
                       child: widget.bDelete
@@ -169,23 +169,17 @@ class _ToDoNodeState extends State<ToDoNode> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 GestureDetector(
-                  onTap: showUser,
+                  onTap: widget.toDo.state != ToDoState.Done ? showUser : null,
                   child: Row(
                     children: users,
                   ),
                 ),
                 GestureDetector(
-                  onTap: showScore,
+                  onTap:
+                      widget.toDo.state != ToDoState.Done ? showDeadline : null,
                   child: Padding(
                     padding: const EdgeInsets.only(right: 14.0),
-                    child: Text(
-                      widget.toDo.score.toString(),
-                      style: const TextStyle(
-                          fontSize: 10,
-                          color: Palette.pastelPurple,
-                          height: 2.5),
-                      textHeightBehavior: textHeightBehavior,
-                    ),
+                    child: timestampToText(widget.toDo.deadline),
                   ),
                 )
               ],
@@ -198,109 +192,354 @@ class _ToDoNodeState extends State<ToDoNode> {
   }
 
   void doneToDo() {
-    widget.toDoRef
-        .doc(widget.toDo.task)
-        .update({'state': ToDoState.Done.index});
-    parent!.rebuildToDo();
+    int bonusScore = 0;
+    String userName = widget
+        .chatDataParent.userNameList[widget.chatDataParent.currentUser.uid]!;
+    String resultUser =
+        widget.toDo.userIDs.contains(widget.chatDataParent.currentUser.uid)
+            ? "성실한 "
+            : "솔선수범한 ";
+
+    late String additionalString;
+
+    bonusScore +=
+        widget.toDo.userIDs.contains(widget.chatDataParent.currentUser.uid)
+            ? 0
+            : 20;
+    int diffDay = getDeadlineDiff().inDays;
+    bonusScore += diffDay >= 0 ? diffDay * 2 : diffDay * 5;
+
+    diffDay < 0 ? resultUser = "파이팅이 필요한 " : null;
+    switch (resultUser) {
+      case "성실한 ":
+        additionalString = "계속 이렇게만 해주세요!";
+        break;
+      case "솔선수범한 ":
+        additionalString = "휼륭해요! 하지만 혼자만하면 힘드니 다른 조원에게도 같이 해보자고 말해봐요!";
+        break;
+      case "파이팅이 필요한 ":
+        additionalString = "늦었긴했지만 그래도 끝까지 책임지는 모습 칭찬해요! 조금 더 힘내봐요!";
+        break;
+    }
+    resultUser += "$userName!";
+
+    showWidget(
+        title: Text("${widget.toDo.task}을(를) 완료하셨나요?"),
+        widget: Wrap(children: [
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Text(resultUser,
+                    style: const TextStyle(
+                        fontSize: 24, fontWeight: FontWeight.bold)),
+              ),
+              const Text("총 참여도 보상은"),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                const Text("기존 완료 보상 "),
+                Text("${widget.toDo.score} 포인트",
+                    style: const TextStyle(
+                        color: Palette.brightBlue,
+                        fontWeight: FontWeight.bold)),
+                const Text("와"),
+              ]),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                const Text("추가 완료 보상 "),
+                Text("$bonusScore 포인트",
+                    style: TextStyle(
+                        color: bonusScore >= 0
+                            ? Palette.brightBlue
+                            : Palette.brightViolet,
+                        fontWeight: FontWeight.bold)),
+                const Text("로"),
+              ]),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                const Text("총 "),
+                Text("${widget.toDo.score + bonusScore} 포인트",
+                    style: TextStyle(
+                        color: (widget.toDo.score + bonusScore >= 0)
+                            ? Palette.brightBlue
+                            : Palette.brightViolet,
+                        fontWeight: FontWeight.bold)),
+                const Text("입니다!"),
+              ]),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(additionalString,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        color: Palette.brightBlue,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold)),
+              )
+            ],
+          ),
+        ]),
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    return;
+                  },
+                  child: const Text('취소', style: purpleText)),
+              TextButton(
+                  onPressed: () {
+                    List<int> userIndexs = List<int>.empty(growable: true);
+                    for (String userID in widget.toDo.userIDs) {
+                      int userIndex = widget.chatDataParent.chat
+                          .getIndexOfUser(userID: userID);
+                      if (userIndex == -1) continue;
+                      userIndexs.add(userIndex);
+                    }
+
+                    // 불필요하면 삭제
+                    widget.toDo.state = ToDoState.Done;
+                    widget.toDo.deadline = Timestamp.now();
+                    widget.toDo.score += bonusScore;
+
+                    widget.chatDataParent.toDoColRef
+                        .doc(widget.toDo.task)
+                        .update({
+                      'state': widget.toDo.state.index,
+                      'deadline': Timestamp.now(),
+                      'score': widget.toDo.score,
+                    });
+
+                    for (int userIndex in userIndexs) {
+                      widget.chatDataParent.chat.userList[userIndex]
+                          .participation += widget.toDo.score;
+                      widget
+                          .chatDataParent.chat.userList[userIndex].doneCount++;
+                    }
+                    // 혹시 성능에 문제가 있을 경우, 부분적으로 업데이트 되도록 수정 필요
+                    widget.chatDataParent.chatDocRef
+                        .update(widget.chatDataParent.chat.toJson());
+
+                    widget.buildParent.rebuildToDo();
+                    widget.chatDataParent.updateProgressPercent();
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('확인', style: purpleText)),
+            ],
+          )
+        ]);
   }
 
   void addToDo() {
-    // check fill all
-    // 1. text / 2. date(Timestamp) / 3. user
-    if (controller.text.isEmpty) {
+    if (controller.text.isEmpty ||
+        widget.toDo.userIDs.isEmpty ||
+        getDeadlineDiff().inMinutes < 10) {
       showError();
       return;
     }
 
-    widget.toDoRef.doc(controller.text).set(widget.toDo.toJson());
+    widget.chatDataParent.toDoColRef
+        .doc(controller.text)
+        .set(widget.toDo.toJson());
 
     // clear addToDoNode
     controller.text = '';
     widget.toDo.resetToDo();
 
-    parent!.rebuildToDo();
+    widget.buildParent.rebuildToDo();
+    widget.chatDataParent.updateProgressPercent();
   }
 
   void updateToDo() {
-    if (controller.text == widget.toDo.task && controller.text.isEmpty) return;
+    if (controller.text == widget.toDo.task || controller.text.isEmpty) return;
 
     // create new document
-    widget.toDoRef.doc(controller.text).set(widget.toDo.toJson());
+    widget.chatDataParent.toDoColRef
+        .doc(controller.text)
+        .set(widget.toDo.toJson());
     // delete old document
-    widget.toDoRef.doc(widget.toDo.task).delete();
+    widget.chatDataParent.toDoColRef.doc(widget.toDo.task).delete();
     // replace old to new
     widget.toDo.task = controller.text;
 
-    parent!.rebuildToDo();
+    widget.buildParent.rebuildToDo();
   }
 
+  // TODO : Add delete dialog
   void deleteToDo() {
-    widget.toDoRef.doc(widget.toDo.task).delete();
-    parent!.rebuildToDo();
+    widget.chatDataParent.toDoColRef.doc(widget.toDo.task).delete();
+
+    widget.buildParent.rebuildToDo();
+    widget.chatDataParent.updateProgressPercent();
   }
 
-  // ToDo
-  // 1. showDeadline
-  // 2.
-  void showDeadline() {
+  void showDeadline() async {
     DateTime now = DateTime.now();
 
-    showWidget(
-        title: const Text('마감기한을 정해주세요'),
-        widget: Column(children: const <Widget>[]),
-        actions: [
-          TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('확인'))
-        ]);
-  }
-
-  Future _selectDayAndTime(BuildContext context) async {
-    DateTime? selectedDay = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2018),
-        lastDate: DateTime(2030),
-        builder: (BuildContext context, Widget? child) => child!);
-
-    TimeOfDay? selectedTime = await showTimePicker(
+    DateTime? dateTime = await showOmniDateTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialDate: widget.bDelete ? widget.toDo.deadline.toDate() : now,
+      firstDate: DateTime(now.year),
+      lastDate: DateTime(now.year + 5),
     );
 
-    if (selectedDay != null && selectedTime != null) {
-      //a little check
+    if (dateTime == null) return;
+
+    setState(() {
+      widget.toDo.deadline = Timestamp.fromDate(dateTime);
+    });
+
+    if (widget.bDelete) {
+      widget.chatDataParent.toDoColRef
+          .doc(widget.toDo.task)
+          .update({'deadline': widget.toDo.deadline});
     }
+  }
+
+  DateFormat dateFormat = DateFormat("(yy/MM/dd HH:mm)");
+
+// D-DAY Text
+  Text timestampToText(Timestamp value) {
+    if (widget.toDo.state == ToDoState.Done) {
+      return Text(
+        "완료${dateFormat.format(value.toDate())}",
+        style: const TextStyle(
+            fontSize: 10, color: Palette.brightBlue, height: 2.5),
+        textHeightBehavior: textHeightBehavior,
+      );
+    }
+
+    DateTime now = DateTime.now();
+    Duration diff = value.toDate().difference(now);
+
+    if (!(widget.bDelete) && diff.inMinutes.ceil() == 0) {
+      return const Text(
+        "마감기한을 지정해주세요",
+        style: TextStyle(fontSize: 10, color: Palette.darkGray, height: 2.5),
+        textHeightBehavior: textHeightBehavior,
+      );
+    }
+
+    bool bRemain = diff.inMinutes >= 0;
+
+    late String dDayFront;
+
+    if (diff.inDays.abs() > 0) {
+      dDayFront = "${diff.inDays.ceil().abs()}일 ";
+    } else {
+      if (diff.inHours.abs() > 0) {
+        dDayFront = "${diff.inHours.ceil().abs()}시 ";
+      } else {
+        dDayFront = "${diff.inMinutes.ceil().abs()}분 ";
+      }
+    }
+
+    return Text(
+      dDayFront + (bRemain ? "남음" : "지남") + dateFormat.format(value.toDate()),
+      style: TextStyle(
+          fontSize: 10,
+          color: bRemain ? Palette.brightBlue : Palette.brightViolet,
+          height: 2.5),
+      textHeightBehavior: textHeightBehavior,
+    );
+  }
+
+  Duration getDeadlineDiff() {
+    DateTime now = DateTime.now();
+    return widget.toDo.deadline.toDate().difference(now);
   }
 
   void showUser() {
     // user 선택창 구현
+    widget.chatDataParent.readInitChatData();
+    List<String> currentUserIDs = widget.toDo.userIDs;
+
+    showWidget(
+        title: const Text("일할 사람을 선택해주세요"),
+        widget: Wrap(children: [
+          for (var userID in widget.chatDataParent.userNameList.keys)
+            StatefulBuilder(builder: (context, state) {
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ChoiceChip(
+                  // 추후 아바타 추가
+                  // avatar: ,
+                  label: Text(widget.chatDataParent.userNameList[userID]!),
+                  labelStyle: const TextStyle(color: Colors.white),
+                  selected: widget.toDo.userIDs.contains(userID),
+                  selectedColor: Palette.pastelPurple,
+                  onSelected: (_) {
+                    state(() {});
+                    setState(() {
+                      widget.toDo.userIDs.contains(userID)
+                          ? widget.toDo.userIDs.remove(userID)
+                          : widget.toDo.userIDs.add(userID);
+                      users = setUsers();
+                    });
+                  },
+                ),
+              );
+            }),
+        ]),
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              TextButton(
+                  onPressed: () {
+                    setState(() {
+                      widget.toDo.userIDs = currentUserIDs;
+                      users = setUsers();
+                    });
+                    Navigator.of(context).pop();
+                    return;
+                  },
+                  child: const Text('취소', style: purpleText)),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    if (widget.bDelete) {
+                      widget.chatDataParent.toDoColRef
+                          .doc(widget.toDo.task)
+                          .update({"userIDs": widget.toDo.userIDs});
+                    }
+                  },
+                  child: const Text('확인', style: purpleText)),
+            ],
+          )
+        ]);
   }
 
   List<Widget> setUsers() {
     if (widget.toDo.userIDs.isEmpty) {
-      return List.empty();
-    }
-
-    return <Widget>[
-      for (var userID in widget.toDo.userIDs)
+      return <Widget>[
         const Padding(
           padding: EdgeInsets.only(left: 10.0),
           child: Text(
-            // '${widget.toDo.users[userID]} ',
-            'userName',
+            "일할 사람을 배정해주세요",
             style:
                 TextStyle(fontSize: 10, color: Palette.darkGray, height: 2.5),
             textHeightBehavior: textHeightBehavior,
           ),
         ),
+      ];
+    }
+
+    return <Widget>[
+      for (var userID in widget.toDo.userIDs)
+        Padding(
+          padding: const EdgeInsets.only(left: 10.0),
+          child: Text(
+            widget.chatDataParent.userNameList[userID]!,
+            style: const TextStyle(
+                fontSize: 10, color: Palette.darkGray, height: 2.5),
+            textHeightBehavior: textHeightBehavior,
+          ),
+        )
     ];
   }
 
   void showScore() {
-    Color color = Palette.pastelPurple;
+    int currentScore = widget.toDo.score;
+    Color color = Palette.brightBlue;
 
     showWidget(
         title: const Text('점수를 배점해주세요'),
@@ -332,24 +571,40 @@ class _ToDoNodeState extends State<ToDoNode> {
           }),
         ]),
         actions: [
-          TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // ToDoNode 일 경우에만 update
-                if (widget.bDelete) {
-                  widget.toDoRef
-                      .doc(widget.toDo.task)
-                      .update({'score': widget.toDo.score});
-                }
-              },
-              child: const Text('확인'))
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              TextButton(
+                  onPressed: () {
+                    setState(() {
+                      widget.toDo.score = currentScore;
+                    });
+                    Navigator.of(context).pop();
+                    return;
+                  },
+                  child: const Text('취소',
+                      style: TextStyle(color: Palette.brightBlue))),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    // ToDoNode 일 경우에만 update
+                    if (widget.bDelete) {
+                      widget.chatDataParent.toDoColRef
+                          .doc(widget.toDo.task)
+                          .update({'score': widget.toDo.score});
+                    }
+                  },
+                  child: const Text('확인',
+                      style: TextStyle(color: Palette.brightBlue)))
+            ],
+          ),
         ]);
   }
 
   void showError() {
     showWidget(
       widget: const Text(
-        '추가할 정보를 모두 채워주세요',
+        '등록할 할 일의 정보를 모두 채워주세요',
         textAlign: TextAlign.center,
       ),
     );

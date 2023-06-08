@@ -1,88 +1,25 @@
-// import 'package:capston/chatting/chat/view_important_message.dart';
-// import 'package:flutter/material.dart';
-
-// class ChatPlusFunc extends StatelessWidget {
-//   final String roomId;
-
-//   const ChatPlusFunc({Key? key, required this.roomId}) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       height: 282,
-//       color: Colors.grey,
-//       child: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           mainAxisSize: MainAxisSize.min,
-//           children: [
-//             Row(
-//               mainAxisAlignment: MainAxisAlignment.center,
-//               mainAxisSize: MainAxisSize.min,
-//               children: <Widget>[
-//                 ElevatedButton(
-//                   onPressed: () {
-//                     print('자료 조회 or 보내기');
-//                   },
-//                   child: const Text('자료'),
-//                 ),
-//                 Padding(padding: EdgeInsets.all(10.0)),
-//                 ElevatedButton(
-//                   onPressed: () {
-//                     print('Todo리스트 조회');
-//                   },
-//                   child: const Text('Todo'),
-//                 ),
-//                 Padding(padding: EdgeInsets.all(10.0)),
-//                 ElevatedButton(
-//                   onPressed: () {
-//                     print('중요한 메세지? 모아보기');
-
-//                     //이곳에 심플뷰
-
-//                     // Navigator.push(
-//                     //   context,
-//                     //   MaterialPageRoute(
-//                     //     builder: (context) =>
-//                     //         ImportantMessagesPage(roomname: roomId),
-//                     //   ),
-//                     // );
-//                   },
-//                   child: const Text('중요한 일'),
-//                 ),
-//                 Padding(padding: EdgeInsets.all(10.0)),
-//                 ElevatedButton(
-//                   onPressed: () {
-//                     print('참여도 조회 창 예정 :)');
-//                   },
-//                   child: const Text('참여도'),
-//                 ),
-//               ],
-//             ),
-//             Expanded(
-//               child: Container(
-//                 //컨테이너 사이즈 확인
-//                 color: Colors.amber,
-//                 width: double.infinity,
-//                 height: double.infinity,
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-//                                      *OLD CODE*
-
 import 'package:capston/chatting/chat/message/view_important_message.dart';
 import 'package:capston/chatting/chat/add_chat.dart';
+import 'package:capston/chatting/chat_screen.dart';
+import 'package:capston/palette.dart';
+import 'package:capston/todo_list/todo_page.dart';
 import 'package:flutter/material.dart';
 
-class ChatPlusFunc extends StatefulWidget {
-  final String roomId;
+final ButtonStyle buttonStyle = ButtonStyle(
+    backgroundColor: MaterialStateProperty.all(Palette.pastelPurple),
+    elevation: MaterialStateProperty.all(0.0),
+    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+        RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+            side: const BorderSide(color: Palette.pastelPurple))));
 
-  const ChatPlusFunc({Key? key, required this.roomId}) : super(key: key);
+class ChatPlusFunc extends StatefulWidget {
+  final String roomID;
+  final ChatScreenState chatScreenState;
+
+  const ChatPlusFunc(
+      {Key? key, required this.roomID, required this.chatScreenState})
+      : super(key: key);
 
   @override
   _ChatPlusFuncState createState() => _ChatPlusFuncState();
@@ -99,10 +36,14 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
       if (function == '자료 조회 or 보내기') {
         dynamicWidget = const DataWidget();
       } else if (function == 'Todo리스트 조회') {
-        dynamicWidget = const TodoListWidget();
+        dynamicWidget = ToDoPage(
+          roomID: widget.roomID,
+          chatScreenState: widget.chatScreenState,
+          bMini: true,
+        );
       } else if (function == '중요한 메세지? 모아보기') {
         dynamicWidget = SimpleImportantMessage(
-          roomname: widget.roomId,
+          roomname: widget.roomID,
         );
       } else if (function == '참여도 점수 보기') {
         dynamicWidget = const ParticipationWidget();
@@ -116,7 +57,7 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
   Widget build(BuildContext context) {
     return Container(
       height: 282,
-      color: Colors.grey,
+      color: Colors.white,
       child: Center(
         child: Column(
           //버튼 리스트 칼럼
@@ -131,6 +72,7 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
                   onPressed: () {
                     setFunction('자료 조회 or 보내기');
                   },
+                  style: buttonStyle,
                   child: const Text('자료'),
                 ),
                 const Padding(padding: EdgeInsets.all(10.0)),
@@ -138,13 +80,23 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
                   onPressed: () {
                     setFunction('Todo리스트 조회');
                   },
-                  child: const Text('Todo'),
+                  style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStateProperty.all(Palette.brightBlue),
+                      elevation: MaterialStateProperty.all(0.0),
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.0),
+                        side: const BorderSide(color: Palette.brightBlue),
+                      ))),
+                  child: const Text('할 일 목록'),
                 ),
                 const Padding(padding: EdgeInsets.all(10.0)),
                 ElevatedButton(
                   onPressed: () {
                     setFunction('중요한 메세지? 모아보기');
                   },
+                  style: buttonStyle,
                   child: const Text('중요한 일'),
                 ),
                 const Padding(padding: EdgeInsets.all(10.0)),
@@ -152,21 +104,27 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
                   onPressed: () {
                     setFunction('참여도 점수 보기');
                   },
+                  style: buttonStyle,
                   child: const Text('참여도'),
                 ),
               ],
             ),
             Expanded(
               child: Container(
-                color: Colors.amber,
+                color: Colors.white,
                 width: double.infinity,
                 height: double.infinity,
                 child: Center(
-                  child: dynamicWidget ??
-                      const Text(
-                        'No widget selected',
-                        style: TextStyle(fontSize: 24),
-                      ),
+                  child: MediaQuery.removePadding(
+                    context: context,
+                    removeTop: true,
+                    removeBottom: true,
+                    child: dynamicWidget ??
+                        const Text(
+                          'No widget selected',
+                          style: TextStyle(fontSize: 24),
+                        ),
+                  ),
                 ),
               ),
             ),

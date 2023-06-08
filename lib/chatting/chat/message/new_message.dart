@@ -1,13 +1,18 @@
 //import 'dart:math';
 
+import 'package:capston/chatting/chat_screen.dart';
+import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'chat_plus_func.dart';
 
 class NewMessage extends StatefulWidget {
-  final String roomname;
-  const NewMessage({Key? key, required this.roomname}) : super(key: key);
+  final String roomID;
+  final ChatScreenState chatScreenState;
+  const NewMessage(
+      {Key? key, required this.roomID, required this.chatScreenState})
+      : super(key: key);
 
   @override
   _NewMessageState createState() => _NewMessageState();
@@ -26,7 +31,7 @@ class _NewMessageState extends State<NewMessage> {
         .get();
     FirebaseFirestore.instance
         .collection('exchat')
-        .doc(widget.roomname)
+        .doc(widget.roomID)
         .collection('message')
         .add({
       'text': _userEnterMessage,
@@ -41,8 +46,9 @@ class _NewMessageState extends State<NewMessage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(8),
+      // send message container background
+      color: Colors.white,
+      padding: const EdgeInsets.only(bottom: 8),
       child: Column(
         children: [
           Row(
@@ -58,8 +64,8 @@ class _NewMessageState extends State<NewMessage> {
                     // Scaffold.of(context).showBottomSheet<void>(
                     //     (BuildContext context) => ChatPlusFunc());
                   },
-                  icon: const Icon(Icons.add),
-                  color: Colors.blue),
+                  icon: Icon(block ? Icons.close_rounded : Icons.add_rounded),
+                  color: Palette.darkGray),
               Expanded(
                 child: TextField(
                   //메세지 입력 칸
@@ -82,14 +88,18 @@ class _NewMessageState extends State<NewMessage> {
               IconButton(
                 onPressed:
                     _userEnterMessage.trim().isEmpty ? null : _sendMessage,
-                icon: const Icon(Icons.send),
-                color: Colors.blue,
+                icon: const Icon(Icons.rocket_launch_rounded),
+                color: Palette.darkGray,
               ),
             ],
           ),
           block
-              ? ChatPlusFunc(
-                  roomId: widget.roomname,
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: ChatPlusFunc(
+                    roomID: widget.roomID,
+                    chatScreenState: widget.chatScreenState,
+                  ),
                 )
               : const SizedBox(
                   width: 0, height: 0) //TODO: roomID를 처리하지 않거나, roomID를 가져오는 방법

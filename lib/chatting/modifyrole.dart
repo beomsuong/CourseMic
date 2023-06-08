@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-class Modifyrole extends StatefulWidget {
+class ModifyRole extends StatefulWidget {
   final String roomid;
   final String useruid;
   final int role;
   final Function(int) returnuserrole;
 
-  const Modifyrole(
+  const ModifyRole(
       {Key? key,
       required this.useruid,
       required this.roomid,
@@ -15,10 +15,10 @@ class Modifyrole extends StatefulWidget {
       : super(key: key);
 
   @override
-  State<Modifyrole> createState() => _ModifyroleState();
+  State<ModifyRole> createState() => _ModifyRoleState();
 }
 
-class _ModifyroleState extends State<Modifyrole> {
+class _ModifyRoleState extends State<ModifyRole> {
   late int userRole;
   @override
   void initState() {
@@ -145,13 +145,13 @@ class _ModifyroleState extends State<Modifyrole> {
                   ],
                 ),
               ),
-              const Expanded(
+              Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(left: 8.0),
+                  padding: const EdgeInsets.only(left: 8.0),
                   child: Column(
                     children: [
                       Row(
-                        children: [
+                        children: const [
                           Text(
                             '커맨더',
                             style: TextStyle(
@@ -164,12 +164,12 @@ class _ModifyroleState extends State<Modifyrole> {
                           ),
                         ],
                       ),
-                      Divider(
+                      const Divider(
                         thickness: 2,
                         height: 1,
                         color: Colors.black,
                       ),
-                      Text(
+                      const Text(
                         '전체적인 일정을 조율하고 조별과제가 잘 마무리될 수 있도록 이끌어보자 !',
                         style: TextStyle(
                             fontWeight: FontWeight.w500, fontSize: 15),
@@ -218,13 +218,13 @@ class _ModifyroleState extends State<Modifyrole> {
                   height: 70,
                 ),
               ),
-              const Expanded(
+              Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(left: 8.0),
+                  padding: const EdgeInsets.only(left: 8.0),
                   child: Column(
                     children: [
                       Row(
-                        children: [
+                        children: const [
                           Text(
                             '엔지니어',
                             style: TextStyle(
@@ -237,12 +237,12 @@ class _ModifyroleState extends State<Modifyrole> {
                           ),
                         ],
                       ),
-                      Divider(
+                      const Divider(
                         thickness: 2,
                         height: 1,
                         color: Colors.black,
                       ),
-                      Text(
+                      const Text(
                         '과제 수행에 필요한 기능이나 기획에 맞게 프로그램을 구현해보자 !',
                         style: TextStyle(
                             fontWeight: FontWeight.w500, fontSize: 15),
@@ -290,13 +290,13 @@ class _ModifyroleState extends State<Modifyrole> {
                   height: 70,
                 ),
               ),
-              const Expanded(
+              Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(left: 8.0),
+                  padding: const EdgeInsets.only(left: 8.0),
                   child: Column(
                     children: [
                       Row(
-                        children: [
+                        children: const [
                           Text(
                             '아티스트',
                             style: TextStyle(
@@ -309,12 +309,12 @@ class _ModifyroleState extends State<Modifyrole> {
                           ),
                         ],
                       ),
-                      Divider(
+                      const Divider(
                         thickness: 2,
                         height: 1,
                         color: Colors.black,
                       ),
-                      Text(
+                      const Text(
                         'PPT, 사진 그리고 동영상 같은 자료들을 제작하고 멋지고 예쁘게 편집해보자 !',
                         style: TextStyle(
                             fontWeight: FontWeight.w500, fontSize: 15),
@@ -362,13 +362,13 @@ class _ModifyroleState extends State<Modifyrole> {
                   height: 70,
                 ),
               ),
-              const Expanded(
+              Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(left: 8.0),
+                  padding: const EdgeInsets.only(left: 8.0),
                   child: Column(
                     children: [
                       Row(
-                        children: [
+                        children: const [
                           Text(
                             '익스플로러',
                             style: TextStyle(
@@ -381,12 +381,12 @@ class _ModifyroleState extends State<Modifyrole> {
                           ),
                         ],
                       ),
-                      Divider(
+                      const Divider(
                         thickness: 2,
                         height: 1,
                         color: Colors.black,
                       ),
-                      Text(
+                      const Text(
                         '과제 수행함에 있어 필요한 자료를 조사하고 팀원과 공유해 보자 !',
                         style: TextStyle(
                             fontWeight: FontWeight.w500, fontSize: 15),
@@ -434,13 +434,13 @@ class _ModifyroleState extends State<Modifyrole> {
                   height: 70,
                 ),
               ),
-              const Expanded(
+              Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(left: 8.0),
+                  padding: const EdgeInsets.only(left: 8.0),
                   child: Column(
                     children: [
                       Row(
-                        children: [
+                        children: const [
                           Text(
                             '커뮤니케이터',
                             style: TextStyle(
@@ -453,12 +453,12 @@ class _ModifyroleState extends State<Modifyrole> {
                           ),
                         ],
                       ),
-                      Divider(
+                      const Divider(
                         thickness: 2,
                         height: 1,
                         color: Colors.black,
                       ),
-                      Text(
+                      const Text(
                         '그동안 팀원들과 함께 만든 작품을 교수님이나 다른 조원들 앞에서 열심히 발표해보자 !',
                         style: TextStyle(
                           fontWeight: FontWeight.w500,

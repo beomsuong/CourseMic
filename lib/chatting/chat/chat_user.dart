@@ -7,19 +7,19 @@ final Map<String, int> userRole = {
   '커뮤니케이터': 1,
 };
 
-class MyUser {
+class ChatUser {
   final String userID;
   late int role;
   late int participation;
   late int doneCount;
 
-  MyUser(
+  ChatUser(
       {required this.userID,
       this.role = 0,
       this.participation = 0,
       this.doneCount = 0});
 
-  MyUser.fromData(Map<String, dynamic> data)
+  ChatUser.fromData(Map<String, dynamic> data)
       : this(
             userID: data['userID'],
             role: data['role'] as int,

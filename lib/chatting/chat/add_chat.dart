@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:capston/chatting/chat/user.dart';
+import 'package:capston/chatting/chat/chat_user.dart';
 
 class AddChat extends StatefulWidget {
   const AddChat({
@@ -41,7 +41,7 @@ class _AddChatState extends State<AddChat> {
     exchats.add({
       '톡방이름': roomname,
       'commanderID': '',
-      'userList': <Map<String, dynamic>>[MyUser(userID: user!.uid).toJson()],
+      'userList': <Map<String, dynamic>>[ChatUser(userID: user!.uid).toJson()],
     }).then((DocumentReference doc) {
       CollectionReference exusers = firestore.collection('exuser');
 

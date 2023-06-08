@@ -56,7 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.messenger_outline),
-            label: '체팅방',
+            label: '채팅방',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_circle),

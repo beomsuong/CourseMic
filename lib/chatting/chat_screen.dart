@@ -1,9 +1,14 @@
+import 'package:capston/chatting/chat/chat.dart';
 import 'package:capston/chatting/modifyrole.dart';
+import 'package:capston/palette.dart';
+import 'package:capston/todo_list/todo.dart';
+import 'package:capston/todo_list/todo_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:capston/chatting/chat/message/message.dart';
 import 'package:capston/chatting/chat/message/new_message.dart';
+import 'package:percent_indicator/linear_percent_indicator.dart';
 
 import 'chat/viewuserprofile.dart';
 
@@ -12,65 +17,102 @@ class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key, required this.roomID}) : super(key: key);
 
   @override
-  _ChatScreenState createState() => _ChatScreenState();
+  ChatScreenState createState() => ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
-  final _authentication = FirebaseAuth.instance;
-  late final user;
-  late int userrole;
-  String roomname = '';
-  late List<dynamic> userList1;
-  late List<Map<dynamic, dynamic>> userList = [];
-  late List<dynamic> userinfo;
+class ChatScreenState extends State<ChatScreen> {
+  final FirebaseAuth _authentication = FirebaseAuth.instance;
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  late final DocumentReference chatDocRef;
+  late Chat chat;
+  Map<String, String> userNameList = {};
+
+  late final DocumentReference userDocRef;
+  late final User currentUser;
+  List<String> userChatList = List<String>.empty(growable: true);
+
+  late final CollectionReference toDoColRef;
+  late Future<double> progressPercentFuture;
+  late Future<void> chatFuture;
+
   @override
   void initState() {
-    final authentication = FirebaseAuth.instance;
-    user = authentication.currentUser;
-    // TODO: implement initState
     super.initState();
+    currentUser = _authentication.currentUser!;
+    userDocRef = firestore.collection("exuser").doc(currentUser.uid);
+    chatDocRef = firestore.collection('exchat').doc(widget.roomID);
+    toDoColRef =
+        firestore.collection("exchat").doc(widget.roomID).collection("todo");
+    progressPercentFuture = calculateProgressPercent();
+    chatFuture = readInitChatData();
   }
 
-  Future<void> loadingdata() async {
-    print(user!.uid);
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    DocumentReference roomRef =
-        firestore.collection('exchat').doc(widget.roomID);
-    DocumentSnapshot roomnameSnapshot = await roomRef.get();
-    roomname = roomnameSnapshot.get('톡방이름');
-    DocumentReference docRef =
-        firestore.collection('exchat').doc(widget.roomID);
-    DocumentSnapshot docSnapshot = await docRef.get();
-    userList1 = docSnapshot.get('userList');
+  Future<void> readInitChatData() async {
+    // get user chatList data
+    userDocRef.get().then((value) {
+      userChatList =
+          (value.data() as Map<String, dynamic>)['톡방리스트'] as List<String>;
+    });
 
-    userList.clear();
-    for (var user1 in userList1) {
-      DocumentReference docRef =
-          firestore.collection('exuser').doc(user1['userID']);
-      DocumentSnapshot docSnapshot = await docRef.get();
-
-      if (user1['userID'] == user!.uid) {
-        userrole = user1['role'];
-        userinfo = docSnapshot.get('톡방리스트');
-      }
-      userList.add({
-        'userID': user1['userID'],
-        'username': docSnapshot.get('이름'),
-        'role': user1['role']
+    // get chat data
+    await readRoomName();
+    for (var user in chat.userList) {
+      firestore.collection('exuser').doc(user.userID).get().then((value) {
+        userNameList[user.userID] = value.data()!['이름'];
       });
     }
-    print(userList1);
   }
 
-  late List<List<dynamic>> roomList; //톡방 이름, UID, 마지막 메시지 저장
-  Widget room(String id, String name, int userrole) {
+  // also read chat data
+  Future<String> readRoomName() async {
+    await chatDocRef.get().then((value) {
+      chat = Chat.fromJson(value);
+    });
+    return chat.roomName;
+  }
+
+  void updateChat() {
+    setState(() {
+      chatFuture = readInitChatData();
+    });
+  }
+
+  String progressCount = "";
+  Future<double> calculateProgressPercent() async {
+    double progressPercent = 0.0;
+    await toDoColRef
+        .where('state', isEqualTo: ToDoState.Done.index)
+        .get()
+        .then((snapshot) {
+      progressPercent =
+          snapshot.docs.isEmpty ? 0.0 : snapshot.docs.length.toDouble();
+      progressCount = progressPercent.toInt().toString();
+    });
+    if (progressPercent == 0.0) return progressPercent;
+    await toDoColRef.get().then(
+      (snapshot) {
+        progressPercent /= snapshot.docs.length;
+        progressCount += "/${snapshot.docs.length}";
+      },
+    );
+    return progressPercent;
+  }
+
+  void updateProgressPercent() {
+    setState(() {
+      progressPercentFuture = calculateProgressPercent();
+    });
+  }
+
+  Widget roleSelect(String userID, String userName, int userRole) {
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) {
-              return Viewuserprofile(userid: id);
+              return Viewuserprofile(userid: userID);
             },
           ),
         );
@@ -79,29 +121,29 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Padding(
           padding: const EdgeInsets.only(top: 8), //톡방간 간격
           child: Row(children: [
-            if (userrole == 0)
+            if (userRole == 0)
               Image.asset(
                 "assets/image/logo.png",
                 width: 30,
                 height: 30,
                 color: Colors.purple,
               )
-            else if (userrole >= 16)
+            else if (userRole >= 16)
               Image.asset("assets/image/commander.png",
                   width: 30, height: 30, color: Colors.purple)
-            else if (userrole >= 8)
+            else if (userRole >= 8)
               Image.asset("assets/image/explorer.png",
                   width: 30, height: 30, color: Colors.purple)
-            else if (userrole >= 4)
+            else if (userRole >= 4)
               Image.asset(
                 "assets/image/artist.png",
                 width: 30,
                 height: 30,
               )
-            else if (userrole >= 2)
+            else if (userRole >= 2)
               Image.asset("assets/image/communicator.png",
                   width: 30, height: 30, color: Colors.purple)
-            else if (userrole >= 1)
+            else if (userRole >= 1)
               Image.asset(
                 "assets/image/explorer.png",
                 width: 30,
@@ -114,7 +156,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start, //글자 왼쪽 정렬
                     children: [
                       Text(
-                        name,
+                        userName,
                         style: const TextStyle(
                             fontSize: 20, fontWeight: FontWeight.w500),
                         // 톡방 제목은 굵게
@@ -130,153 +172,185 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: loadingdata(),
-      builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        } else {
-          if (snapshot.hasError) {
-            return Scaffold(
-              body: Center(child: Text('Error: ${snapshot.error}')),
-            );
-          } else {
-            return Scaffold(
-              appBar: AppBar(
-                title: Text(roomname),
-              ),
-              endDrawer: Drawer(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: ListView(
-                        children: [
-                          SizedBox(
-                            child: Text(
-                              roomname,
-                              style: const TextStyle(
-                                fontSize: 25,
-                                fontWeight: FontWeight.w500,
-                              ),
+    return Scaffold(
+      // chatting room background
+      backgroundColor: Palette.lightGray,
+      appBar: AppBar(
+        // appBar background
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Colors.black54),
+        title: Center(
+          child: FutureBuilder(
+              future: readRoomName(),
+              builder: (context, snapshot) {
+                return Text(snapshot.hasData ? snapshot.data! : "RoomName",
+                    style: const TextStyle(color: Colors.black));
+              }),
+        ),
+      ),
+      endDrawer: Drawer(
+        child: FutureBuilder(
+            future: chatFuture,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return const CircularProgressIndicator(
+                  color: Palette.pastelPurple,
+                );
+              }
+              return Column(
+                children: <Widget>[
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        SizedBox(
+                          child: Text(
+                            chat.roomName,
+                            style: const TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          Row(children: [
-                            const SizedBox(
-                              child: Text(
-                                '코드: ',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              child: Text(
-                                widget.roomID.substring(0, 4),
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ),
-                          ]),
-                          const Divider(
-                            thickness: 0.5,
-                            height: 1,
-                            color: Color.fromARGB(255, 138, 138, 138),
-                          ),
+                        ),
+                        Row(children: [
                           const SizedBox(
                             child: Text(
-                              '참여자',
+                              '코드: ',
                               style: TextStyle(
-                                fontSize: 25,
-                                fontWeight: FontWeight.w500,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
                           ),
-                          for (var data in userList)
-                            if (data.containsKey('userID') &&
-                                data.containsKey('role'))
-                              room(
-                                data['userID'].toString(),
-                                data['username'].toString(),
-                                data['role'],
+                          SizedBox(
+                            child: Text(
+                              widget.roomID.substring(0, 4),
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
                               ),
-                        ],
-                      ),
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.settings, color: Colors.black),
-                      title: const Text('역할 수정하기'),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return Modifyrole(
-                              role: userrole,
-                              roomid: widget.roomID,
-                              useruid: user.uid,
-                              returnuserrole: (int userrole) {
-                                for (var user1 in userList1) {
-                                  if (user1['userID'] == user.uid) {
-                                    user1['role'] = userrole;
-                                    break;
-                                  }
-                                }
-                                FirebaseFirestore.instance
-                                    .collection('exchat')
-                                    .doc(widget.roomID)
-                                    .update({
-                                  'userList': userList1,
-                                });
-                                setState(() {});
-                              },
-                            );
-                          },
+                            ),
+                          ),
+                        ]),
+                        const Divider(
+                          thickness: 0.5,
+                          height: 1,
+                          color: Palette.darkGray,
                         ),
+                        const SizedBox(
+                          child: Text(
+                            '참여자',
+                            style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        for (var user in chat.userList)
+                          roleSelect(
+                            user.userID,
+                            userNameList[user.userID] ?? "userName",
+                            user.role,
+                          ),
+                      ],
+                    ),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.settings, color: Colors.black),
+                    title: const Text('역할 수정하기'),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return ModifyRole(
+                            role: chat
+                                .userList[chat.getIndexOfUser(
+                                    userID: currentUser.uid)]
+                                .role,
+                            roomid: widget.roomID,
+                            useruid: currentUser.uid,
+                            returnuserrole: (int userrole) {
+                              chat
+                                  .userList[chat.getIndexOfUser(
+                                      userID: currentUser.uid)]
+                                  .role = userrole;
+                              chatDocRef.update({
+                                'userList': chat.userList,
+                              });
+                              setState(() {});
+                            },
+                          );
+                        },
                       ),
                     ),
-                    ListTile(
-                      leading: const Icon(Icons.exit_to_app_rounded,
-                          color: Colors.red),
-                      title: const Text('나가기'),
-                      onTap: () {
-                        userList.removeWhere(
-                            (user1) => user1['userID'] == user!.uid);
-                        userinfo.remove(widget.roomID);
-                        FirebaseFirestore.instance
-                            .collection('exchat')
-                            .doc(widget.roomID)
-                            .update({
-                          'userList': userList,
-                        });
-                        FirebaseFirestore.instance
-                            .collection('exuser')
-                            .doc(user!.uid)
-                            .update({
-                          '톡방리스트': userinfo,
-                        });
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pop();
-                      },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.exit_to_app_rounded,
+                        color: Colors.red),
+                    title: const Text('나가기'),
+                    onTap: () {
+                      chat.userList.removeAt(chat.getIndexOfUser(
+                        userID: currentUser.uid,
+                      ));
+                      // userList.removeWhere(
+                      //     (user1) => user1['userID'] == user.uid);
+                      userChatList.remove(widget.roomID);
+                      chatDocRef.update(chat.userListToJson());
+                      userDocRef.update({
+                        '톡방리스트': userChatList,
+                      });
+                      // pop Drawer
+                      Navigator.of(context).pop();
+                      // pop ChatScreen
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            }),
+      ),
+      body: Column(
+        children: [
+          FutureBuilder(
+              future: progressPercentFuture,
+              builder: (context, snapshot) {
+                return GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ToDoPage(
+                        roomID: widget.roomID,
+                        chatScreenState: this,
+                      ),
                     ),
-                  ],
-                ),
-              ),
-              body: Container(
-                child: Column(
-                  children: [
-                    Expanded(child: Messages(roomID: widget.roomID)),
-                    NewMessage(roomname: widget.roomID),
-                  ],
-                ),
-              ),
-            );
-          }
-        }
-      },
+                  ),
+                  child: LinearPercentIndicator(
+                    padding: const EdgeInsets.all(0),
+                    animation: true,
+                    animationDuration: 500,
+                    lineHeight: 15.0,
+                    percent: snapshot.hasData ? snapshot.data! : 0.0,
+                    center: Text(progressCount.isEmpty ? "" : progressCount,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12)),
+                    // only one color can accept
+                    linearGradient: const LinearGradient(colors: [
+                      Palette.brightViolet,
+                      Palette.pastelPurple,
+                      Palette.brightBlue
+                    ]),
+                  ),
+                );
+              }),
+          Expanded(child: Messages(roomID: widget.roomID)),
+          NewMessage(
+            roomID: widget.roomID,
+            chatScreenState: this,
+          ),
+        ],
+      ),
     );
   }
 }

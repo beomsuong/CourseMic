@@ -226,13 +226,13 @@ class _MypageState extends State<Mypage> {
                         ],
                       ),
                     ),
-                    const Align(
+                    Align(
                       alignment: Alignment.bottomLeft,
                       child: Padding(
-                        padding: EdgeInsets.only(right: 25, left: 25),
+                        padding: const EdgeInsets.only(right: 25, left: 25),
                         child: Column(
                           children: [
-                            Divider(
+                            const Divider(
                               thickness: 2,
                               height: 3,
                               color: Colors.black,
@@ -240,7 +240,7 @@ class _MypageState extends State<Mypage> {
                             SizedBox(
                               height: 30,
                               child: Row(
-                                children: [
+                                children: const [
                                   Text(
                                     '현재 참여중인 과제 : ' '갯수 변수' '(개)',
                                     style: TextStyle(
@@ -253,7 +253,7 @@ class _MypageState extends State<Mypage> {
                             SizedBox(
                               height: 30,
                               child: Row(
-                                children: [
+                                children: const [
                                   Text(
                                     '완료한 과제 : ' '갯수 변수' '(개)',
                                     style: TextStyle(
@@ -263,7 +263,7 @@ class _MypageState extends State<Mypage> {
                                 ],
                               ),
                             ),
-                            Divider(
+                            const Divider(
                               thickness: 2,
                               height: 10,
                               color: Colors.black,
@@ -272,10 +272,10 @@ class _MypageState extends State<Mypage> {
                         ),
                       ),
                     ),
-                    const SizedBox(
+                    SizedBox(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                        children: const [
                           Padding(
                             padding: EdgeInsets.only(top: 7, bottom: 7),
                             child: Text(
