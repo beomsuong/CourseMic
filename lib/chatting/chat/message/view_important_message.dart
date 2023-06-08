@@ -1,29 +1,38 @@
 //import 'package:capston/message/addmessage.dart';
+import 'package:capston/quiz/solve_quiz.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 final currentYear = DateTime.now().year; //실제 시간의 년도
 
+typedef ImpMsgSnapshot = QuerySnapshot<Map<String, dynamic>>;
+
 class ImportantMessagesPage extends StatelessWidget {
   final String roomname;
+  late Stream<QuerySnapshot<Object?>> imgMsgStream;
 
-  const ImportantMessagesPage({Key? key, required this.roomname})
-      : super(key: key);
+  ImportantMessagesPage({Key? key, required this.roomname}) : super(key: key);
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> loadImpMsgList() async* {
+    var snapshot = await FirebaseFirestore.instance
+        .collection('exchat')
+        .doc(roomname)
+        .collection('imp_msg')
+        .orderBy('timeStamp', descending: true) // 시간 역순으로 정렬
+        .get();
+    yield snapshot;
+  }
 
   @override
   Widget build(BuildContext context) {
+    imgMsgStream = loadImpMsgList();
     return Scaffold(
       appBar: AppBar(
         title: const Text('중요한 메시지 목록'),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('exchat')
-            .doc(roomname)
-            .collection('imp_msg')
-            .orderBy('timeStamp', descending: false) // 시간 역순으로 정렬
-            .snapshots(),
+        stream: imgMsgStream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(child: Text('오류가 발생했습니다.'));
@@ -38,6 +47,7 @@ class ImportantMessagesPage extends StatelessWidget {
           // 해당 채팅방의 중요한 메시지만 필터링하여 보여줌
 
           return ListView.builder(
+            reverse: true,
             itemCount: documents.length,
             itemBuilder: (context, index) {
               final data = documents[index].data() as Map<String, dynamic>;
@@ -107,6 +117,17 @@ class ImportantMessagesPage extends StatelessWidget {
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(
+          //     builder: (context) => const solve_quiz(),
+          //   ),
+          // );
+        },
+        child: const Text("Quiz!"),
       ),
     );
   }
