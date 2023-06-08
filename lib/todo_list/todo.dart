@@ -13,7 +13,7 @@ class ToDo {
   late ToDoState state;
   late String task;
   late String detail;
-  // Timestamp? deadline = Timestamp.now();
+  late Timestamp deadline;
   late List<String> userIDs;
   late int score;
 
@@ -22,8 +22,8 @@ class ToDo {
     this.state = ToDoState.ToDo,
     this.task = '새로운 할 일을 추가해주세요',
     this.detail = '',
-    // this.deadline,
-    this.userIDs = const <String>[],
+    required this.deadline,
+    required this.userIDs,
     this.score = 10,
   });
 
@@ -33,8 +33,10 @@ class ToDo {
           state: ToDoState.values[json['state']!],
           task: json.id,
           detail: json['detail'],
-          // deadline: json['deadline'] as Timestamp,
-          userIDs: json['users']! as List<String>,
+          deadline: json['deadline'] as Timestamp,
+          userIDs: <String>[
+            for (var jsonData in json['userIDs']! as List<dynamic>) jsonData,
+          ],
           score: json['score'] as int,
         );
 
@@ -43,7 +45,7 @@ class ToDo {
       'index': index,
       'state': state.index,
       'detail': detail,
-      // 'deadline': deadline,
+      'deadline': deadline,
       'userIDs': userIDs,
       'score': score,
     };
@@ -53,7 +55,7 @@ class ToDo {
     index = 1;
     // task = '새로운 할 일을 추가해주세요';
     detail = '';
-    // this.deadline,
+    deadline = Timestamp.now();
     userIDs.clear();
     score = 10;
   }

@@ -45,7 +45,8 @@ dependencies:
   firebase_storage: ^11.2.0
   modal_progress_hud_nsn: ^0.4.0
   intl: ^0.18.1
-  binary: ^3.0.1
+  omni_datetime_picker: ^1.0.7
+  drag_and_drop_lists: ^0.3.3
 
 dev_dependencies:
   flutter_test:

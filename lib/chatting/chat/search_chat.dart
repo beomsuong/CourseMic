@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:capston/chatting/chat/user.dart';
+import 'package:capston/chatting/chat/chat_user.dart';
 
 class SearchChat extends StatefulWidget {
   const SearchChat({super.key});
@@ -82,7 +82,7 @@ class _SearchChatState extends State<SearchChat> {
 
     // add user into userList field
     firebase.collection('exchat').doc(roomcode).update({
-      'userList': FieldValue.arrayUnion([MyUser(userID: user.uid).toJson()])
+      'userList': FieldValue.arrayUnion([ChatUser(userID: user.uid).toJson()])
     });
   }
 
@@ -205,51 +205,49 @@ class _SearchChatState extends State<SearchChat> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: Container(
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.end, // 오른쪽 정렬
-                            children: [
-                              SizedBox(
-                                width: 120,
-                                height: 35,
-                                child: Text(
-                                  "그룹 이름 :",
-                                  textAlign: TextAlign.right,
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 20,
-                                  ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end, // 오른쪽 정렬
+                          children: const [
+                            SizedBox(
+                              width: 120,
+                              height: 35,
+                              child: Text(
+                                "그룹 이름 :",
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 20,
                                 ),
                               ),
-                              SizedBox(
-                                width: 120,
-                                height: 35,
-                                child: Text(
-                                  "현재 참가자 :",
-                                  textAlign: TextAlign.right,
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 20,
-                                  ),
+                            ),
+                            SizedBox(
+                              width: 120,
+                              height: 35,
+                              child: Text(
+                                "현재 참가자 :",
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 20,
                                 ),
                               ),
-                              SizedBox(
-                                width: 120,
-                                height: 35,
-                                child: Text(
-                                  "최근 메시지 :",
-                                  textAlign: TextAlign.right,
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 20,
-                                  ),
+                            ),
+                            SizedBox(
+                              width: 120,
+                              height: 35,
+                              child: Text(
+                                "최근 메시지 :",
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 20,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -258,52 +256,50 @@ class _SearchChatState extends State<SearchChat> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(left: 8),
-                        child: Container(
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                width: 120,
-                                height: 35,
-                                child: Text(
-                                  groupname,
-                                  textAlign: TextAlign.left,
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 20,
-                                  ),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              width: 120,
+                              height: 35,
+                              child: Text(
+                                groupname,
+                                textAlign: TextAlign.left,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 20,
                                 ),
                               ),
-                              SizedBox(
-                                width: 120,
-                                height: 35,
-                                child: Text(
-                                  groupmember.isNotEmpty
-                                      ? groupmember.length.toString()
-                                      : ' ',
-                                  textAlign: TextAlign.left,
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 20,
-                                  ),
+                            ),
+                            SizedBox(
+                              width: 120,
+                              height: 35,
+                              child: Text(
+                                groupmember.isNotEmpty
+                                    ? groupmember.length.toString()
+                                    : ' ',
+                                textAlign: TextAlign.left,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 20,
                                 ),
                               ),
-                              SizedBox(
-                                width: 120,
-                                height: 35,
-                                child: Text(
-                                  groupmessage,
-                                  textAlign: TextAlign.left,
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 20,
-                                  ),
+                            ),
+                            SizedBox(
+                              width: 120,
+                              height: 35,
+                              child: Text(
+                                groupmessage,
+                                textAlign: TextAlign.left,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 20,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

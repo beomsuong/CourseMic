@@ -1,5 +1,4 @@
 import 'package:capston/chatting/main_screen.dart';
-import 'package:capston/todo_list/todo_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_config/flutter_config.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -18,7 +17,6 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  static const testID = 'mH2pTd2HcfRFSAO9dPVU';
   const MyApp({super.key});
 
   @override
@@ -26,6 +24,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CourseMic',
       theme: ThemeData(primarySwatch: Colors.blue),
+      // home: const ToDoPage(roomID: testID),
       home: const LoginSignupScreen(),
     );
   }

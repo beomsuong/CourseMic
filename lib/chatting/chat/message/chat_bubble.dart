@@ -96,8 +96,8 @@ class ChatBubbles extends StatelessWidget {
                 child: ChatBubble(
                   clipper: ChatBubbleClipper8(type: BubbleType.sendBubble),
                   alignment: Alignment.topRight,
-                  margin: const EdgeInsets.only(top: 20),
-                  backGroundColor: Colors.blue,
+                  margin: const EdgeInsets.only(bottom: 10),
+                  backGroundColor: const Color(0xFF8754f8),
                   child: Container(
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.7,
@@ -127,7 +127,7 @@ class ChatBubbles extends StatelessWidget {
                 child: ChatBubble(
                   clipper: ChatBubbleClipper8(type: BubbleType.receiverBubble),
                   backGroundColor: const Color(0xffE7E7ED),
-                  margin: const EdgeInsets.only(top: 20),
+                  margin: const EdgeInsets.only(bottom: 10),
                   child: Container(
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.7,
