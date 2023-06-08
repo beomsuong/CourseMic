@@ -40,29 +40,29 @@ class RoomListState extends State<RoomList> {
     super.initState();
   }
 
+  List<List<dynamic>> roomList = [];
+
   Future<void> loadingdata() async {
     final authentication = FirebaseAuth.instance;
-
     final user = authentication.currentUser;
-    print(user!.uid);
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-    // 최상위 컬렉션에서 하위 컬렉션까지 한 번에 지정하는 변수
-    DocumentReference docRef = firestore.collection('exuser').doc(user.uid);
-
-    // 문서의 데이터를 가져옵니다.
+    DocumentReference docRef = firestore.collection('exuser').doc(user!.uid);
     DocumentSnapshot docSnapshot = await docRef.get();
-
-    // 문서 내부의 사람리스트 필드를 가져옵니다.
     List<dynamic> roomIdList = docSnapshot.get('톡방리스트');
-    print("!");
-
-    roomList = [];
+    roomList.clear();
+    late List<dynamic> userList;
     for (var roomID in roomIdList) {
       DocumentReference roomRef = firestore.collection('exchat').doc(roomID);
       DocumentSnapshot roomnameSnapshot = await roomRef.get();
       String roomname = roomnameSnapshot.get('톡방이름');
-
+      int userrole = 0;
+      userList = roomnameSnapshot.get('userList');
+      for (var user1 in userList) {
+        if (user1['userID'] == user.uid) {
+          userrole = user1['role'];
+          break;
+        }
+      }
       final chatDocsSnapshot = await FirebaseFirestore.instance
           .collection('exchat')
           .doc(roomID)
@@ -70,34 +70,33 @@ class RoomListState extends State<RoomList> {
           .orderBy('time', descending: true)
           .limit(1)
           .get();
-
       if (chatDocsSnapshot.docs.isNotEmpty) {
         final lastMessage = chatDocsSnapshot.docs[0]['text'];
-
         roomList.add([
           roomname,
           roomID,
           lastMessage,
+          userrole,
+          chatDocsSnapshot.docs[0]['time']
         ]);
       } else {
-        roomList.add([
-          roomname,
-          roomID,
-          '',
-        ]);
+        roomList.add(
+          [roomname, roomID, '', userrole, ''],
+        );
       }
     }
+    roomList.sort((a, b) {
+      if (a[4] == '') return -1;
+      if (b[4] == '') return 1;
+      return (b[4] as Timestamp).compareTo(a[4] as Timestamp);
+    });
     roomIdList = [];
   }
 
-  late List<List<dynamic>> roomList; //톡방 이름, UID, 마지막 메시지 저장
-  Widget room(String name, String id, String message) {
-    //UID는 onTap에서 톡방을 불러오기 위해 사용
-    //톡방을 리스트를 보여주는 함수
+  Widget room(String name, String id, String message, int role) {
     return InkWell(
-      onTap: () {
-        print("해당 톡방이 클릭됬음 $id");
-        Navigator.push(
+      onTap: () async {
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) {
@@ -107,20 +106,49 @@ class RoomListState extends State<RoomList> {
             },
           ),
         );
-        ChatScreen(
-          roomID: id,
-        );
+        setState(() {});
       },
       child: SizedBox(
         height: 80,
         child: Padding(
           padding: const EdgeInsets.only(top: 8), //톡방간 간격
           child: Row(children: [
-            Image.asset(
-              //톡방별 대표 이미지 개개인 프사나 해당 톡방에서의 역할 표시하면 좋을듯
-              "assets/image/logo.png",
-              fit: BoxFit.contain,
-            ),
+            if (role == 0)
+              Image.asset(
+                "assets/image/logo.png",
+                fit: BoxFit.contain,
+              )
+            else if (role >= 16)
+              Image.asset(
+                "assets/image/commander.png",
+                fit: BoxFit.contain,
+              )
+            else if (role >= 8)
+              Image.asset(
+                "assets/image/explorer.png",
+                fit: BoxFit.contain,
+              )
+            else if (role >= 4)
+              Image.asset(
+                "assets/image/artist.png",
+                fit: BoxFit.contain,
+              )
+            else if (role >= 2)
+              Image.asset(
+                "assets/image/communicator.png",
+                fit: BoxFit.contain,
+              )
+            else if (role >= 1)
+              Image.asset(
+                "assets/image/explorer.png",
+                fit: BoxFit.contain,
+              )
+            else if (role == 0)
+              Image.asset(
+                //톡방별 대표 이미지 개개인 프사나 해당 톡방에서의 역할 표시하면 좋을듯
+                "assets/image/logo.png",
+                fit: BoxFit.contain,
+              ),
             Padding(
               padding: const EdgeInsets.only(left: 8),
               child: SizedBox(
@@ -164,12 +192,15 @@ class RoomListState extends State<RoomList> {
           ),
           actions: [
             IconButton(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const SearchChat()),
                 );
+
+                setState(() {});
               },
+
               icon: const Icon(
                 Icons.search,
                 color: Colors.purple,
@@ -192,7 +223,8 @@ class RoomListState extends State<RoomList> {
                 return ListView(
                   children: [
                     for (var data in roomList)
-                      room(data[0], data[1], data[2]), // 자신이 속한 톡방의 갯수만큼 반복
+                      room(data[0], data[1], data[2],
+                          data[3]), // 자신이 속한 톡방의 갯수만큼 반복
                   ],
                 );
               }
@@ -202,13 +234,20 @@ class RoomListState extends State<RoomList> {
         floatingActionButton: FloatingActionButton(
             tooltip: '톡방 추가',
             child: const Icon(Icons.add),
-            onPressed: () {
-              showDialog(
+            onPressed: () async {
+              await showDialog(
                 context: context,
                 builder: (BuildContext context) {
                   return const AddChat();
                 },
               );
+
+              setState(() {
+                print('됨');
+                print(roomList);
+                roomList.clear();
+                print(roomList);
+              });
             }));
   }
 }
