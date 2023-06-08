@@ -40,6 +40,13 @@ class Chat {
     };
   }
 
+  ChatUser? getUser({required String userID}) {
+    for (int i = 0; i < userList.length; i++) {
+      if (userList[i].userID == userID) return userList[i];
+    }
+    return null;
+  }
+
   int getIndexOfUser({required String userID}) {
     for (int i = 0; i < userList.length; i++) {
       if (userList[i].userID == userID) return i;

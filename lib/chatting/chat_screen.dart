@@ -52,7 +52,7 @@ class ChatScreenState extends State<ChatScreen> {
     // get user chatList data
     userDocRef.get().then((value) {
       userChatList =
-          (value.data() as Map<String, dynamic>)['톡방리스트'] as List<String>;
+          ((value.data() as Map<String, dynamic>)['톡방리스트']) as List<String>;
     });
 
     // get chat data
