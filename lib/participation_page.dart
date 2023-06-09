@@ -55,8 +55,11 @@ class _ParticipationPageState extends State<ParticipationPage> {
             thickness: 1.5,
           ),
         ),
-        ParticipationGraph(chatDataParent: widget.chatDataParent)
-        // ParticipationDetail(chatDataParent: widget.chatDataParent)
+        Expanded(
+          child: !bDetail
+              ? ParticipationGraph(chatDataParent: widget.chatDataParent)
+              : ParticipationDetail(chatDataParent: widget.chatDataParent),
+        )
       ],
     );
   }
@@ -71,52 +74,95 @@ class ParticipationGraph extends StatefulWidget {
 }
 
 class _ParticipationGraphState extends State<ParticipationGraph> {
-  int maxParticipation = 0;
+  final double maxWidth = 220.0;
+  double maxRatio = 0;
+  bool bGraphAnimationEnd = false;
 
   @override
   void initState() {
     super.initState();
+    updateMaxParticipation();
   }
 
   void updateMaxParticipation() {
+    int max = 0;
     for (var user in widget.chatDataParent.chat.userList) {
-      if (user.participation >= maxParticipation) {
-        maxParticipation = user.participation;
+      if (user.participation >= max) {
+        max = user.participation;
       }
     }
+    maxRatio = max / maxWidth;
+    maxRatio = 1 / maxRatio;
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        for (var user in widget.chatDataParent.chat.userList)
-          Row(
+        Wrap(children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(widget.chatDataParent.userNameList[user.userID]!),
-              LinearPercentIndicator(
-                padding: const EdgeInsets.all(0),
-                animation: true,
-                animationDuration: 500,
-                lineHeight: 15.0,
-                percent: maxParticipation != 0
-                    ? user.participation / maxParticipation
-                    : 0,
-                trailing: Text(user.participation.toString(),
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12)),
-                // only one color can accept
-                linearGradient: const LinearGradient(colors: [
-                  Palette.brightViolet,
-                  Palette.pastelPurple,
-                  Palette.brightBlue
-                ]),
-              ),
+              for (var user in widget.chatDataParent.chat.userList)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    widget.chatDataParent.userNameList[user.userID]!,
+                    textAlign: TextAlign.end,
+                    style: widget.chatDataParent.currentUser.uid == user.userID
+                        ? const TextStyle(
+                            color: Palette.pastelPurple,
+                            fontWeight: FontWeight.bold)
+                        : null,
+                  ),
+                ),
             ],
-          )
+          ),
+        ]),
+        Wrap(children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0, top: 4.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var user in widget.chatDataParent.chat.userList)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 13.0),
+                    child: LinearPercentIndicator(
+                      backgroundColor: Colors.transparent,
+                      padding: const EdgeInsets.only(right: 8.0),
+                      width: user.participation * maxRatio,
+                      animation: true,
+                      animationDuration: 500,
+                      lineHeight: 15.0,
+                      percent: 1.0,
+                      onAnimationEnd: () {
+                        setState(() {
+                          bGraphAnimationEnd = true;
+                        });
+                      },
+                      trailing: Text(user.participation.toString(),
+                          style: TextStyle(
+                              color: bGraphAnimationEnd
+                                  ? Colors.black
+                                  : Colors.transparent,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 12)),
+                      // only one color can accept
+                      linearGradient: const LinearGradient(colors: [
+                        Palette.brightViolet,
+                        Palette.pastelPurple,
+                        Palette.brightBlue
+                      ]),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ]),
       ],
     );
   }
@@ -134,7 +180,7 @@ class _ParticipationDetailState extends State<ParticipationDetail> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(top: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.start,
