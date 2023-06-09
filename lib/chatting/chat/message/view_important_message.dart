@@ -120,12 +120,14 @@ class ImportantMessagesPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => const solve_quiz(),
-          //   ),
-          // );
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => solve_quiz(
+                roomname: roomname,
+              ),
+            ),
+          );
         },
         child: const Text("Quiz!"),
       ),
