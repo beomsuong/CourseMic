@@ -74,6 +74,7 @@ class ParticipationGraph extends StatefulWidget {
 }
 
 class _ParticipationGraphState extends State<ParticipationGraph> {
+  final double minWidth = 8.0;
   final double maxWidth = 220.0;
   double maxRatio = 0;
   bool bGraphAnimationEnd = false;
@@ -92,6 +93,7 @@ class _ParticipationGraphState extends State<ParticipationGraph> {
       }
     }
     maxRatio = max / maxWidth;
+    if (maxRatio == 0) return;
     maxRatio = 1 / maxRatio;
     setState(() {});
   }
@@ -124,7 +126,7 @@ class _ParticipationGraphState extends State<ParticipationGraph> {
         ]),
         Wrap(children: [
           Padding(
-            padding: const EdgeInsets.only(left: 8.0, top: 4.0),
+            padding: const EdgeInsets.only(left: 8.0, top: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -134,11 +136,13 @@ class _ParticipationGraphState extends State<ParticipationGraph> {
                     child: LinearPercentIndicator(
                       backgroundColor: Colors.transparent,
                       padding: const EdgeInsets.only(right: 8.0),
-                      width: user.participation * maxRatio,
+                      width: maxRatio != 0
+                          ? user.participation * maxRatio
+                          : minWidth,
                       animation: true,
                       animationDuration: 500,
                       lineHeight: 15.0,
-                      percent: 1.0,
+                      percent: maxRatio != 0 ? 1.0 : 0,
                       onAnimationEnd: () {
                         setState(() {
                           bGraphAnimationEnd = true;

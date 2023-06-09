@@ -19,7 +19,7 @@ class ImportantMessagesPage extends StatelessWidget {
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection('exchat')
+            .collection('chat')
             .doc(roomname)
             .collection('imp_msg')
             .orderBy('timeStamp', descending: false) // 시간 역순으로 정렬
@@ -132,7 +132,7 @@ class ImportantMessagesPage extends StatelessWidget {
 Future<void> deleteImpMsg(String roomname, String impMsgId) async {
   try {
     await FirebaseFirestore.instance
-        .collection('exchat')
+        .collection('chat')
         .doc(roomname)
         .collection('imp_msg')
         .doc(impMsgId)
@@ -160,7 +160,7 @@ class SimpleImportantMessage extends StatelessWidget {
     return Scaffold(
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection('exchat')
+            .collection('chat')
             .doc(roomname)
             .collection('imp_msg')
             .orderBy('timeStamp', descending: true) // 최근 시간 순으로 정렬

@@ -18,7 +18,7 @@ Future<void> saveImportantMessage(String messageDetail, String messageId,
     Timestamp sendTime, String userId, String roomId) async {
   try {
     await FirebaseFirestore.instance
-        .collection('exchat')
+        .collection('chat')
         .doc(roomId)
         .collection('imp_msg')
         .doc()

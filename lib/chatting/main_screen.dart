@@ -17,8 +17,11 @@ class LoginSignupScreen extends StatefulWidget {
 
 class _LoginSignupScreenState extends State<LoginSignupScreen> {
   final _authentication = FirebaseAuth.instance;
+  final storage = FirebaseStorage.instance;
+  final firestore = FirebaseFirestore.instance;
 
-  bool isSignupScreen = false;
+  bool bSignupScreen = false;
+
   bool showSpinner = false;
   final _formKey = GlobalKey<FormState>();
   String userName = '';
@@ -26,7 +29,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
   String userPassword = '';
   File? userPickedImage;
 
-  final email = 'test1@gmail.com';
+  final email = 'kyb@gmail.com';
   final password = '123456';
 
   void pickedImage(File image) {
@@ -57,6 +60,8 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
     return Scaffold(
       backgroundColor: Palette.backgroundColor,
       body: ModalProgressHUD(
+        progressIndicator:
+            const CircularProgressIndicator(color: Palette.pastelPurple),
         inAsyncCall: showSpinner,
         child: GestureDetector(
           onTap: () {
@@ -73,12 +78,14 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                   child: Container(
                     padding: const EdgeInsets.only(top: 90, left: 20),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Image.asset(
                           "assets/image/logo.png",
-                          scale: 5, // 이미지 크기를 그대로 유지합니다.
+                          scale: 2.8, // 이미지 크기를 그대로 유지합니다.
                         ),
+                        const SizedBox(width: 4),
                         Text(
                           'CourseMic',
                           style: TextStyle(
@@ -89,8 +96,8 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                                 colors: [
-                                  Colors.blue,
-                                  Color.fromARGB(142, 141, 5, 187)
+                                  Palette.brightViolet,
+                                  Palette.brightBlue,
                                 ],
                               ).createShader(
                                 const Rect.fromLTWH(50.0, 0.0, 200.0, 0.0),
@@ -111,7 +118,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                   duration: const Duration(milliseconds: 500),
                   curve: Curves.easeIn,
                   padding: const EdgeInsets.all(20.0),
-                  height: isSignupScreen ? 280.0 : 250.0,
+                  height: bSignupScreen ? 280.0 : 250.0,
                   width: MediaQuery.of(context).size.width - 40,
                   margin: const EdgeInsets.symmetric(horizontal: 20.0),
                   decoration: BoxDecoration(
@@ -134,23 +141,24 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                             GestureDetector(
                               onTap: () {
                                 setState(() {
-                                  isSignupScreen = false;
+                                  bSignupScreen = false;
                                 });
                               },
                               child: Column(
                                 children: [
                                   Text(
-                                    'LOGIN',
+                                    '로그인',
                                     style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: !isSignupScreen
-                                            ? Palette.activeColor
+                                        color: !bSignupScreen
+                                            ? Palette.lightBlack
                                             : Palette.textColor1),
                                   ),
-                                  if (!isSignupScreen)
+                                  if (!bSignupScreen)
                                     Container(
-                                      margin: const EdgeInsets.only(top: 3),
+                                      margin: const EdgeInsets.only(
+                                          top: 4, right: 0.5),
                                       height: 2,
                                       width: 55,
                                       color: Colors.orange,
@@ -161,45 +169,46 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                             GestureDetector(
                               onTap: () {
                                 setState(() {
-                                  isSignupScreen = true;
+                                  bSignupScreen = true;
                                 });
                               },
                               child: Column(
                                 children: [
                                   Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
-                                        'SIGNUP',
+                                        '회원가입',
                                         style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
-                                            color: isSignupScreen
-                                                ? Palette.activeColor
+                                            color: bSignupScreen
+                                                ? Palette.lightBlack
                                                 : Palette.textColor1),
                                       ),
                                       const SizedBox(
-                                        width: 15,
+                                        width: 10,
                                       ),
-                                      if (isSignupScreen)
+                                      if (bSignupScreen)
                                         GestureDetector(
                                           onTap: () {
                                             showAlert(context);
                                           },
                                           child: Icon(
                                             Icons.image,
-                                            color: isSignupScreen
-                                                ? Colors.cyan
+                                            color: bSignupScreen
+                                                ? Palette.brightBlue
                                                 : Colors.grey[300],
                                           ),
                                         )
                                     ],
                                   ),
-                                  if (isSignupScreen)
+                                  if (bSignupScreen)
                                     Container(
                                       margin: const EdgeInsets.fromLTRB(
                                           0, 3, 35, 0),
                                       height: 2,
-                                      width: 55,
+                                      width: 64,
                                       color: Colors.orange,
                                     )
                                 ],
@@ -208,7 +217,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                           ],
                         ),
                         // SIGNUP CONTAINER =====================================
-                        if (isSignupScreen)
+                        if (bSignupScreen)
                           Container(
                             margin: const EdgeInsets.only(top: 20),
                             child: Form(
@@ -218,8 +227,8 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                   TextFormField(
                                     key: const ValueKey(1),
                                     validator: (value) {
-                                      if (value!.isEmpty || value.length < 4) {
-                                        return 'Please enter at least 4 characters';
+                                      if (value!.isEmpty || value.length < 3) {
+                                        return '최소 3 글자 이상 입력해주세요.';
                                       }
                                       return null;
                                     },
@@ -248,7 +257,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                             Radius.circular(35.0),
                                           ),
                                         ),
-                                        hintText: 'User name',
+                                        hintText: '이름',
                                         hintStyle: TextStyle(
                                             fontSize: 14,
                                             color: Palette.textColor1),
@@ -263,7 +272,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                     validator: (value) {
                                       if (value!.isEmpty ||
                                           !value.contains('@')) {
-                                        return 'Please enter a valid email address.';
+                                        return '옳바른 이메일 주소를 입력해주세요.';
                                       }
                                       return null;
                                     },
@@ -292,7 +301,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                             Radius.circular(35.0),
                                           ),
                                         ),
-                                        hintText: 'email',
+                                        hintText: '이메일',
                                         hintStyle: TextStyle(
                                             fontSize: 14,
                                             color: Palette.textColor1),
@@ -306,7 +315,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                     key: const ValueKey(3),
                                     validator: (value) {
                                       if (value!.isEmpty || value.length < 6) {
-                                        return 'Password must be at least 7 characters long.';
+                                        return '비밀번호는 반드시 6 글자 이상이여야 합니다.';
                                       }
                                       return null;
                                     },
@@ -335,7 +344,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                             Radius.circular(35.0),
                                           ),
                                         ),
-                                        hintText: 'password',
+                                        hintText: '비밀번호',
                                         hintStyle: TextStyle(
                                             fontSize: 14,
                                             color: Palette.textColor1),
@@ -346,7 +355,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                             ),
                           ),
                         // LOGIN CONTAINER =====================================
-                        if (!isSignupScreen)
+                        if (!bSignupScreen)
                           Container(
                             margin: const EdgeInsets.only(top: 20),
                             child: Form(
@@ -359,7 +368,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                     validator: (value) {
                                       if (value!.isEmpty ||
                                           !value.contains('@')) {
-                                        return 'Please enter a valid email address.';
+                                        return '옳바른 이메일 주소를 입력해주세요.';
                                       }
                                       return null;
                                     },
@@ -388,7 +397,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                             Radius.circular(35.0),
                                           ),
                                         ),
-                                        hintText: 'email',
+                                        hintText: '이메일',
                                         hintStyle: TextStyle(
                                             fontSize: 14,
                                             color: Palette.textColor1),
@@ -398,11 +407,12 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                     height: 8.0,
                                   ),
                                   TextFormField(
+                                    obscureText: true,
                                     initialValue: password,
                                     key: const ValueKey(5),
                                     validator: (value) {
                                       if (value!.isEmpty || value.length < 6) {
-                                        return 'Password must be at least 7 characters long.';
+                                        return '비밀번호는 반드시 6 글자 이상이여야 합니다.';
                                       }
                                       return null;
                                     },
@@ -431,7 +441,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                             Radius.circular(35.0),
                                           ),
                                         ),
-                                        hintText: 'password',
+                                        hintText: '비밀번호',
                                         hintStyle: TextStyle(
                                             fontSize: 14,
                                             color: Palette.textColor1),
@@ -450,7 +460,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 500),
                 curve: Curves.easeIn,
-                top: isSignupScreen ? 530 : 490,
+                top: bSignupScreen ? 530 : 490,
                 right: 0,
                 left: 0,
                 child: Center(
@@ -466,15 +476,14 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                         setState(() {
                           showSpinner = true;
                         });
-                        if (isSignupScreen) {
+                        if (bSignupScreen) {
                           if (userPickedImage == null) {
                             setState(() {
                               showSpinner = false;
                             });
-
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Please pick your image'),
+                                content: Text('이미지를 선택해주세요.'),
                                 backgroundColor: Colors.blue,
                               ),
                             );
@@ -489,61 +498,48 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                               password: userPassword,
                             );
 
-                            final refImage = FirebaseStorage.instance
+                            final imageRef = storage
                                 .ref()
                                 .child('picked_image')
                                 .child('${newUser.user!.uid}.png');
+                            await imageRef.putFile(userPickedImage!);
+                            final url = await imageRef.getDownloadURL();
 
-                            await refImage.putFile(userPickedImage!);
-                            final url = await refImage.getDownloadURL();
-                            FirebaseFirestore firestore =
-                                FirebaseFirestore.instance;
-
-                            await FirebaseFirestore.instance
-                                .collection('exuser')
+                            await firestore
+                                .collection('user')
                                 .doc(newUser.user!.uid)
                                 .set(
                               {
-                                '이름': userName,
-                                '대학': '???',
-                                '연락가능시간': '???',
+                                'name': userName,
+                                'university': '???',
+                                'contactTime': '???',
                                 'MBTI': '???',
-                                '학과': '???',
-                                '톡방리스트': [],
-                                '이미지': url
+                                'department': '???',
+                                'chatList': [],
+                                'image': url
                               },
                             );
 
                             if (newUser.user != null) {
-                              //Navigator.push(
-                              // context,
-                              //MaterialPageRoute(
-                              //  builder: (context) {
-                              //   return ChatScreen();
-                              // },
-//),
-                              // );
                               setState(() {
                                 showSpinner = false;
                               });
                             }
                           } catch (e) {
                             print(e);
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'Please check your email and password'),
-                                  backgroundColor: Colors.blue,
-                                ),
-                              );
-                              setState(() {
-                                showSpinner = false;
-                              });
-                            }
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('중복되는 이메일이 존재합니다.'),
+                                backgroundColor: Colors.blue,
+                              ),
+                            );
+                            setState(() {
+                              showSpinner = false;
+                            });
                           }
                         }
-                        if (!isSignupScreen) {
+                        if (!bSignupScreen) {
                           _tryValidation();
 
                           try {
@@ -552,7 +548,9 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                               email: userEmail,
                               password: userPassword,
                             );
+
                             if (newUser.user != null) {
+                              if (!mounted) return;
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -577,8 +575,8 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                               colors: [
-                                Colors.blue,
-                                Color.fromARGB(142, 141, 5, 187)
+                                Palette.brightBlue,
+                                Palette.brightViolet,
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight),

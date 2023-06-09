@@ -46,7 +46,7 @@ class _MypageState extends State<Mypage> {
 
     final user = authentication.currentUser;
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    DocumentReference docRef = firestore.collection('exuser').doc(user!.uid);
+    DocumentReference docRef = firestore.collection('user').doc(user!.uid);
     DocumentSnapshot docSnapshot = await docRef.get();
 
     return docSnapshot;
@@ -107,14 +107,15 @@ class _MypageState extends State<Mypage> {
                       child: SizedBox(
                         child: CircleAvatar(
                           radius: 50,
-                          backgroundImage: NetworkImage(docSnapshot.get('이미지')),
+                          backgroundImage:
+                              NetworkImage(docSnapshot.get('image')),
                         ),
                       ),
                     ),
                     Column(
                       children: [
                         Text(
-                          docSnapshot.get('이름'),
+                          docSnapshot.get('name'),
                           style: const TextStyle(
                             fontSize: 30,
                           ),
@@ -149,10 +150,10 @@ class _MypageState extends State<Mypage> {
                                 context: context,
                                 builder: (BuildContext context) {
                                   return AddDialog(
-                                    university: docSnapshot.get('대학'),
-                                    major: docSnapshot.get('학과'),
+                                    university: docSnapshot.get('university'),
+                                    department: docSnapshot.get('department'),
                                     mbti: docSnapshot.get('MBTI'),
-                                    contacttime: docSnapshot.get('연락가능시간'),
+                                    contacttime: docSnapshot.get('contactTime'),
                                   );
                                 },
                               ).then((value) {
@@ -183,10 +184,11 @@ class _MypageState extends State<Mypage> {
                               height: 3,
                               color: Colors.black,
                             ),
-                            print_info("대학", docSnapshot.get('대학')),
-                            print_info("학과 ", docSnapshot.get('학과')),
+                            print_info("대학", docSnapshot.get('university')),
+                            print_info("학과 ", docSnapshot.get('department')),
                             print_info("MBTI ", docSnapshot.get('MBTI')),
-                            print_info("연락 가능 시간 ", docSnapshot.get('연락가능시간')),
+                            print_info(
+                                "연락 가능 시간 ", docSnapshot.get('contactTime')),
                             const Divider(
                               thickness: 2,
                               height: 10,

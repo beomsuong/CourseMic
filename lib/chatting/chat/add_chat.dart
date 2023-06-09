@@ -20,7 +20,7 @@ class _AddChatState extends State<AddChat> {
     final authentication = FirebaseAuth.instance;
     final user = authentication.currentUser;
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    DocumentReference docRef = firestore.collection('exuser').doc(user?.uid);
+    DocumentReference docRef = firestore.collection('user').doc(user?.uid);
     DocumentSnapshot docSnapshot = await docRef.get();
     await docRef.update({datatype: universistyname});
     return docSnapshot;
@@ -33,20 +33,20 @@ class _AddChatState extends State<AddChat> {
 
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    CollectionReference exchats = firestore.collection('exchat');
+    CollectionReference chatColRef = firestore.collection('chat');
     final authentication = FirebaseAuth.instance;
     final user = authentication.currentUser;
 
     // add user to chatting room field
-    exchats.add({
-      '톡방이름': roomname,
+    chatColRef.add({
+      'roomName': roomname,
       'commanderID': '',
       'userList': <Map<String, dynamic>>[ChatUser(userID: user!.uid).toJson()],
     }).then((DocumentReference doc) {
-      CollectionReference exusers = firestore.collection('exuser');
+      CollectionReference userColRef = firestore.collection('user');
 
-      exusers.doc(user.uid).update({
-        '톡방리스트': FieldValue.arrayUnion([doc.id]),
+      userColRef.doc(user.uid).update({
+        'chatList': FieldValue.arrayUnion([doc.id]),
       }).then((value) {
         print("Value Added to Array");
       }).catchError((error) {
@@ -100,7 +100,7 @@ class _AddChatState extends State<AddChat> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("그룹 이름 :",
+                  const Text("톡방 이름 :",
                       style:
                           TextStyle(fontWeight: FontWeight.w500, fontSize: 20)),
                   ElevatedButton(
