@@ -16,7 +16,7 @@ class ImportantMessagesPage extends StatelessWidget {
 
   Stream<QuerySnapshot<Map<String, dynamic>>> loadImpMsgList() async* {
     var snapshot = await FirebaseFirestore.instance
-        .collection('exchat')
+        .collection('chat')
         .doc(roomname)
         .collection('imp_msg')
         .orderBy('timeStamp', descending: true) // 시간 역순으로 정렬

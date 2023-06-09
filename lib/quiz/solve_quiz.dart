@@ -19,11 +19,11 @@ class solve_quiz extends StatelessWidget {
   // final GlobalKey<_BuildWriterQuizState> buildWriterQuizKey =
   //     GlobalKey<_BuildWriterQuizState>();
 
-  solve_quiz({required this.roomname});
+  solve_quiz({super.key, required this.roomname});
 
   Future<List<imp_msg>> getimpMsgList() async {
     QuerySnapshot querySnapshot = await _firestore
-        .collection('exchat')
+        .collection('chat')
         .doc(roomname)
         .collection('imp_msg')
         .orderBy('timeStamp', descending: true)
@@ -79,6 +79,7 @@ class BuildOrderQuiz extends StatefulWidget {
   final List<imp_msg> impMsgList;
 
   const BuildOrderQuiz({
+    super.key,
     required this.roomname,
     required this.impMsgList,
   });
@@ -144,7 +145,8 @@ class BuildWriterQuiz extends StatefulWidget {
   final String roomname;
   final List<imp_msg> impMsgList;
 
-  const BuildWriterQuiz({required this.roomname, required this.impMsgList});
+  const BuildWriterQuiz(
+      {super.key, required this.roomname, required this.impMsgList});
 
   @override
   State<BuildWriterQuiz> createState() => _BuildWriterQuizState();
