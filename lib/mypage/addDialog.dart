@@ -4,11 +4,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AddDialog extends StatefulWidget {
-  late String university, major, mbti, contacttime;
+  late String university, department, mbti, contacttime;
   AddDialog({
     Key? key,
     required this.university,
-    required this.major,
+    required this.department,
     required this.mbti,
     required this.contacttime,
   }) : super(key: key);
@@ -24,7 +24,7 @@ Future<DocumentSnapshot> loadingdata() async {
   final user = authentication.currentUser;
   print(user!.uid);
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  DocumentReference docRef = firestore.collection('exuser').doc(user.uid);
+  DocumentReference docRef = firestore.collection('user').doc(user.uid);
   DocumentSnapshot docSnapshot = await docRef.get();
   return docSnapshot;
 }
@@ -86,7 +86,7 @@ class _AddDialog1State extends State<AddDialog> {
                             setState(() {});
                           },
                           university: widget.university,
-                          datatype: "대학",
+                          datatype: "university",
                         );
                       },
                     );
@@ -113,7 +113,7 @@ class _AddDialog1State extends State<AddDialog> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(widget.major,
+                Text(widget.department,
                     style: const TextStyle(
                         fontWeight: FontWeight.w500, fontSize: 20)),
                 ElevatedButton(
@@ -123,11 +123,11 @@ class _AddDialog1State extends State<AddDialog> {
                       builder: (BuildContext context) {
                         return ModifyDialog(
                           returndata: (String value) {
-                            widget.major = value;
+                            widget.department = value;
                             setState(() {});
                           },
-                          university: widget.major,
-                          datatype: "학과",
+                          university: widget.department,
+                          datatype: "department",
                         );
                       },
                     );

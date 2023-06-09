@@ -23,20 +23,20 @@ class _SearchChatState extends State<SearchChat> {
   searchdata(String a) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    QuerySnapshot querySnapshot = await firestore.collection('exchat').get();
+    QuerySnapshot querySnapshot = await firestore.collection('chat').get();
 
     for (var doc in querySnapshot.docs) {
       if (a == doc.id.substring(0, 4)) {
-        print(doc['톡방이름'].toString());
-        groupname = doc['톡방이름'].toString();
+        print(doc['roomName'].toString());
+        groupname = doc['roomName'].toString();
         groupmember = doc['userList'];
 
-        DocumentReference docRef = firestore.collection('exchat').doc(doc.id);
+        DocumentReference docRef = firestore.collection('chat').doc(doc.id);
         DocumentSnapshot docSnapshot = await docRef.get();
         groupmember = docSnapshot.get('userList');
 
         final chatDocsSnapshot = await FirebaseFirestore.instance
-            .collection('exchat')
+            .collection('chat')
             .doc(doc.id)
             .collection('message')
             .orderBy('time', descending: true)
@@ -76,12 +76,12 @@ class _SearchChatState extends State<SearchChat> {
     final authentication = FirebaseAuth.instance;
     final firebase = FirebaseFirestore.instance;
     final user = authentication.currentUser;
-    await firebase.collection('exuser').doc(user!.uid).update({
-      '톡방리스트': FieldValue.arrayUnion([roomcode]),
+    await firebase.collection('user').doc(user!.uid).update({
+      'chatList': FieldValue.arrayUnion([roomcode]),
     });
 
     // add user into userList field
-    firebase.collection('exchat').doc(roomcode).update({
+    firebase.collection('chat').doc(roomcode).update({
       'userList': FieldValue.arrayUnion([ChatUser(userID: user.uid).toJson()])
     });
   }
@@ -212,7 +212,7 @@ class _SearchChatState extends State<SearchChat> {
                               width: 120,
                               height: 35,
                               child: Text(
-                                "그룹 이름 :",
+                                "톡방 이름 :",
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   color: Colors.grey,

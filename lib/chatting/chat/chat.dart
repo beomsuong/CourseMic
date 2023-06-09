@@ -13,7 +13,7 @@ class Chat {
 
   Chat.fromJson(DocumentSnapshot<Object?> json)
       : this(
-          roomName: json['톡방이름'],
+          roomName: json['roomName'],
           commanderID: json['commanderID'],
           userList: <ChatUser>[
             for (var jsonData in (json['userList'] as List<dynamic>))

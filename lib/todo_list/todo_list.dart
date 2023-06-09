@@ -104,6 +104,11 @@ class ToDoListState extends State<ToDoList> {
                     ),
                   ),
               ],
+              contentsWhenEmpty: const SizedBox(
+                  height: 60,
+                  child: Center(
+                      child: Text("아직 완료된 일이 없습니다",
+                          style: TextStyle(color: Palette.darkGray)))),
             ));
 
             if (toDoDocs == null) break;

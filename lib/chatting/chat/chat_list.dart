@@ -46,15 +46,15 @@ class RoomListState extends State<RoomList> {
     final authentication = FirebaseAuth.instance;
     final user = authentication.currentUser;
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    DocumentReference docRef = firestore.collection('exuser').doc(user!.uid);
+    DocumentReference docRef = firestore.collection('user').doc(user!.uid);
     DocumentSnapshot docSnapshot = await docRef.get();
-    List<dynamic> roomIdList = docSnapshot.get('톡방리스트');
+    List<dynamic> roomIdList = docSnapshot.get('chatList');
     roomList.clear();
     late List<dynamic> userList;
     for (var roomID in roomIdList) {
-      DocumentReference roomRef = firestore.collection('exchat').doc(roomID);
+      DocumentReference roomRef = firestore.collection('chat').doc(roomID);
       DocumentSnapshot roomnameSnapshot = await roomRef.get();
-      String roomname = roomnameSnapshot.get('톡방이름');
+      String roomname = roomnameSnapshot.get('roomName');
       int userrole = 0;
       userList = roomnameSnapshot.get('userList');
       for (var user1 in userList) {
@@ -64,7 +64,7 @@ class RoomListState extends State<RoomList> {
         }
       }
       final chatDocsSnapshot = await FirebaseFirestore.instance
-          .collection('exchat')
+          .collection('chat')
           .doc(roomID)
           .collection('message')
           .orderBy('time', descending: true)
