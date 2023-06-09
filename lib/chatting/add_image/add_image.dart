@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:capston/palette.dart';
+import 'package:capston/todo_list/todo_node.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -34,12 +36,12 @@ class _AddImageState extends State<AddImage> {
       width: 150,
       height: 300,
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircleAvatar(
+          const CircleAvatar(
             radius: 40,
-            backgroundColor: Colors.blue,
-            backgroundImage:
-                pickedImage != null ? FileImage(pickedImage!) : null,
+            backgroundColor: Color.fromARGB(255, 75, 75, 75),
+            backgroundImage: AssetImage("assets/image/user.png"),
           ),
           const SizedBox(
             height: 10,
@@ -48,18 +50,18 @@ class _AddImageState extends State<AddImage> {
             onPressed: () {
               _pickImage();
             },
-            icon: const Icon(Icons.image),
-            label: const Text('Add image'),
+            icon: const Icon(Icons.image, color: Palette.pastelPurple),
+            label: const Text('Add image', style: purpleText),
           ),
           const SizedBox(
-            height: 80,
+            height: 40,
           ),
           TextButton.icon(
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: const Icon(Icons.close),
-            label: const Text('Close'),
+            icon: const Icon(Icons.close, color: Palette.pastelPurple),
+            label: const Text('Close', style: purpleText),
           ),
         ],
       ),

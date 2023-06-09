@@ -19,9 +19,9 @@ class _MessagesState extends State<Messages> {
   @override
   void initState() {
     super.initState();
-    userRef = FirebaseFirestore.instance.collection('exuser');
+    userRef = FirebaseFirestore.instance.collection('user');
     messageStream = FirebaseFirestore.instance
-        .collection('exchat')
+        .collection('chat')
         .doc(widget.roomID)
         .collection('message')
         .orderBy('time', descending: true)
@@ -71,7 +71,7 @@ class _MessagesState extends State<Messages> {
   Future<String> readUserName(String userID) async {
     var docSnapshot = await userRef.doc(userID).get();
     if (docSnapshot.exists) {
-      return docSnapshot.get('이름');
+      return docSnapshot.get('name');
     }
     return '알수없음';
   }

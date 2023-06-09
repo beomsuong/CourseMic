@@ -24,7 +24,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CourseMic',
       theme: ThemeData(primarySwatch: Colors.blue),
-      // home: const ToDoPage(roomID: testID),
       home: const LoginSignupScreen(),
     );
   }

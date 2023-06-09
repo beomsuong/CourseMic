@@ -43,8 +43,7 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     // 최상위 컬렉션에서 하위 컬렉션까지 한 번에 지정하는 변수
-    DocumentReference docRef =
-        firestore.collection('exuser').doc(widget.userid);
+    DocumentReference docRef = firestore.collection('user').doc(widget.userid);
 
     // 문서의 데이터를 가져옵니다.
     DocumentSnapshot docSnapshot = await docRef.get();
@@ -110,14 +109,15 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
                       child: SizedBox(
                         child: CircleAvatar(
                           radius: 50,
-                          backgroundImage: NetworkImage(docSnapshot.get('이미지')),
+                          backgroundImage:
+                              NetworkImage(docSnapshot.get('image')),
                         ),
                       ),
                     ),
                     Column(
                       children: [
                         Text(
-                          docSnapshot.get('이름'),
+                          docSnapshot.get('name'),
                           style: const TextStyle(
                             fontSize: 30,
                           ),
@@ -160,10 +160,11 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
                               height: 3,
                               color: Colors.black,
                             ),
-                            print_info("대학", docSnapshot.get('대학')),
-                            print_info("학과 ", docSnapshot.get('학과')),
+                            print_info("대학", docSnapshot.get('university')),
+                            print_info("학과 ", docSnapshot.get('department')),
                             print_info("MBTI ", docSnapshot.get('MBTI')),
-                            print_info("연락 가능 시간 ", docSnapshot.get('연락가능시간')),
+                            print_info(
+                                "연락 가능 시간 ", docSnapshot.get('contactTime')),
                             const Divider(
                               thickness: 2,
                               height: 10,

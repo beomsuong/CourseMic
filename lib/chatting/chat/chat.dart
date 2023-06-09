@@ -13,7 +13,7 @@ class Chat {
 
   Chat.fromJson(DocumentSnapshot<Object?> json)
       : this(
-          roomName: json['톡방이름'],
+          roomName: json['roomName'],
           commanderID: json['commanderID'],
           userList: <ChatUser>[
             for (var jsonData in (json['userList'] as List<dynamic>))
@@ -38,6 +38,13 @@ class Chat {
         for (var user in userList) user.toJson(),
       ]
     };
+  }
+
+  ChatUser? getUser({required String userID}) {
+    for (int i = 0; i < userList.length; i++) {
+      if (userList[i].userID == userID) return userList[i];
+    }
+    return null;
   }
 
   int getIndexOfUser({required String userID}) {
