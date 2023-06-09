@@ -8,7 +8,7 @@ class testpage extends StatelessWidget {
 
     // 최상위 컬렉션에서 하위 컬렉션까지 한 번에 지정하는 변수
     DocumentReference docRef =
-        firestore.collection('exchat').doc('mH2pTd2HcfRFSAO9dPVU');
+        firestore.collection('chat').doc('mH2pTd2HcfRFSAO9dPVU');
 
     // 문서의 데이터를 가져옵니다.
     DocumentSnapshot docSnapshot = await docRef.get();

@@ -40,10 +40,10 @@ class ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     currentUser = _authentication.currentUser!;
-    userDocRef = firestore.collection("exuser").doc(currentUser.uid);
-    chatDocRef = firestore.collection('exchat').doc(widget.roomID);
+    userDocRef = firestore.collection("user").doc(currentUser.uid);
+    chatDocRef = firestore.collection('chat').doc(widget.roomID);
     toDoColRef =
-        firestore.collection("exchat").doc(widget.roomID).collection("todo");
+        firestore.collection("chat").doc(widget.roomID).collection("todo");
     progressPercentFuture = calculateProgressPercent();
     chatFuture = readInitChatData();
   }
@@ -52,14 +52,14 @@ class ChatScreenState extends State<ChatScreen> {
     // get user chatList data
     userDocRef.get().then((value) {
       userChatList =
-          (value.data() as Map<String, dynamic>)['톡방리스트'] as List<String>;
+          ((value.data() as Map<String, dynamic>)['chatList']) as List<String>;
     });
 
     // get chat data
     await readRoomName();
     for (var user in chat.userList) {
-      firestore.collection('exuser').doc(user.userID).get().then((value) {
-        userNameList[user.userID] = value.data()!['이름'];
+      firestore.collection('user').doc(user.userID).get().then((value) {
+        userNameList[user.userID] = value.data()!['name'];
       });
     }
   }
@@ -297,7 +297,7 @@ class ChatScreenState extends State<ChatScreen> {
                       userChatList.remove(widget.roomID);
                       chatDocRef.update(chat.userListToJson());
                       userDocRef.update({
-                        '톡방리스트': userChatList,
+                        'chatList': userChatList,
                       });
                       // pop Drawer
                       Navigator.of(context).pop();

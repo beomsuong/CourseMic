@@ -22,7 +22,7 @@ Future<DocumentSnapshot> loadingdata(
   final authentication = FirebaseAuth.instance;
   final user = authentication.currentUser;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  DocumentReference docRef = firestore.collection('exuser').doc(user?.uid);
+  DocumentReference docRef = firestore.collection('user').doc(user?.uid);
   DocumentSnapshot docSnapshot = await docRef.get();
   await docRef.update({datatype: universistyname});
   return docSnapshot;

@@ -2,6 +2,7 @@ import 'package:capston/chatting/chat/message/view_important_message.dart';
 import 'package:capston/chatting/chat/add_chat.dart';
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/palette.dart';
+import 'package:capston/participation_page.dart';
 import 'package:capston/todo_list/todo_page.dart';
 import 'package:flutter/material.dart';
 
@@ -33,22 +34,30 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
     //setState로 미리보기 창 제어. 각 위젯 명은 가칭이니, 변경 가능
     setState(() {
       currentFunction = function;
-      if (function == '자료 조회 or 보내기') {
-        dynamicWidget = const DataWidget();
-      } else if (function == 'Todo리스트 조회') {
-        dynamicWidget = ToDoPage(
-          roomID: widget.roomID,
-          chatScreenState: widget.chatScreenState,
-          bMini: true,
-        );
-      } else if (function == '중요한 메세지? 모아보기') {
-        dynamicWidget = SimpleImportantMessage(
-          roomname: widget.roomID,
-        );
-      } else if (function == '참여도 점수 보기') {
-        dynamicWidget = const ParticipationWidget();
-      } else {
-        dynamicWidget = null;
+      switch (function) {
+        case "자료 조회 or 보내기":
+          dynamicWidget = const DataWidget();
+          break;
+        case "Todo리스트 조회":
+          dynamicWidget = ToDoPage(
+            roomID: widget.roomID,
+            chatScreenState: widget.chatScreenState,
+            bMini: true,
+          );
+          break;
+        case "중요한 메세지? 모아보기":
+          dynamicWidget = SimpleImportantMessage(
+            roomname: widget.roomID,
+          );
+          break;
+        case "참여도 점수 보기":
+          dynamicWidget = ParticipationPage(
+            chatDataParent: widget.chatScreenState,
+          );
+          break;
+        default:
+          dynamicWidget = null;
+          break;
       }
     });
   }
@@ -162,14 +171,5 @@ class ImportantMessagesWidget extends StatelessWidget {
     return SimpleImportantMessage(
       roomname: roomname,
     );
-  }
-}
-
-class ParticipationWidget extends StatelessWidget {
-  const ParticipationWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Text('Participation score Widget');
   }
 }

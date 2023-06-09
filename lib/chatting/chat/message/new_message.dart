@@ -26,19 +26,19 @@ class _NewMessageState extends State<NewMessage> {
     FocusScope.of(context).unfocus();
     final user = FirebaseAuth.instance.currentUser;
     final userData = await FirebaseFirestore.instance
-        .collection('exuser')
+        .collection('user')
         .doc(user!.uid)
         .get();
     FirebaseFirestore.instance
-        .collection('exchat')
+        .collection('chat')
         .doc(widget.roomID)
         .collection('message')
         .add({
       'text': _userEnterMessage,
       'time': Timestamp.now(),
       'userID': user.uid,
-      'userName': userData.data()!['이름'],
-      'userImage': userData['이미지'],
+      'userName': userData.data()!['name'],
+      'userImage': userData['image'],
     });
     _controller.clear();
   }
