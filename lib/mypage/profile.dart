@@ -1,9 +1,11 @@
+import 'package:capston/chatting/main_screen.dart';
 import 'package:capston/mypage/my_user.dart';
 import 'package:capston/palette.dart';
 import 'package:capston/widgets/GradientText.dart';
 import 'package:capston/widgets/RoundButtonStyle.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
 import 'package:capston/mypage/addDialog.dart';
@@ -52,25 +54,74 @@ class ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: widget.bChild
-              ? const Text(
-                  "프로필",
-                  style: TextStyle(color: Colors.black, fontSize: 20),
-                )
-              : const GradientText(text: "프로필"),
-          centerTitle: !widget.bMyProfile,
-          elevation: 0.5,
-          backgroundColor: Colors.white,
-          automaticallyImplyLeading: !widget.bMyProfile,
-          leading: widget.bChild
-              ? IconButton(
-                  icon: const Icon(Icons.arrow_back_rounded,
-                      color: Palette.darkGray),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                )
-              : null),
+        title: widget.bChild
+            ? const Text(
+                "프로필",
+                style: TextStyle(color: Colors.black, fontSize: 20),
+              )
+            : const GradientText(text: "프로필"),
+        centerTitle: !widget.bMyProfile,
+        elevation: 0.5,
+        backgroundColor: Colors.white,
+        automaticallyImplyLeading: !widget.bMyProfile,
+        leading: widget.bChild
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded,
+                    color: Palette.darkGray),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              )
+            : null,
+        actions: [
+          if (!widget.bChild)
+            IconButton(
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) => AlertDialog(
+                          title: const Text(
+                            "로그아웃",
+                            textAlign: TextAlign.center,
+                          ),
+                          actions: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    child: const Text('취소',
+                                        style: TextStyle(
+                                            color: Palette.brightBlue,
+                                            fontWeight: FontWeight.bold))),
+                                TextButton(
+                                    onPressed: () {
+                                      const FlutterSecureStorage()
+                                          .delete(key: "login");
+
+                                      Navigator.of(context).pop();
+                                      Navigator.pushReplacement(context,
+                                          MaterialPageRoute(
+                                        builder: (context) {
+                                          return const LoginSignupScreen();
+                                        },
+                                      ));
+                                    },
+                                    child: const Text('확인',
+                                        style: TextStyle(
+                                            color: Palette.brightRed,
+                                            fontWeight: FontWeight.bold)))
+                              ],
+                            )
+                          ],
+                        ));
+              },
+              icon: const Icon(Icons.exit_to_app_rounded,
+                  color: Palette.pastelPurple),
+            )
+        ],
+      ),
       body: FutureBuilder<DocumentSnapshot>(
           future: readUserData(),
           builder:

@@ -24,6 +24,7 @@ class Palette {
   static const Color pastelPink = Color(0xFFCA7EFF);
 
   static const Color brightBlue = Color(0xFF473cf7);
+  static const Color brightRed = Color(0xFFf7473c);
   static const Color brightViolet = Color(0xFFa53cf7);
 
   static const Color pastelWarning = Color(0xFFb78700);
@@ -31,8 +32,7 @@ class Palette {
   static const Color pastelError = Color(0xFFff7e55);
   static const Color pastelBlack = Color(0xFF403000);
 
-  static const Color pastelGreen = Color(0xFF473cf7);
-  static const Color pastelRed = Color(0xFFa53cf7);
+  static const Color pastelRed = Color(0xFFf7763c);
 
   static const MaterialColor primary = MaterialColor(
     _primaryValue,

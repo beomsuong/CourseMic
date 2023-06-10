@@ -137,7 +137,7 @@ class _ToDoNodeState extends State<ToDoNode> {
                         child: Text(
                           "${widget.toDo.score > 0 ? "+" : ""}${widget.toDo.score}",
                           style: const TextStyle(
-                            color: Palette.pastelGreen,
+                            color: Palette.brightBlue,
                           ),
                         ),
                       ),

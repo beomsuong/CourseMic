@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:capston/palette.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:capston/chatting/add_image/add_image.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -16,6 +18,9 @@ class LoginSignupScreen extends StatefulWidget {
 }
 
 class _LoginSignupScreenState extends State<LoginSignupScreen> {
+  static const secureStorage = FlutterSecureStorage();
+  late String? userInfo = "";
+
   final _authentication = FirebaseAuth.instance;
   final storage = FirebaseStorage.instance;
   final firestore = FirebaseFirestore.instance;
@@ -30,30 +35,82 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
   String userPassword = '';
   File? userPickedImage;
 
-  final email = 'kyb@gmail.com';
-  final password = '123456';
+  late FToast fToast;
+  Widget successToast = Container(
+    padding: const EdgeInsets.all(12),
+    margin: const EdgeInsets.only(bottom: 36),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(20.0),
+      color: Palette.toastGray,
+    ),
+    child: const Text("자동 로그인 성공!", style: TextStyle(color: Colors.white)),
+  );
 
-  void pickedImage(File image) {
-    userPickedImage = image;
+  @override
+  void initState() {
+    super.initState();
+    fToast = FToast();
+    fToast.init(context);
+    _autoLogin();
   }
 
-  void _tryValidation() {
-    final isValid = _formKey.currentState!.validate();
-    if (isValid) {
-      _formKey.currentState!.save();
+  _autoLogin() async {
+    userInfo = await secureStorage.read(key: "login");
+
+    if (userInfo == null) return;
+
+    userEmail = userInfo!.split(" ")[1];
+    userPassword = userInfo!.split(" ")[3];
+
+    try {
+      final newUser = await _authentication.signInWithEmailAndPassword(
+        email: userEmail,
+        password: userPassword,
+      );
+      currentUserID = newUser.user!.uid;
+
+      fToast.showToast(
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(bottom: 36),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20.0),
+              color: Palette.toastGray,
+            ),
+            child: const Text("자동 로그인에 성공하였습니다",
+                style: TextStyle(color: Colors.white)),
+          ),
+          toastDuration: const Duration(milliseconds: 1500),
+          fadeDuration: const Duration(milliseconds: 700));
+
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) {
+            return MyHomePage(
+              currentUserID: currentUserID,
+            );
+          },
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      fToast.showToast(
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(bottom: 36),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20.0),
+              color: Palette.toastGray,
+            ),
+            child: const Text("자동 로그인에 실패하였습니다",
+                style: TextStyle(color: Colors.white)),
+          ),
+          toastDuration: const Duration(milliseconds: 1500),
+          fadeDuration: const Duration(milliseconds: 700));
+      return;
     }
-  }
-
-  void showAlert(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.white,
-          child: AddImage(pickedImage),
-        );
-      },
-    );
   }
 
   @override
@@ -364,7 +421,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                               child: Column(
                                 children: [
                                   TextFormField(
-                                    initialValue: email,
+                                    initialValue: userEmail,
                                     key: const ValueKey(4),
                                     validator: (value) {
                                       if (value!.isEmpty ||
@@ -409,7 +466,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                   ),
                                   TextFormField(
                                     obscureText: true,
-                                    initialValue: password,
+                                    initialValue: userPassword,
                                     key: const ValueKey(5),
                                     validator: (value) {
                                       if (value!.isEmpty || value.length < 6) {
@@ -514,6 +571,10 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                               },
                             );
 
+                            await secureStorage.write(
+                                key: "login",
+                                value: "id $userEmail password $userPassword");
+
                             currentUserID = newUser.user!.uid;
                             setState(() {
                               bSignupScreen = false;
@@ -543,9 +604,13 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                               password: userPassword,
                             );
 
+                            await secureStorage.write(
+                                key: "login",
+                                value: "id $userEmail password $userPassword");
                             currentUserID = newUser.user!.uid;
+
                             if (!mounted) return;
-                            Navigator.push(
+                            Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
                                 builder: (context) {
@@ -599,6 +664,29 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void pickedImage(File image) {
+    userPickedImage = image;
+  }
+
+  void _tryValidation() {
+    final isValid = _formKey.currentState!.validate();
+    if (isValid) {
+      _formKey.currentState!.save();
+    }
+  }
+
+  void showAlert(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          child: AddImage(pickedImage),
+        );
+      },
     );
   }
 }

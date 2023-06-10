@@ -1,6 +1,5 @@
 import 'package:capston/chatting/chat/message/view_important_message.dart';
 import 'package:capston/chatting/chat_screen.dart';
-import 'package:capston/palette.dart';
 import 'package:capston/participation_page.dart';
 import 'package:capston/todo_list/todo_page.dart';
 import 'package:capston/widgets/RoundButtonStyle.dart';
@@ -68,50 +67,45 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                ElevatedButton(
-                  onPressed: () {
-                    setFunction('자료 조회 or 보내기');
-                  },
-                  style: buttonStyle,
-                  child: const Text('자료'),
-                ),
-                const Padding(padding: EdgeInsets.all(10.0)),
-                ElevatedButton(
-                  onPressed: () {
-                    setFunction('Todo리스트 조회');
-                  },
-                  style: ButtonStyle(
-                      backgroundColor:
-                          MaterialStateProperty.all(Palette.brightBlue),
-                      elevation: MaterialStateProperty.all(0.0),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                        side: const BorderSide(color: Palette.brightBlue),
-                      ))),
-                  child: const Text('할 일 목록'),
-                ),
-                const Padding(padding: EdgeInsets.all(10.0)),
-                ElevatedButton(
-                  onPressed: () {
-                    setFunction('중요한 메세지? 모아보기');
-                  },
-                  style: buttonStyle,
-                  child: const Text('중요메세지'),
-                ),
-                const Padding(padding: EdgeInsets.all(10.0)),
-                ElevatedButton(
-                  onPressed: () {
-                    setFunction('참여도 점수 보기');
-                  },
-                  style: buttonStyle,
-                  child: const Text('참여도'),
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  ElevatedButton(
+                    onPressed: () {
+                      setFunction('자료 조회 or 보내기');
+                    },
+                    style: buttonStyle,
+                    child: const Text('자료'),
+                  ),
+                  const Padding(padding: EdgeInsets.all(10.0)),
+                  ElevatedButton(
+                    onPressed: () {
+                      setFunction('Todo리스트 조회');
+                    },
+                    style: buttonStyle,
+                    child: const Text('할 일 목록'),
+                  ),
+                  const Padding(padding: EdgeInsets.all(10.0)),
+                  ElevatedButton(
+                    onPressed: () {
+                      setFunction('중요한 메세지? 모아보기');
+                    },
+                    style: buttonStyle,
+                    child: const Text('중요메세지'),
+                  ),
+                  const Padding(padding: EdgeInsets.all(10.0)),
+                  ElevatedButton(
+                    onPressed: () {
+                      setFunction('참여도 점수 보기');
+                    },
+                    style: buttonStyle,
+                    child: const Text('참여도'),
+                  ),
+                ],
+              ),
             ),
             if (dynamicWidget != null)
               Expanded(

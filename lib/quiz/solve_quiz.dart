@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +10,8 @@ class solve_quiz extends StatefulWidget {
   final ChatScreenState chatScreenState;
   final String roomID;
 
-  solve_quiz({Key? key, required this.roomID, required this.chatScreenState})
+  const solve_quiz(
+      {Key? key, required this.roomID, required this.chatScreenState})
       : super(key: key);
 
   @override
@@ -57,7 +60,7 @@ class _solve_quizState extends State<solve_quiz> {
         final Timestamp currentTimestamp = Timestamp.now();
         final Duration difference =
             currentTimestamp.toDate().difference(latestTimestamp.toDate());
-        final score = 5;
+        const score = 5;
 
         if (difference.inHours < 24) {
           //! 24시간 이내
@@ -114,6 +117,7 @@ class _solve_quizState extends State<solve_quiz> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("QUIZ"),
+        centerTitle: true,
       ),
       body: FutureBuilder<List<imp_msg>>(
         future: getimpMsgList(),
@@ -175,6 +179,7 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
   }
 
   bool submitAnswer() {
+    answerList = answerList.reversed.toList();
     for (int i = 0; i < answerList.length; i++) {
       if (reorderedList[i] != answerList[i]) {
         return false;
@@ -195,15 +200,14 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
 
   @override
   Widget build(BuildContext context) {
-    final Color oddItemColor = Color.fromARGB(70, 85, 129, 255);
-    final Color evenItemColor = Color.fromARGB(70, 255, 211, 85);
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text("다음 중요 메세지들을 최근 -> 오래됨 순으로 나열"),
-          const SizedBox(height: 16),
+          const Text("Q. 다음 중요메세지들을 오랜된 메세지(맨 위)부터 차례대로 나열하세요. (5점)",
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 30),
           ReorderableListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -213,28 +217,26 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
               return ReorderableDragStartListener(
                 index: index,
                 key: Key('$index'),
-                child: Container(
-                  decoration: BoxDecoration(
-                      border: Border.all(),
-                      borderRadius: BorderRadius.circular(5.0)),
-                  child: ListTile(
-                    tileColor: index.isOdd ? oddItemColor : evenItemColor,
-                    leading: Text(
-                      '${item.userId}:',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    title: Wrap(
-                      children: [
-                        Text(
-                          item.msgDetail,
-                          style: const TextStyle(color: Colors.black54),
-                          maxLines: 5,
-                        )
-                      ],
-                    ),
-                    trailing: const Icon(Icons.menu),
-                    titleAlignment: ListTileTitleAlignment.threeLine,
+                child: ListTile(
+                  tileColor: Palette.pastelYellow,
+                  leading: Text(
+                    '${item.userId} :',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Palette.pastelBlack),
                   ),
+                  title: Wrap(
+                    children: [
+                      Text(
+                        item.msgDetail,
+                        style: const TextStyle(color: Palette.pastelBlack),
+                        maxLines: 5,
+                      )
+                    ],
+                  ),
+                  trailing: const Icon(Icons.menu_rounded,
+                      color: Palette.pastelBlack),
+                  titleAlignment: ListTileTitleAlignment.threeLine,
                 ),
               );
             },
@@ -245,10 +247,10 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
             alignment: Alignment.bottomRight,
             child: FloatingActionButton.extended(
               onPressed: () {
-                print(
-                    '제출: ${reorderedList[0].msgDetail} | ${reorderedList[1].msgDetail} | ${reorderedList[2].msgDetail} | ${reorderedList[3].msgDetail} | ${reorderedList[4].msgDetail}');
-                print(
-                    '정답: ${answerList[0].msgDetail} | ${answerList[1].msgDetail} | ${answerList[2].msgDetail} | ${answerList[3].msgDetail} | ${answerList[4].msgDetail}');
+                // print(
+                //     '제출: ${reorderedList[0].msgDetail} | ${reorderedList[1].msgDetail} | ${reorderedList[2].msgDetail} | ${reorderedList[3].msgDetail} | ${reorderedList[4].msgDetail}');
+                // print(
+                //     '정답: ${answerList[0].msgDetail} | ${answerList[1].msgDetail} | ${answerList[2].msgDetail} | ${answerList[3].msgDetail} | ${answerList[4].msgDetail}');
                 if (submitAnswer()) {
                   //! 정답
                   widget.updateOrCreateQuiz();
@@ -256,7 +258,10 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: const Text('정답!'),
+                          title: const Text(
+                            '정답!',
+                            textAlign: TextAlign.center,
+                          ),
                           content: const Wrap(
                             children: [
                               Text(
@@ -286,8 +291,11 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: const Text("오답!"),
-                          content: Text(''), //! 여기 수정
+                          title: const Text(
+                            "오답!",
+                            textAlign: TextAlign.center,
+                          ),
+                          content: const Text(''), //! 여기 수정
                           actions: [
                             TextButton(
                               onPressed: () {
@@ -301,6 +309,8 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
                       });
                 }
               },
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5))),
               icon: const Icon(Icons.fact_check_rounded),
               label: const Text(
                 "제출!",

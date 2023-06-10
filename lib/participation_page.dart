@@ -18,41 +18,47 @@ class _ParticipationPageState extends State<ParticipationPage> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    bDetail = !bDetail;
-                  });
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 12.0),
-                  child: Text(!bDetail ? " + 상세보기" : " + 그래프보기",
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10,
-                          color: Colors.black54)),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 12.0),
-                child: Text(
-                  "나의 참여지수 : ${widget.chatDataParent.chat.getUser(userID: widget.chatDataParent.currentUser.uid)!.participation}포인트",
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+        Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Palette.lightGray,
+                offset: Offset(0.0, 5.0), //(x,y)
+                blurRadius: 3.0,
               ),
             ],
           ),
-        ),
-        const Padding(
-          padding: EdgeInsets.only(left: 8.0, right: 8.0),
-          child: Divider(
-            color: Colors.black54,
-            thickness: 1.5,
+          child: Padding(
+            padding: const EdgeInsets.only(
+                left: 8.0, right: 2.0, top: 1.0, bottom: 9.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      bDetail = !bDetail;
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 12.0),
+                    child: Text(!bDetail ? " + 상세보기" : " + 그래프보기",
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                            color: Colors.black54)),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: Text(
+                    "나의 참여지수 : ${widget.chatDataParent.chat.getUser(userID: widget.chatDataParent.currentUser.uid)!.participation}포인트",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         Expanded(
