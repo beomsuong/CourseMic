@@ -1,3 +1,4 @@
+import 'package:capston/chatting/chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat_bubble.dart';
@@ -5,7 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class Messages extends StatefulWidget {
   final String roomID;
-  const Messages({Key? key, required this.roomID}) : super(key: key);
+  final ChatScreenState chatDataParent;
+  const Messages({Key? key, required this.roomID, required this.chatDataParent})
+      : super(key: key);
 
   @override
   State<Messages> createState() => _MessagesState();
@@ -40,8 +43,8 @@ class _MessagesState extends State<Messages> {
             child: CircularProgressIndicator(),
           );
         }
-        final chatDocs = snapshot.data!.docs;
-
+        final chatDocs = snapshot.data!.docs as List<DocumentSnapshot>;
+        widget.chatDataParent.widget.lastMessage = chatDocs.last["text"];
         return ListView.builder(
           reverse: true,
           itemCount: chatDocs.length,
