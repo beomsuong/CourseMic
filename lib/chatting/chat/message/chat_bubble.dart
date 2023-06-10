@@ -1,11 +1,15 @@
-import 'package:capston/chatting/chat/viewuserprofile.dart';
+import 'package:capston/mypage/profile.dart';
+import 'package:capston/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'save_important_message.dart';
 
 class ChatBubbles extends StatelessWidget {
-  const ChatBubbles(this.message, this.isMe, this.userid, this.userName,
+  ChatBubbles(this.message, this.isMe, this.userid, this.userName,
       this.userImage, this.sendTime, this.roomID,
       {Key? key})
       : super(key: key);
@@ -16,6 +20,19 @@ class ChatBubbles extends StatelessWidget {
   final String userImage;
   final Timestamp sendTime;
   final String roomID;
+
+  late String copyedMessage;
+  late FToast fToast = FToast();
+  Widget toast = Container(
+    padding: const EdgeInsets.all(12),
+    margin: const EdgeInsets.only(bottom: 36),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(20.0),
+      color: Palette.toastGray,
+    ),
+    child: const Text("해당 채팅이 클립보드에 복사되었습니다",
+        style: TextStyle(color: Colors.white)),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +59,11 @@ class ChatBubbles extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) {
-                                return Viewuserprofile(userid: userid);
+                                return Profile(
+                                  userID: userid,
+                                  bMyProfile: userid ==
+                                      FirebaseAuth.instance.currentUser!.uid,
+                                );
                               },
                             ),
                           );
@@ -52,16 +73,18 @@ class ChatBubbles extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
+                          copyedMessage = message;
+                          copyMessage();
                           Navigator.pop(context);
                         },
                         child: const Text('복사'),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text('답장'), // 구현 미정
-                      ),
+                      // TextButton(
+                      //   onPressed: () {
+                      //     Navigator.pop(context);
+                      //   },
+                      //   child: const Text('답장'), // 구현 미정
+                      // ),
                       TextButton(
                         onPressed: () {
                           print(message);
@@ -75,7 +98,7 @@ class ChatBubbles extends StatelessWidget {
                           );
                           Navigator.pop(context);
                         },
-                        child: const Text('> !중요! <'),
+                        child: const Text('중요메세지 설정'),
                       )
                     ],
                   ),
@@ -160,10 +183,20 @@ class ChatBubbles extends StatelessWidget {
           right: isMe ? 5 : null,
           left: isMe ? null : 5,
           child: CircleAvatar(
-            backgroundImage: NetworkImage(userImage),
+            backgroundImage: NetworkImage(
+              userImage,
+            ),
           ),
         ),
       ]),
     );
+  }
+
+  void copyMessage() {
+    Clipboard.setData(ClipboardData(text: copyedMessage));
+    fToast.showToast(
+        child: toast,
+        toastDuration: const Duration(milliseconds: 1250),
+        fadeDuration: const Duration(milliseconds: 550));
   }
 }

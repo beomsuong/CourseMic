@@ -59,16 +59,24 @@ class ToDoPageState extends State<ToDoPage> {
         : Scaffold(
             backgroundColor: Palette.lightGray,
             appBar: PreferredSize(
-              preferredSize: const Size.fromHeight(100),
+              preferredSize: const Size.fromHeight(55),
               child: AppBar(
-                toolbarHeight: 100,
-                centerTitle: true,
-                title: Text(
-                  widget.chatScreenState.chat.roomName,
-                  style: const TextStyle(color: Colors.black, fontSize: 24),
-                ),
-                backgroundColor: Colors.white,
-              ),
+                  toolbarHeight: 100,
+                  centerTitle: true,
+                  elevation: 1,
+                  title: Text(
+                    "${widget.chatScreenState.chat.roomName} 할 일 목록",
+                    style: const TextStyle(color: Colors.black, fontSize: 20),
+                  ),
+                  backgroundColor: Colors.white,
+                  automaticallyImplyLeading: true,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back_rounded,
+                        color: Palette.darkGray),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  )),
             ),
             body: ToDoList(
               roomID: widget.roomID,
