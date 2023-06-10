@@ -38,11 +38,15 @@ class _AddImageState extends State<AddImage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircleAvatar(
-            radius: 40,
-            backgroundColor: Color.fromARGB(255, 75, 75, 75),
-            backgroundImage: AssetImage("assets/image/user.png"),
-          ),
+          pickedImage != null
+              ? CircleAvatar(
+                  radius: 40,
+                  backgroundImage: FileImage(pickedImage!),
+                )
+              : const CircleAvatar(
+                  radius: 40,
+                  backgroundImage: AssetImage("assets/image/user.png"),
+                ),
           const SizedBox(
             height: 10,
           ),
@@ -51,17 +55,22 @@ class _AddImageState extends State<AddImage> {
               _pickImage();
             },
             icon: const Icon(Icons.image, color: Palette.pastelPurple),
-            label: const Text('Add image', style: purpleText),
+            label: const Text('이미지 추가', style: purpleText),
           ),
-          const SizedBox(
-            height: 40,
+          const Padding(
+            padding: EdgeInsets.only(top: 30, bottom: 10),
+            child: Text("기본 프로필 이미지를 사용하려면 닫기를 눌러주세요.",
+                style: TextStyle(
+                    color: Palette.brightBlue,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold)),
           ),
           TextButton.icon(
             onPressed: () {
               Navigator.pop(context);
             },
             icon: const Icon(Icons.close, color: Palette.pastelPurple),
-            label: const Text('Close', style: purpleText),
+            label: const Text('닫기', style: purpleText),
           ),
         ],
       ),

@@ -1,18 +1,10 @@
 import 'package:capston/chatting/chat/message/view_important_message.dart';
-import 'package:capston/chatting/chat/add_chat.dart';
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/palette.dart';
 import 'package:capston/participation_page.dart';
 import 'package:capston/todo_list/todo_page.dart';
+import 'package:capston/widgets/RoundButtonStyle.dart';
 import 'package:flutter/material.dart';
-
-final ButtonStyle buttonStyle = ButtonStyle(
-    backgroundColor: MaterialStateProperty.all(Palette.pastelPurple),
-    elevation: MaterialStateProperty.all(0.0),
-    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-        RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-            side: const BorderSide(color: Palette.pastelPurple))));
 
 class ChatPlusFunc extends StatefulWidget {
   final String roomID;
@@ -29,6 +21,8 @@ class ChatPlusFunc extends StatefulWidget {
 class _ChatPlusFuncState extends State<ChatPlusFunc> {
   String currentFunction = '';
   Widget? dynamicWidget;
+  double minHeight = 50;
+  double maxHeight = 280;
 
   void setFunction(String function) {
     //setState로 미리보기 창 제어. 각 위젯 명은 가칭이니, 변경 가능
@@ -65,7 +59,7 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 282,
+      height: dynamicWidget == null ? minHeight : maxHeight,
       color: Colors.white,
       child: Center(
         child: Column(
@@ -106,7 +100,7 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
                     setFunction('중요한 메세지? 모아보기');
                   },
                   style: buttonStyle,
-                  child: const Text('중요한 일'),
+                  child: const Text('중요메세지'),
                 ),
                 const Padding(padding: EdgeInsets.all(10.0)),
                 ElevatedButton(
@@ -118,25 +112,22 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
                 ),
               ],
             ),
-            Expanded(
-              child: Container(
-                color: Colors.white,
-                width: double.infinity,
-                height: double.infinity,
-                child: Center(
-                  child: MediaQuery.removePadding(
-                    context: context,
-                    removeTop: true,
-                    removeBottom: true,
-                    child: dynamicWidget ??
-                        const Text(
-                          'No widget selected',
-                          style: TextStyle(fontSize: 24),
-                        ),
+            if (dynamicWidget != null)
+              Expanded(
+                child: Container(
+                  color: Colors.white,
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: Center(
+                    child: MediaQuery.removePadding(
+                      context: context,
+                      removeTop: true,
+                      removeBottom: true,
+                      child: dynamicWidget!,
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
@@ -150,26 +141,5 @@ class DataWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Text('Data Widget');
-  }
-}
-
-class TodoListWidget extends StatelessWidget {
-  const TodoListWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Text('Todo List Widget');
-  }
-}
-
-class ImportantMessagesWidget extends StatelessWidget {
-  //중요한 메시지 보기
-  const ImportantMessagesWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SimpleImportantMessage(
-      roomname: roomname,
-    );
   }
 }

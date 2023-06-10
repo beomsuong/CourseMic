@@ -1,143 +1,123 @@
+import 'package:capston/chatting/chat/chat.dart';
+import 'package:capston/chatting/chat/chat_list.dart';
+import 'package:capston/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:capston/chatting/chat/chat_user.dart';
 
 class SearchChat extends StatefulWidget {
-  const SearchChat({super.key});
+  final ChatListState chatListParent;
+  const SearchChat({super.key, required this.chatListParent});
 
   @override
   State<SearchChat> createState() => _SearchChatState();
 }
 
 class _SearchChatState extends State<SearchChat> {
-  String groupname = '';
-  List<dynamic> groupmember = [];
-  String groupmessage = '';
-  bool btn = false;
-  String userinput = '';
-  String roomcode = '';
-  late final user;
-  late final firebase;
-  searchdata(String a) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
+  bool bButton = false;
+  bool bInSearchedChat = false;
+  bool bFind = false;
 
-    QuerySnapshot querySnapshot = await firestore.collection('chat').get();
+  String lastMessage = '';
+  String lastMessageDate = '';
+  String userInput = '';
+  String roomID = '';
+  Chat? searchedChat;
+
+  void searchChat(String shortRoomCode) async {
+    QuerySnapshot querySnapshot =
+        await widget.chatListParent.firestore.collection('chat').get();
 
     for (var doc in querySnapshot.docs) {
-      if (a == doc.id.substring(0, 4)) {
-        print(doc['roomName'].toString());
-        groupname = doc['roomName'].toString();
-        groupmember = doc['userList'];
+      if (shortRoomCode == doc.id.substring(0, 4)) {
+        searchedChat = Chat.fromJson(doc);
 
-        DocumentReference docRef = firestore.collection('chat').doc(doc.id);
-        DocumentSnapshot docSnapshot = await docRef.get();
-        groupmember = docSnapshot.get('userList');
-
-        final chatDocsSnapshot = await FirebaseFirestore.instance
+        final chatDocsSnapshot = await widget.chatListParent.firestore
             .collection('chat')
             .doc(doc.id)
             .collection('message')
             .orderBy('time', descending: true)
             .limit(1)
             .get();
-        roomcode = doc.id;
+
+        roomID = doc.id;
+
         if (chatDocsSnapshot.docs.isNotEmpty) {
           Timestamp timestamp = chatDocsSnapshot.docs[0]['time'];
           DateTime dateTime = timestamp.toDate();
-          String formattedDate = DateFormat('M월d일').format(dateTime);
-          groupmessage = formattedDate;
+          String formattedDate = DateFormat('yy/MM/dd').format(dateTime);
+          lastMessage = chatDocsSnapshot.docs[0]['text'];
+          lastMessageDate = formattedDate;
         }
-        for (var member in groupmember) {
-          if (member['userID'] == user!.uid) {
-            setState(() {});
-            return;
-          }
+        if (searchedChat!.getIndexOfUser(
+                userID: widget.chatListParent.currentUser.uid) !=
+            -1) {
+          setState(() {
+            bFind = true;
+            bInSearchedChat = true;
+            bButton = false;
+          });
+          return;
         }
-        btn = true;
-        setState(() {});
+
+        setState(() {
+          bFind = true;
+          bInSearchedChat = false;
+          bButton = true;
+        });
         return;
       }
     }
-    btn = false;
-    setState(() {});
+
+    setState(() {
+      bFind = false;
+      bInSearchedChat = false;
+      bButton = false;
+    });
   }
 
-  @override
-  void initState() {
-    final authentication = FirebaseAuth.instance;
-    user = authentication.currentUser;
-    // TODO: implement initState
-    super.initState();
-  }
-
-  addroom() async {
-    final authentication = FirebaseAuth.instance;
-    final firebase = FirebaseFirestore.instance;
-    final user = authentication.currentUser;
-    await firebase.collection('user').doc(user!.uid).update({
-      'chatList': FieldValue.arrayUnion([roomcode]),
+  void addRoom() {
+    widget.chatListParent.currUserDocRef.update({
+      'chatList': FieldValue.arrayUnion([roomID]),
     });
 
     // add user into userList field
-    firebase.collection('chat').doc(roomcode).update({
-      'userList': FieldValue.arrayUnion([ChatUser(userID: user.uid).toJson()])
+    widget.chatListParent.firestore.collection('chat').doc(roomID).update({
+      'userList': FieldValue.arrayUnion(
+          [ChatUser(userID: widget.chatListParent.currentUser.uid).toJson()])
     });
+
+    widget.chatListParent.addRoom(roomID, searchedChat!.roomName, lastMessage);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: Colors.black,
-            size: 30,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(55),
+        child: AppBar(
+          centerTitle: true,
+          leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: const Icon(
+              Icons.arrow_back_rounded,
+            ),
+          ),
+          toolbarHeight: 100.0,
+          title: const Text(
+            "톡방 검색",
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 20,
+            ),
           ),
         ),
-        backgroundColor: Colors.white,
-        toolbarHeight: 100.0,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  height: 3.0,
-                  width: 150.0,
-                  color: Colors.black,
-                ),
-                const Text(
-                  "톡방 검색",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 30,
-                  ),
-                ),
-                const SizedBox(height: 3.0),
-                Container(
-                  height: 3.0,
-                  width: 150.0,
-                  color: Colors.black,
-                ),
-              ],
-            ),
-            const SizedBox(width: 60),
-          ],
-        ),
       ),
-      body: Column(children: [
-        const SizedBox(
-          height: 20,
-        ),
+      body: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -149,184 +129,192 @@ class _SearchChatState extends State<SearchChat> {
                 child: TextField(
                     textAlign: TextAlign.center,
                     decoration: const InputDecoration(
-                      hintText: '코드를 입력하세요',
-                    ),
+                        hintText: '4 자리 코드를 입력하세요',
+                        hintStyle: TextStyle(color: Palette.textColor1)),
                     onChanged: (value) {
-                      userinput = value;
+                      userInput = value;
                     })),
             IconButton(
               onPressed: () {
                 FocusManager.instance.primaryFocus?.unfocus();
-                searchdata(userinput);
+                searchChat(userInput);
               },
               icon: const Icon(
-                Icons.search,
-                color: Colors.purple,
+                Icons.search_rounded,
+                color: Palette.pastelPurple,
                 size: 30,
               ), // 원하는 아이콘을 선택합니다.
             ),
           ],
         ),
-        Container(
-            width: 370,
-            height: 400,
-            margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.black,
-                width: 6, // 선의 굵기 설정
-              ),
-              borderRadius: BorderRadius.circular(20), // 둥근 정도 설정
-            ),
-            child: Column(
-              children: [
-                const Text(
-                  "선택한 톡방 정보",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 25,
+        Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Card(
+            color: Palette.pastelYellow,
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                children: [
+                  Text(
+                    "검색된 채팅방 정보",
+                    style: TextStyle(
+                      color:
+                          bInSearchedChat ? Palette.pastelBlack : Colors.black,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 25,
+                    ),
                   ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Container(
-                  height: 2.0,
-                  width: 250.0,
-                  color: Colors.black,
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Row(children: [
-                  Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end, // 오른쪽 정렬
-                          children: const [
-                            SizedBox(
-                              width: 120,
-                              height: 35,
-                              child: Text(
-                                "톡방 이름 :",
-                                textAlign: TextAlign.right,
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 20,
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 120,
-                              height: 35,
-                              child: Text(
-                                "현재 참가자 :",
-                                textAlign: TextAlign.right,
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 20,
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 120,
-                              height: 35,
-                              child: Text(
-                                "최근 메시지 :",
-                                textAlign: TextAlign.right,
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 20,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  const SizedBox(
+                    height: 20,
                   ),
-                  Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Column(
+                  bFind
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
-                              width: 120,
-                              height: 35,
-                              child: Text(
-                                groupname,
-                                textAlign: TextAlign.left,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 20,
-                                ),
+                              Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.end, // 오른쪽 정렬
+                                      children: [
+                                        SizedBox(
+                                          width: 120,
+                                          height: 35,
+                                          child: Text(
+                                            "채팅방 이름 :",
+                                            textAlign: TextAlign.right,
+                                            style: TextStyle(
+                                              color: bInSearchedChat
+                                                  ? Palette.pastelWarning
+                                                  : Palette.pastelBlack,
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 20,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 120,
+                                          height: 35,
+                                          child: Text(
+                                            "현재 참가자 :",
+                                            textAlign: TextAlign.right,
+                                            style: TextStyle(
+                                              color: bInSearchedChat
+                                                  ? Palette.pastelWarning
+                                                  : Palette.pastelBlack,
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 20,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 120,
+                                          height: 35,
+                                          child: Text(
+                                            "최근 메시지 :",
+                                            textAlign: TextAlign.right,
+                                            style: TextStyle(
+                                              color: bInSearchedChat
+                                                  ? Palette.pastelWarning
+                                                  : Palette.pastelBlack,
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 20,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            SizedBox(
-                              width: 120,
-                              height: 35,
-                              child: Text(
-                                groupmember.isNotEmpty
-                                    ? groupmember.length.toString()
-                                    : ' ',
-                                textAlign: TextAlign.left,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 20,
-                                ),
+                              Row(
+                                children: [
+                                  Column(
+                                    children: [
+                                      SizedBox(
+                                        width: 120,
+                                        height: 35,
+                                        child: Text(
+                                          searchedChat != null
+                                              ? searchedChat!.roomName
+                                              : " ",
+                                          textAlign: TextAlign.left,
+                                          style: TextStyle(
+                                            color: bInSearchedChat
+                                                ? Palette.pastelWarning
+                                                : Palette.pastelBlack,
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 20,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 120,
+                                        height: 35,
+                                        child: Text(
+                                          searchedChat != null
+                                              ? "${searchedChat!.userList.length} 명"
+                                              : ' ',
+                                          textAlign: TextAlign.left,
+                                          style: TextStyle(
+                                            color: bInSearchedChat
+                                                ? Palette.pastelWarning
+                                                : Palette.pastelBlack,
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 20,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 120,
+                                        height: 35,
+                                        child: Text(
+                                          lastMessageDate.isEmpty
+                                              ? "없음"
+                                              : lastMessageDate,
+                                          textAlign: TextAlign.left,
+                                          style: TextStyle(
+                                            color: bInSearchedChat
+                                                ? Palette.pastelWarning
+                                                : Palette.pastelBlack,
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 20,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ),
-                            SizedBox(
-                              width: 120,
-                              height: 35,
-                              child: Text(
-                                groupmessage,
-                                textAlign: TextAlign.left,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 20,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                            ])
+                      : const Text("해당 채팅방을 찾을 수 없습니다."),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12.0),
+                    child: Text(
+                        bFind && bInSearchedChat ? "이미 검색한 채팅방에 속해있습니다." : " ",
+                        style: const TextStyle(
+                            color: Palette.pastelError,
+                            fontWeight: FontWeight.bold)),
                   ),
-                ]),
-                const SizedBox(
-                  height: 30,
-                ),
-                ElevatedButton(
-                  onPressed: btn
-                      ? () {
-                          addroom();
-
-                          Navigator.of(context).pop();
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        const Color.fromARGB(255, 148, 61, 255), // 버튼 배경색 지정
-                  ),
-                  child: const Text(
-                    '입장',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ],
-            )),
+                ],
+              ),
+            ),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: bButton
+              ? () {
+                  addRoom();
+                  Navigator.of(context).pop();
+                }
+              : null,
+          child: Text(
+            bInSearchedChat ? "입장불가" : "입장",
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+          ),
+        ),
       ]),
     );
   }

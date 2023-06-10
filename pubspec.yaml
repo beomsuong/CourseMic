@@ -48,6 +48,7 @@ dependencies:
   percent_indicator: ^4.0.1 #퍼센티지 바 디펜던시
   omni_datetime_picker: ^1.0.7
   drag_and_drop_lists: ^0.3.3
+  fluttertoast: ^8.2.2
 
 dev_dependencies:
   flutter_test:
