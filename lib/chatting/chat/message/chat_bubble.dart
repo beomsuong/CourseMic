@@ -1,7 +1,6 @@
 import 'package:capston/mypage/profile.dart';
 import 'package:capston/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
@@ -61,8 +60,7 @@ class ChatBubbles extends StatelessWidget {
                               builder: (context) {
                                 return Profile(
                                   userID: userid,
-                                  bMyProfile: userid ==
-                                      FirebaseAuth.instance.currentUser!.uid,
+                                  bMyProfile: false,
                                 );
                               },
                             ),
