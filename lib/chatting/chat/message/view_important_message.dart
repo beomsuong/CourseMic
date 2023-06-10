@@ -81,13 +81,23 @@ class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
     return passerList.contains(currentUserId);
   }
 
-  // void checkBtnStatus() async{
-  //   DocumentSnapshot<Map<String, dynamic>>? latestQuiz = await getLatestQuiz();
+  void checkBtnStatus() async {
+    DocumentSnapshot<Map<String, dynamic>>? latestQuiz = await getLatestQuiz();
 
-  //   setState(() {
-  //     if(isWithin24(latestQuiz) && isUserInPasserList(quiz)) //24시간 넘었거나 퀴즈가 없고,
-  //   });
-  // }
+    setState(() {
+      if (latestQuiz != null && //퀴즈가 존재함
+          isWithin24(latestQuiz) && //24시간 내에 생긴 퀴즈가 있음
+          isUserInPasserList(//정답자 리스트에 있음
+              latestQuiz)) {
+        isBtnEnable = false;
+      } else if (latestQuiz == null || //퀴즈가 존재하지 않음
+          !isWithin24(latestQuiz) || //24시간 내에 생긴 퀴즈 없음
+          !isUserInPasserList(latestQuiz)) {
+        //정답자 리스테 없음
+        isBtnEnable = true;
+      }
+    });
+  }
 
 //-----------------------------------------------------
   @override
@@ -198,17 +208,19 @@ class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => solve_quiz(
-                chatScreenState: widget.chatScreenState,
-                roomID: widget.roomID,
-              ),
-            ),
-          );
-        },
+        onPressed: isBtnEnable
+            ? () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => solve_quiz(
+                      chatScreenState: widget.chatScreenState,
+                      roomID: widget.roomID,
+                    ),
+                  ),
+                );
+              }
+            : null,
         child: const Text("Quiz!"),
       ),
     );
