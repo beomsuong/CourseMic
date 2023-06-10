@@ -60,9 +60,6 @@ class _NewMessageState extends State<NewMessage> {
                     setState(() {
                       block = !block;
                     });
-                    // print('+ button pushed!');
-                    // Scaffold.of(context).showBottomSheet<void>(
-                    //     (BuildContext context) => ChatPlusFunc());
                   },
                   icon: Icon(block ? Icons.close_rounded : Icons.add_rounded),
                   color: Palette.darkGray),
@@ -101,8 +98,7 @@ class _NewMessageState extends State<NewMessage> {
                     chatScreenState: widget.chatScreenState,
                   ),
                 )
-              : const SizedBox(
-                  width: 0, height: 0) //TODO: roomID를 처리하지 않거나, roomID를 가져오는 방법
+              : const SizedBox(width: 0, height: 0)
         ],
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:capston/chatting/main_screen.dart';
+import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_config/flutter_config.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'CourseMic',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(primarySwatch: Palette.primary),
       home: const LoginSignupScreen(),
     );
   }
