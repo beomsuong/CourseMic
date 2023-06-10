@@ -262,7 +262,7 @@ class ChatScreenState extends State<ChatScreen> {
         action: SnackBarAction(
           label: '풀기',
           onPressed: () {
-            print('스낵바의 퀴즈 풀어라~ 버튼 눌림');
+            print('스낵바 버튼 눌림');
             Navigator.push(
               context,
               MaterialPageRoute(
