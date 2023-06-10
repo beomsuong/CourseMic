@@ -3,8 +3,6 @@ import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
-import 'dart:ui';
 
 class solve_quiz extends StatefulWidget {
   final ChatScreenState chatScreenState;
@@ -31,7 +29,6 @@ class _solve_quizState extends State<solve_quiz> {
           .set({
         'quiz_C_date': quiz_C_date,
         'quiz_passer': quiz_passer,
-        'score': 10,
       });
     } catch (error) {
       print('퀴즈 세팅 실패: $error');
@@ -60,6 +57,7 @@ class _solve_quizState extends State<solve_quiz> {
         final Timestamp currentTimestamp = Timestamp.now();
         final Duration difference =
             currentTimestamp.toDate().difference(latestTimestamp.toDate());
+        final score = 5;
 
         if (difference.inHours < 24) {
           //! 24시간 이내
@@ -275,7 +273,7 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
                               onPressed: () {
                                 Navigator.pop(context);
                                 Navigator.pop(context);
-                                Navigator.pop(context);
+                                //Navigator.pop(context);
                               },
                               child: const Text('확인'),
                             ),
@@ -294,7 +292,7 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
                             TextButton(
                               onPressed: () {
                                 Navigator.pop(context);
-                                Navigator.pop(context);
+                                // Navigator.pop(context);
                               },
                               child: const Text('확인'),
                             )
@@ -389,7 +387,7 @@ class _BuildWriterQuizState extends State<BuildWriterQuiz> {
                     onPressed: () {
                       Navigator.pop(context);
                       Navigator.pop(context);
-                      Navigator.pop(context);
+                      // Navigator.pop(context);
                     },
                     child: const Text('확인'))
               ],
