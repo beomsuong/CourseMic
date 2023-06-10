@@ -1,4 +1,5 @@
 import 'package:capston/chatting/chat_screen.dart';
+import 'package:capston/palette.dart';
 import 'package:capston/quiz/solve_quiz.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -32,8 +33,13 @@ class ImportantMessagesPage extends StatelessWidget {
     imgMsgStream = loadImpMsgList();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('중요한 메시지 목록'),
-      ),
+          // appBar background
+          elevation: 0.5,
+          iconTheme: const IconThemeData(color: Colors.white),
+          centerTitle: true,
+          title: const Text("중요메세지 목록",
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.w500))),
       body: StreamBuilder<QuerySnapshot>(
         stream: imgMsgStream,
         builder: (context, snapshot) {
@@ -71,48 +77,56 @@ class ImportantMessagesPage extends StatelessWidget {
                 fmtTime = DateFormat('M월 d일 h:mm a').format(dateTime);
               }
 
-              return GestureDetector(
-                onLongPress: () => showDialog<String>(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                    title: const Text('이 메시지를 삭제하시겠습니까?'),
-                    content: Text(messageDetail),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('취소'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          print(documents[index].id);
-                          deleteImpMsg(roomID, impMsgId);
-                          Navigator.pop(context);
-                        },
-                        child: const Text('삭제'),
-                      ),
-                    ],
-                  ),
-                ),
-                child: ListTile(
-                  title: Text(
-                    userId,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.normal,
-                      fontSize: 14,
+              return Card(
+                color: Palette.pastelYellow,
+                margin: const EdgeInsets.only(top: 14, left: 12, right: 12),
+                child: GestureDetector(
+                  onLongPress: () => showDialog<String>(
+                    context: context,
+                    builder: (BuildContext context) => AlertDialog(
+                      title: const Text('이 메시지를 삭제하시겠습니까?'),
+                      content: Text(messageDetail),
+                      actions: <Widget>[
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('취소'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            print(documents[index].id);
+                            deleteImpMsg(roomID, impMsgId);
+                            Navigator.pop(context);
+                          },
+                          child: const Text('삭제'),
+                        ),
+                      ],
                     ),
                   ),
-                  subtitle: Text(
-                    messageDetail,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 15,
+                  child: ListTile(
+                    title: Text(
+                      userId,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: Palette.pastelBlack),
                     ),
-                  ),
-                  trailing: Text(
-                    fmtTime,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 11,
+                    subtitle: Text(
+                      messageDetail,
+                      style: const TextStyle(
+                          fontSize: 14, color: Palette.pastelBlack),
+                    ),
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          fmtTime,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -137,22 +151,6 @@ class ImportantMessagesPage extends StatelessWidget {
       ),
     );
   }
-
-  // bool isDifferentDate(QueryDocumentSnapshot<Object?> prev,
-  //     QueryDocumentSnapshot<Object?> current) {
-  //   final prevTime =
-  //       (prev.data() as Map<String, dynamic>)['timeStamp'] as Timestamp;
-  //   final currentTime =
-  //       (current.data() as Map<String, dynamic>)['timeStamp'] as Timestamp;
-
-  //   final prevDateTime = prevTime.toDate();
-  //   final currentDateTime = currentTime.toDate();
-
-  //   return prevDateTime.day != currentDateTime.day ||
-  //       prevDateTime.month != currentDateTime.month ||
-  //       prevDateTime.year != currentDateTime.year;
-  // }
-  //! 적용 대기
 }
 
 //---------------------------------------------------------------------------------------------------
@@ -207,32 +205,45 @@ class SimpleImportantMessage extends StatelessWidget {
 
           return Column(
             children: [
-              SizedBox(
-                height: 29,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ImportantMessagesPage(
-                              roomID: roomID,
-                              chatScreenState: chatScreenState,
-                            ),
+              Container(
+                height: 30,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Palette.lightGray,
+                      offset: Offset(0.0, 5.0), //(x,y)
+                      blurRadius: 3.0,
+                    ),
+                  ],
+                ),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ImportantMessagesPage(
+                            roomID: roomID,
+                            chatScreenState: chatScreenState,
                           ),
-                        );
-                      },
-                      child: const Text(
+                        ),
+                      );
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.only(
+                          left: 8.0, right: 14.0, top: 4.0, bottom: 12.0),
+                      child: Text(
                         '+ 중요 메시지 전부 보기',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 10,
+                          color: Palette.brightBlue,
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
               Expanded(
@@ -246,7 +257,7 @@ class SimpleImportantMessage extends StatelessWidget {
                     final sendTime = data['timeStamp'] as Timestamp;
                     final userId = data['user_id'] ?? '';
                     final dateTime = sendTime.toDate();
-                    final fmtTime = DateFormat('M/d').format(dateTime);
+                    final fmtTime = DateFormat('MM/dd').format(dateTime);
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,12 +269,13 @@ class SimpleImportantMessage extends StatelessWidget {
                                 documents[index]))
                           Padding(
                             //if문이 true일 때만 실행. 시간을 패딩으로 같은 날짜의 시간 기입'
-                            padding: const EdgeInsets.symmetric(vertical: 0.0),
+                            padding: const EdgeInsets.only(
+                                top: 12, bottom: 4, left: 12),
                             child: Column(
                               crossAxisAlignment:
                                   CrossAxisAlignment.start, //제거시 날짜 중앙 정렬
                               children: [
-                                const Divider(color: Colors.purple),
+                                // const Divider(color: Palette.darkGray),
                                 Text(
                                   fmtTime,
                                   style: const TextStyle(
@@ -275,12 +287,25 @@ class SimpleImportantMessage extends StatelessWidget {
                               ],
                             ),
                           ),
-                        ListTile(
-                          //메시지 본문. trailing의 날짜 삭제
-                          title: Text(
-                            '$userId : $messageDetail',
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8, right: 8),
+                          child: Card(
+                            margin: const EdgeInsets.all(4),
+                            color: Palette.pastelYellow,
+                            child: ListTile(
+                              //메시지 본문. trailing의 날짜 삭제
+                              contentPadding: const EdgeInsets.only(left: 12),
+                              visualDensity: const VisualDensity(
+                                  horizontal: 0, vertical: -4),
+                              title: Text(
+                                '$userId : $messageDetail',
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                                softWrap: false,
+                                style: const TextStyle(
+                                    fontSize: 14, color: Palette.pastelBlack),
+                              ),
+                            ),
                           ),
                         ),
                       ],
