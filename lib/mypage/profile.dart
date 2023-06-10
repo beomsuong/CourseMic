@@ -58,7 +58,7 @@ class ProfileState extends State<Profile> {
                   style: TextStyle(color: Colors.black, fontSize: 20),
                 )
               : const GradientText(text: "프로필"),
-          centerTitle: true,
+          centerTitle: !widget.bMyProfile,
           elevation: 0.5,
           backgroundColor: Colors.white,
           automaticallyImplyLeading: !widget.bMyProfile,
@@ -125,8 +125,8 @@ class ProfileState extends State<Profile> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: const [
+                                const Row(
+                                  children: [
                                     Icon(Icons.person),
                                     SizedBox(
                                       child: Text(
@@ -195,8 +195,8 @@ class ProfileState extends State<Profile> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: const [
+                                const Row(
+                                  children: [
                                     Icon(Icons.subject_rounded),
                                     SizedBox(
                                       child: Text(
@@ -223,9 +223,9 @@ class ProfileState extends State<Profile> {
                               ],
                             ),
                           ),
-                          Card(
+                          const Card(
                             child: Padding(
-                              padding: const EdgeInsets.all(8.0),
+                              padding: EdgeInsets.all(8.0),
                               child: Align(
                                 alignment: Alignment.centerLeft,
                                 child: Column(
@@ -233,7 +233,7 @@ class ProfileState extends State<Profile> {
                                     SizedBox(
                                       height: 30,
                                       child: Row(
-                                        children: const [
+                                        children: [
                                           Text(
                                             '현재 참여중인 과제 : ' 'N' '(개)',
                                             style: TextStyle(
@@ -243,11 +243,11 @@ class ProfileState extends State<Profile> {
                                         ],
                                       ),
                                     ),
-                                    const Divider(color: Palette.darkGray),
+                                    Divider(color: Palette.darkGray),
                                     SizedBox(
                                       height: 30,
                                       child: Row(
-                                        children: const [
+                                        children: [
                                           Text(
                                             '완료한 과제 : ' '0' '(개)',
                                             style: TextStyle(
