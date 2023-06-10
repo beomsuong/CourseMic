@@ -3,8 +3,11 @@ import 'package:capston/chatting/chat/chat_list.dart';
 import 'package:capston/chatting/modify_role.dart';
 import 'package:capston/mypage/profile.dart';
 import 'package:capston/palette.dart';
+import 'package:capston/quiz/solve_quiz.dart';
 import 'package:capston/todo_list/todo.dart';
 import 'package:capston/todo_list/todo_page.dart';
+import 'package:cherry_toast/cherry_toast_icon.dart';
+import 'package:cherry_toast/resources/arrays.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -67,6 +70,7 @@ class ChatScreenState extends State<ChatScreen> {
         firestore.collection("chat").doc(widget.roomID).collection("todo");
     progressPercentFuture = calculateProgressPercent();
     chatFuture = readInitChatData();
+    showInitialSnackBar();
   }
 
   Future<void> readInitChatData() async {
@@ -196,6 +200,86 @@ class ChatScreenState extends State<ChatScreen> {
         ),
       ),
     );
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>?> getLatestQuiz() async {
+    try {
+      final QuerySnapshot<Map<String, dynamic>> latestQuizQuerySnapshot =
+          await chatDocRef
+              .collection('quiz')
+              .orderBy('quiz_C_date', descending: true)
+              .limit(1)
+              .get();
+
+      if (latestQuizQuerySnapshot.docs.isNotEmpty) {
+        return latestQuizQuerySnapshot.docs.first;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      print('Failed to get latest quiz: $error');
+      return null;
+    }
+  }
+
+  bool isWithin24(DocumentSnapshot<Map<String, dynamic>> quiz) {
+    final Timestamp quizTimestamp = quiz.data()!['quiz_C_date'];
+    final DateTime quizDateTime = quizTimestamp.toDate();
+    final DateTime currentDateTime = DateTime.now();
+    final Duration difference = currentDateTime.difference(quizDateTime);
+
+    return difference.inHours < 24;
+  }
+
+  Duration calculateDifference(DocumentSnapshot<Map<String, dynamic>> quiz) {
+    final Timestamp quizTimestamp = quiz.data()!['quiz_C_date'] as Timestamp;
+    final DateTime quizDateTime = quizTimestamp.toDate();
+    final DateTime currentDateTime = DateTime.now();
+    final Duration difference = currentDateTime.difference(quizDateTime);
+    return difference;
+  }
+
+  bool isUserInPasserList(DocumentSnapshot<Map<String, dynamic>> quiz) {
+    final List<dynamic> passerList =
+        quiz.data()!['quiz_passer'] as List<dynamic>;
+    final String currentUserId = currentUser.uid;
+
+    return passerList.contains(currentUserId);
+  }
+
+  void showInitialSnackBar() async {
+    DocumentSnapshot<Map<String, dynamic>>? latestQuiz = await getLatestQuiz();
+
+    if (latestQuiz != null &&
+        isWithin24(latestQuiz) &&
+        !isUserInPasserList(latestQuiz)) {
+      Duration difference = calculateDifference(latestQuiz);
+      int durationMilliseconds = difference.inMilliseconds;
+      print('가장 최근 퀴즈 있음');
+      final snackBar = SnackBar(
+        duration: Duration(milliseconds: durationMilliseconds),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(100),
+        content: const Text('퀴즈를 푸세요'),
+        action: SnackBarAction(
+          label: 'View',
+          onPressed: () {
+            print('스낵바의 퀴즈 풀어라~ 버튼 눌림');
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    solve_quiz(roomID: widget.roomID, chatScreenState: this),
+              ),
+            );
+          },
+        ),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      //! 스낵바 안보일 때 처리
+      print('가장 최근 퀴즈가 없는거같다.');
+    }
   }
 
   @override
@@ -464,7 +548,12 @@ class ChatScreenState extends State<ChatScreen> {
                   ),
                 );
               }),
-          Expanded(child: Messages(roomID: widget.roomID)),
+          Builder(builder: (context) {
+            //showInitialSnackBar();
+            return Expanded(
+              child: Messages(roomID: widget.roomID),
+            );
+          }),
           NewMessage(
             roomID: widget.roomID,
             chatScreenState: this,

@@ -8,25 +8,87 @@ final currentYear = DateTime.now().year; //실제 시간의 년도
 
 typedef ImpMsgSnapshot = QuerySnapshot<Map<String, dynamic>>;
 
-class ImportantMessagesPage extends StatelessWidget {
+class ImportantMessagesPage extends StatefulWidget {
   final ChatScreenState chatScreenState;
   final String roomID;
-  late Stream<QuerySnapshot<Object?>> imgMsgStream;
 
   ImportantMessagesPage(
       {Key? key, required this.roomID, required this.chatScreenState})
       : super(key: key);
 
+  @override
+  State<ImportantMessagesPage> createState() => _ImportantMessagesPageState();
+}
+
+class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
+  late Stream<QuerySnapshot<Object?>> imgMsgStream;
+
+  bool isBtnEnable = false;
+
   Stream<QuerySnapshot<Map<String, dynamic>>> loadImpMsgList() async* {
     var snapshot = await FirebaseFirestore.instance
         .collection('chat')
-        .doc(roomID)
+        .doc(widget.roomID)
         .collection('imp_msg')
         .orderBy('timeStamp', descending: true) // 시간 역순으로 정렬
         .get();
     yield snapshot;
   }
 
+  Future<DocumentSnapshot<Map<String, dynamic>>?> getLatestQuiz() async {
+    try {
+      final QuerySnapshot<Map<String, dynamic>> latestQuizQuerySnapshot =
+          await widget.chatScreenState.chatDocRef
+              .collection('quiz')
+              .orderBy('quiz_C_date', descending: true)
+              .limit(1)
+              .get();
+
+      if (latestQuizQuerySnapshot.docs.isNotEmpty) {
+        return latestQuizQuerySnapshot.docs.first;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      print('Failed to get latest quiz: $error');
+      return null;
+    }
+  }
+
+  bool isWithin24(DocumentSnapshot<Map<String, dynamic>> quiz) {
+    final Timestamp quizTimestamp = quiz.data()!['quiz_C_date'];
+    final DateTime quizDateTime = quizTimestamp.toDate();
+    final DateTime currentDateTime = DateTime.now();
+    final Duration difference = currentDateTime.difference(quizDateTime);
+
+    return difference.inHours < 24;
+  }
+
+  Duration calculateDifference(DocumentSnapshot<Map<String, dynamic>> quiz) {
+    final Timestamp quizTimestamp = quiz.data()!['quiz_C_date'] as Timestamp;
+    final DateTime quizDateTime = quizTimestamp.toDate();
+    final DateTime currentDateTime = DateTime.now();
+    final Duration difference = currentDateTime.difference(quizDateTime);
+    return difference;
+  }
+
+  bool isUserInPasserList(DocumentSnapshot<Map<String, dynamic>> quiz) {
+    final List<dynamic> passerList =
+        quiz.data()!['quiz_passer'] as List<dynamic>;
+    final String currentUserId = widget.chatScreenState.currentUser.uid;
+
+    return passerList.contains(currentUserId);
+  }
+
+  // void checkBtnStatus() async{
+  //   DocumentSnapshot<Map<String, dynamic>>? latestQuiz = await getLatestQuiz();
+
+  //   setState(() {
+  //     if(isWithin24(latestQuiz) && isUserInPasserList(quiz)) //24시간 넘었거나 퀴즈가 없고,
+  //   });
+  // }
+
+//-----------------------------------------------------
   @override
   Widget build(BuildContext context) {
     imgMsgStream = loadImpMsgList();
@@ -85,7 +147,7 @@ class ImportantMessagesPage extends StatelessWidget {
                       TextButton(
                         onPressed: () {
                           print(documents[index].id);
-                          deleteImpMsg(roomID, impMsgId);
+                          deleteImpMsg(widget.roomID, impMsgId);
                           Navigator.pop(context);
                         },
                         child: const Text('삭제'),
@@ -127,8 +189,8 @@ class ImportantMessagesPage extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) => solve_quiz(
-                chatScreenState: chatScreenState,
-                roomID: roomID,
+                chatScreenState: widget.chatScreenState,
+                roomID: widget.roomID,
               ),
             ),
           );
@@ -137,22 +199,6 @@ class ImportantMessagesPage extends StatelessWidget {
       ),
     );
   }
-
-  // bool isDifferentDate(QueryDocumentSnapshot<Object?> prev,
-  //     QueryDocumentSnapshot<Object?> current) {
-  //   final prevTime =
-  //       (prev.data() as Map<String, dynamic>)['timeStamp'] as Timestamp;
-  //   final currentTime =
-  //       (current.data() as Map<String, dynamic>)['timeStamp'] as Timestamp;
-
-  //   final prevDateTime = prevTime.toDate();
-  //   final currentDateTime = currentTime.toDate();
-
-  //   return prevDateTime.day != currentDateTime.day ||
-  //       prevDateTime.month != currentDateTime.month ||
-  //       prevDateTime.year != currentDateTime.year;
-  // }
-  //! 적용 대기
 }
 
 //---------------------------------------------------------------------------------------------------
@@ -170,9 +216,6 @@ Future<void> deleteImpMsg(String roomID, String impMsgId) async {
   }
 }
 
-//----------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //--------------------------------- Simple Message View Code------------------------------------------
 

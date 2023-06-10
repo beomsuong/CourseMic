@@ -50,6 +50,7 @@ dependencies:
   omni_datetime_picker: ^1.0.7
   drag_and_drop_lists: ^0.3.3
   fluttertoast: ^8.2.2
+  cherry_toast: ^1.2.1
 
 dev_dependencies:
   flutter_test:
