@@ -27,7 +27,7 @@ Future<void> saveImportantMessage(String messageDetail, String messageId,
       'msg_id': messageId,
       'timeStamp': sendTime,
       'user_id': userId,
-      'room_id': roomId, // roomId 값을 추가로 저장 -> 처리
+      'room_id': roomId,
     });
     print('중요한 메시지 저장 성공!');
   } catch (error) {

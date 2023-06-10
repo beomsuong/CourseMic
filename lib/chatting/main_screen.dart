@@ -195,7 +195,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                             showAlert(context);
                                           },
                                           child: Icon(
-                                            Icons.image,
+                                            Icons.image_rounded,
                                             color: bSignupScreen
                                                 ? Palette.brightBlue
                                                 : Colors.grey[300],

@@ -1,5 +1,4 @@
 import 'package:capston/chatting/chat/message/view_important_message.dart';
-import 'package:capston/chatting/chat/add_chat.dart';
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/palette.dart';
 import 'package:capston/participation_page.dart';
@@ -47,7 +46,8 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
           break;
         case "중요한 메세지? 모아보기":
           dynamicWidget = SimpleImportantMessage(
-            roomname: widget.roomID,
+            roomID: widget.roomID,
+            chatScreenState: widget.chatScreenState,
           );
           break;
         case "참여도 점수 보기":
@@ -150,26 +150,5 @@ class DataWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Text('Data Widget');
-  }
-}
-
-class TodoListWidget extends StatelessWidget {
-  const TodoListWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Text('Todo List Widget');
-  }
-}
-
-class ImportantMessagesWidget extends StatelessWidget {
-  //중요한 메시지 보기
-  const ImportantMessagesWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SimpleImportantMessage(
-      roomname: roomname,
-    );
   }
 }

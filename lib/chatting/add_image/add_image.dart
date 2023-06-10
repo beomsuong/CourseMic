@@ -4,6 +4,8 @@ import 'package:capston/palette.dart';
 import 'package:capston/todo_list/todo_node.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AddImage extends StatefulWidget {
   const AddImage(this.addImageFunc, {Key? key}) : super(key: key);
@@ -17,6 +19,20 @@ class AddImage extends StatefulWidget {
 class _AddImageState extends State<AddImage> {
   File? pickedImage;
 
+  Future<bool> requestCameraAndStoragePermisson() async {
+    Map<Permission, PermissionStatus> status = await [
+      Permission.camera,
+      Permission.storage,
+    ].request();
+
+    if (status[Permission.camera]!.isGranted &&
+        status[Permission.storage]!.isGranted) {
+      return true; //권한 허용
+    } else {
+      return false; //권한 거부
+    }
+  }
+
   void _pickImage() async {
     final imagePicker = ImagePicker();
     final pickedImageFile = await imagePicker.pickImage(
@@ -27,6 +43,22 @@ class _AddImageState extends State<AddImage> {
       }
     });
     widget.addImageFunc(pickedImage!);
+  }
+
+  void _pickImageFromGallery() async {
+    //FilePickerResult? filePickResult = await FilePicker.platform.pickFiles();
+    XFile? pickedFile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxHeight: 100,
+      maxWidth: 100,
+    );
+
+    if (pickedFile != null) {
+      File imageFile = File(pickedFile.path);
+      widget.addImageFunc(imageFile);
+    } else {
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -46,15 +78,44 @@ class _AddImageState extends State<AddImage> {
           const SizedBox(
             height: 10,
           ),
-          OutlinedButton.icon(
-            onPressed: () {
-              _pickImage();
-            },
-            icon: const Icon(Icons.image, color: Palette.pastelPurple),
-            label: const Text('Add image', style: purpleText),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              OutlinedButton.icon(
+                //Camera
+                onPressed: () async {
+                  requestCameraAndStoragePermisson();
+                  if (await Permission.camera.isGranted) {
+                    _pickImage();
+                  } else {
+                    requestCameraAndStoragePermisson();
+                  }
+                },
+                icon: const Icon(Icons.camera_alt_outlined,
+                    color: Palette.pastelPurple),
+                label: const Text('Camera', style: purpleText),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              OutlinedButton.icon(
+                //Gallery
+                onPressed: () async {
+                  requestCameraAndStoragePermisson();
+                  if (await Permission.camera.isGranted) {
+                    _pickImageFromGallery();
+                  } else {
+                    requestCameraAndStoragePermisson();
+                  }
+                },
+                icon: const Icon(Icons.image_outlined,
+                    color: Palette.pastelPurple),
+                label: const Text('Gallery', style: purpleText),
+              ),
+            ],
           ),
           const SizedBox(
-            height: 40,
+            height: 20,
           ),
           TextButton.icon(
             onPressed: () {
