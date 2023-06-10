@@ -4,7 +4,6 @@ import 'package:capston/palette.dart';
 import 'package:capston/todo_list/todo_node.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class AddImage extends StatefulWidget {
@@ -37,11 +36,12 @@ class _AddImageState extends State<AddImage> {
     final imagePicker = ImagePicker();
     final pickedImageFile = await imagePicker.pickImage(
         source: ImageSource.camera, imageQuality: 50, maxHeight: 150);
-    setState(() {
-      if (pickedImageFile != null) {
+
+    if (pickedImageFile != null) {
+      setState(() {
         pickedImage = File(pickedImageFile.path);
-      }
-    });
+      });
+    }
     widget.addImageFunc(pickedImage!);
   }
 
@@ -54,8 +54,10 @@ class _AddImageState extends State<AddImage> {
     );
 
     if (pickedFile != null) {
-      File imageFile = File(pickedFile.path);
-      widget.addImageFunc(imageFile);
+      setState(() {
+        pickedImage = File(pickedFile.path);
+      });
+      widget.addImageFunc(pickedImage!);
     } else {
       Navigator.pop(context);
     }
@@ -80,7 +82,7 @@ class _AddImageState extends State<AddImage> {
                   backgroundImage: AssetImage("assets/image/user.png"),
                 ),
           const SizedBox(
-            height: 10,
+            height: 20,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -118,11 +120,8 @@ class _AddImageState extends State<AddImage> {
               ),
             ],
           ),
-          const SizedBox(
-            height: 20,
-          ),
           const Padding(
-            padding: EdgeInsets.only(top: 30, bottom: 10),
+            padding: EdgeInsets.only(top: 20, bottom: 10),
             child: Text("기본 프로필 이미지를 사용하려면 닫기를 눌러주세요.",
                 style: TextStyle(
                     color: Palette.brightBlue,
