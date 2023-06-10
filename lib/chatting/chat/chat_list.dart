@@ -101,6 +101,7 @@ class ChatListState extends State<ChatList> {
               return ChatScreen(
                 roomID: id,
                 chatListParent: this,
+                lastMessage: message,
               );
             },
           ),
@@ -110,53 +111,70 @@ class ChatListState extends State<ChatList> {
       child: SizedBox(
         height: 80,
         child: Padding(
-          padding: const EdgeInsets.only(top: 8, left: 8), //톡방간 간격
+          padding: const EdgeInsets.only(top: 8, left: 8, right: 8), //톡방간 간격
           child: Row(children: [
             if (role == 0)
-              Image.asset(
-                "assets/image/logo.png",
-                fit: BoxFit.contain,
+              SizedBox(
+                width: 70,
+                height: 60,
+                child: Image.asset(
+                  "assets/image/logo.png",
+                  scale: 2.5,
+                ),
               )
             else if (role >= 16)
-              Image.asset(
-                "assets/image/commander.png",
-                fit: BoxFit.contain,
-                color: Palette.pastelPurple,
+              SizedBox(
+                width: 70,
+                height: 60,
+                child: Image.asset(
+                  "assets/image/commander.png",
+                  scale: 9,
+                  color: Palette.pastelPurple,
+                ),
               )
             else if (role >= 8)
-              Image.asset(
-                "assets/image/explorer.png",
-                fit: BoxFit.contain,
-                color: Palette.pastelPurple,
+              SizedBox(
+                width: 70,
+                height: 60,
+                child: Image.asset(
+                  "assets/image/explorer.png",
+                  scale: 8.5,
+                  color: Palette.pastelPurple,
+                ),
               )
             else if (role >= 4)
-              Image.asset(
-                "assets/image/artist.png",
-                fit: BoxFit.contain,
-                color: Palette.pastelPurple,
+              SizedBox(
+                width: 70,
+                height: 60,
+                child: Image.asset(
+                  "assets/image/artist.png",
+                  scale: 8.5,
+                  color: Palette.pastelPurple,
+                ),
               )
             else if (role >= 2)
-              Image.asset(
-                "assets/image/communicator.png",
-                fit: BoxFit.contain,
-                color: Palette.pastelPurple,
+              SizedBox(
+                width: 70,
+                height: 60,
+                child: Image.asset(
+                  "assets/image/engineer.png",
+                  scale: 9.5,
+                  color: Palette.pastelPurple,
+                ),
               )
             else if (role >= 1)
-              Image.asset(
-                "assets/image/explorer.png",
-                fit: BoxFit.contain,
-                color: Palette.pastelPurple,
-              )
-            else if (role == 0)
-              Image.asset(
-                //톡방별 대표 이미지 개개인 프사나 해당 톡방에서의 역할 표시하면 좋을듯
-                "assets/image/logo.png",
-                fit: BoxFit.contain,
-                color: Palette.pastelPurple,
+              SizedBox(
+                width: 70,
+                height: 60,
+                child: Image.asset(
+                  "assets/image/communicator.png",
+                  scale: 9.5,
+                  color: Palette.pastelPurple,
+                ),
               ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: SizedBox(
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start, //글자 왼쪽 정렬
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -169,9 +187,9 @@ class ChatListState extends State<ChatList> {
                       ),
                       Text(
                         message,
-                        softWrap: true,
                         overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
+                        maxLines: 1,
+                        softWrap: false,
                       ),
                     ]),
               ),
@@ -191,6 +209,12 @@ class ChatListState extends State<ChatList> {
   void leaveRoom(String id) {
     setState(() {
       roomWidgetList.remove(id);
+    });
+  }
+
+  void updateRoom(String id, String name, String lastMessage, int userRole) {
+    setState(() {
+      roomWidgetList[id] = room(id, name, lastMessage, userRole);
     });
   }
 

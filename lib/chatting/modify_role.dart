@@ -130,14 +130,14 @@ class _ModifyRoleState extends State<ModifyRole> {
                         ),
                       ),
                     ),
-                    Expanded(
+                    const Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
+                        padding: EdgeInsets.only(left: 8.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              children: const [
+                              children: [
                                 Text(
                                   '커맨더',
                                   style: TextStyle(
@@ -152,8 +152,8 @@ class _ModifyRoleState extends State<ModifyRole> {
                                 ),
                               ],
                             ),
-                            const Text(
-                              '전체적인 일정을 조율하고 조별과제가\n잘 마무리될 수 있도록 이끌어보자 !',
+                            Text(
+                              '전체적인 일정을 조율하고 조별과제가 잘 마무리될 수 있도록 이끌어보자 !',
                               style: TextStyle(fontSize: 12),
                             ),
                           ],
@@ -208,14 +208,14 @@ class _ModifyRoleState extends State<ModifyRole> {
                         height: 70,
                       ),
                     ),
-                    Expanded(
+                    const Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
+                        padding: EdgeInsets.only(left: 8.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              children: const [
+                              children: [
                                 Text(
                                   '익스플로러',
                                   style: TextStyle(
@@ -230,8 +230,8 @@ class _ModifyRoleState extends State<ModifyRole> {
                                 ),
                               ],
                             ),
-                            const Text(
-                              '과제 수행함에 있어 필요한 자료를 조사하고\n팀원과 공유해 보자 !',
+                            Text(
+                              '과제 수행함에 있어 필요한 자료를 조사하고 팀원과 공유해 보자 !',
                               style: TextStyle(fontSize: 12),
                             ),
                           ],
@@ -286,14 +286,14 @@ class _ModifyRoleState extends State<ModifyRole> {
                         height: 70,
                       ),
                     ),
-                    Expanded(
+                    const Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
+                        padding: EdgeInsets.only(left: 8.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              children: const [
+                              children: [
                                 Text(
                                   '아티스트',
                                   style: TextStyle(
@@ -308,8 +308,8 @@ class _ModifyRoleState extends State<ModifyRole> {
                                 ),
                               ],
                             ),
-                            const Text(
-                              'PPT, 사진 그리고 동영상 같은 자료들을\n제작하고 멋지고 예쁘게 편집해보자 !',
+                            Text(
+                              'PPT, 사진 그리고 동영상 같은 자료들을 제작하고 멋지고 예쁘게 편집해보자 !',
                               style: TextStyle(fontSize: 12),
                             )
                           ],
@@ -365,14 +365,14 @@ class _ModifyRoleState extends State<ModifyRole> {
                         scale: 9,
                       ),
                     ),
-                    Expanded(
+                    const Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
+                        padding: EdgeInsets.only(left: 8.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              children: const [
+                              children: [
                                 Text(
                                   '엔지니어',
                                   style: TextStyle(
@@ -387,8 +387,8 @@ class _ModifyRoleState extends State<ModifyRole> {
                                 ),
                               ],
                             ),
-                            const Text(
-                              '과제 수행에 필요한 기능이나 기획에 맞게 \n프로그램을 구현해보자 !',
+                            Text(
+                              '과제 수행에 필요한 기능이나 기획에 맞게 프로그램을 구현해보자 !',
                               style: TextStyle(fontSize: 12),
                             ),
                           ],
@@ -444,13 +444,13 @@ class _ModifyRoleState extends State<ModifyRole> {
                         scale: 9,
                       ),
                     ),
-                    Expanded(
+                    const Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
+                        padding: EdgeInsets.only(left: 8.0),
                         child: Column(
                           children: [
                             Row(
-                              children: const [
+                              children: [
                                 Text(
                                   '커뮤니케이터',
                                   style: TextStyle(
@@ -465,8 +465,8 @@ class _ModifyRoleState extends State<ModifyRole> {
                                 ),
                               ],
                             ),
-                            const Text(
-                              '그동안 팀원들과 함께 만든 작품을 교수님\n또는 다른 조원들 앞에서 열심히 발표해보자 !',
+                            Text(
+                              '그동안 팀원들과 함께 만든 작품을 교수님 또는 다른 조원들 앞에서 열심히 발표해보자 !',
                               style: TextStyle(
                                 fontSize: 12,
                               ),
@@ -489,7 +489,7 @@ class _ModifyRoleState extends State<ModifyRole> {
                 widget.returnRole(userRole);
                 Navigator.of(context).pop();
               },
-              style: buttonStyle,
+              style: colorButtonStyle(Palette.brightBlue),
               child: const Text(
                 '완료',
                 style: TextStyle(fontSize: 15, color: Colors.white),
