@@ -1,4 +1,4 @@
-//import 'package:capston/message/addmessage.dart';
+import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/quiz/solve_quiz.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,15 +9,18 @@ final currentYear = DateTime.now().year; //실제 시간의 년도
 typedef ImpMsgSnapshot = QuerySnapshot<Map<String, dynamic>>;
 
 class ImportantMessagesPage extends StatelessWidget {
-  final String roomname;
+  final ChatScreenState chatScreenState;
+  final String roomID;
   late Stream<QuerySnapshot<Object?>> imgMsgStream;
 
-  ImportantMessagesPage({Key? key, required this.roomname}) : super(key: key);
+  ImportantMessagesPage(
+      {Key? key, required this.roomID, required this.chatScreenState})
+      : super(key: key);
 
   Stream<QuerySnapshot<Map<String, dynamic>>> loadImpMsgList() async* {
     var snapshot = await FirebaseFirestore.instance
         .collection('chat')
-        .doc(roomname)
+        .doc(roomID)
         .collection('imp_msg')
         .orderBy('timeStamp', descending: true) // 시간 역순으로 정렬
         .get();
@@ -47,7 +50,7 @@ class ImportantMessagesPage extends StatelessWidget {
           // 해당 채팅방의 중요한 메시지만 필터링하여 보여줌
 
           return ListView.builder(
-            reverse: true,
+            reverse: false,
             itemCount: documents.length,
             itemBuilder: (context, index) {
               final data = documents[index].data() as Map<String, dynamic>;
@@ -82,7 +85,7 @@ class ImportantMessagesPage extends StatelessWidget {
                       TextButton(
                         onPressed: () {
                           print(documents[index].id);
-                          deleteImpMsg(roomname, impMsgId);
+                          deleteImpMsg(roomID, impMsgId);
                           Navigator.pop(context);
                         },
                         child: const Text('삭제'),
@@ -124,7 +127,8 @@ class ImportantMessagesPage extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) => solve_quiz(
-                roomname: roomname,
+                chatScreenState: chatScreenState,
+                roomID: roomID,
               ),
             ),
           );
@@ -134,7 +138,7 @@ class ImportantMessagesPage extends StatelessWidget {
     );
   }
 
-  // bool isDifferentDate(QueryDocumentSnapshot<Object?> prev,ㅏ두
+  // bool isDifferentDate(QueryDocumentSnapshot<Object?> prev,
   //     QueryDocumentSnapshot<Object?> current) {
   //   final prevTime =
   //       (prev.data() as Map<String, dynamic>)['timeStamp'] as Timestamp;
@@ -152,11 +156,11 @@ class ImportantMessagesPage extends StatelessWidget {
 }
 
 //---------------------------------------------------------------------------------------------------
-Future<void> deleteImpMsg(String roomname, String impMsgId) async {
+Future<void> deleteImpMsg(String roomID, String impMsgId) async {
   try {
     await FirebaseFirestore.instance
         .collection('chat')
-        .doc(roomname)
+        .doc(roomID)
         .collection('imp_msg')
         .doc(impMsgId)
         .delete();
@@ -173,9 +177,11 @@ Future<void> deleteImpMsg(String roomname, String impMsgId) async {
 //--------------------------------- Simple Message View Code------------------------------------------
 
 class SimpleImportantMessage extends StatelessWidget {
-  final String roomname;
+  final String roomID;
+  final ChatScreenState chatScreenState;
 
-  const SimpleImportantMessage({Key? key, required this.roomname})
+  const SimpleImportantMessage(
+      {Key? key, required this.roomID, required this.chatScreenState})
       : super(key: key);
 
   @override
@@ -184,7 +190,7 @@ class SimpleImportantMessage extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('chat')
-            .doc(roomname)
+            .doc(roomID)
             .collection('imp_msg')
             .orderBy('timeStamp', descending: true) // 최근 시간 순으로 정렬
             .snapshots(),
@@ -211,8 +217,10 @@ class SimpleImportantMessage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                ImportantMessagesPage(roomname: roomname),
+                            builder: (context) => ImportantMessagesPage(
+                              roomID: roomID,
+                              chatScreenState: chatScreenState,
+                            ),
                           ),
                         );
                       },
