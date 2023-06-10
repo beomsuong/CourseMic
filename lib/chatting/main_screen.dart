@@ -24,6 +24,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
 
   bool showSpinner = false;
   final _formKey = GlobalKey<FormState>();
+  String currentUserID = '';
   String userName = '';
   String userEmail = '';
   String userPassword = '';
@@ -100,7 +101,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                   Palette.brightBlue,
                                 ],
                               ).createShader(
-                                const Rect.fromLTWH(50.0, 0.0, 200.0, 0.0),
+                                const Rect.fromLTWH(100.0, 0.0, 250.0, 0.0),
                               ),
                           ),
                         ),
@@ -477,18 +478,6 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                           showSpinner = true;
                         });
                         if (bSignupScreen) {
-                          if (userPickedImage == null) {
-                            setState(() {
-                              showSpinner = false;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('이미지를 선택해주세요.'),
-                                backgroundColor: Colors.blue,
-                              ),
-                            );
-                            return;
-                          }
                           _tryValidation();
 
                           try {
@@ -498,11 +487,16 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                               password: userPassword,
                             );
 
-                            final imageRef = storage
-                                .ref()
-                                .child('picked_image')
-                                .child('${newUser.user!.uid}.png');
-                            await imageRef.putFile(userPickedImage!);
+                            late final Reference imageRef;
+                            if (userPickedImage != null) {
+                              imageRef = storage
+                                  .ref()
+                                  .child('picked_image')
+                                  .child('${newUser.user!.uid}.png');
+                              await imageRef.putFile(userPickedImage!);
+                            } else {
+                              imageRef = storage.ref().child('user.png');
+                            }
                             final url = await imageRef.getDownloadURL();
 
                             await firestore
@@ -516,21 +510,21 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                 'MBTI': '???',
                                 'department': '???',
                                 'chatList': [],
-                                'image': url
+                                'imageURL': url
                               },
                             );
 
-                            if (newUser.user != null) {
-                              setState(() {
-                                showSpinner = false;
-                              });
-                            }
+                            currentUserID = newUser.user!.uid;
+                            setState(() {
+                              bSignupScreen = false;
+                              showSpinner = false;
+                            });
                           } catch (e) {
                             print(e);
                             if (!mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('중복되는 이메일이 존재합니다.'),
+                                content: Text('잘못된 또는 중복된 이메일입니다.'),
                                 backgroundColor: Colors.blue,
                               ),
                             );
@@ -549,20 +543,21 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                               password: userPassword,
                             );
 
-                            if (newUser.user != null) {
-                              if (!mounted) return;
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return const MyHomePage();
-                                  },
-                                ),
-                              );
-                              setState(() {
-                                showSpinner = false;
-                              });
-                            }
+                            currentUserID = newUser.user!.uid;
+                            if (!mounted) return;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return MyHomePage(
+                                    currentUserID: currentUserID,
+                                  );
+                                },
+                              ),
+                            );
+                            setState(() {
+                              showSpinner = false;
+                            });
                           } catch (e) {
                             print(e);
                             setState(() {

@@ -1,58 +1,48 @@
+import 'package:capston/chatting/chat/chat_list.dart';
+import 'package:capston/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:capston/chatting/chat/chat_user.dart';
 
 class AddChat extends StatefulWidget {
+  final ChatListState chatListParent;
   const AddChat({
     Key? key,
+    required this.chatListParent,
   }) : super(key: key);
 
   @override
   State<AddChat> createState() => _AddChatState();
 }
 
-String roomname = '';
-
 class _AddChatState extends State<AddChat> {
-  Future<DocumentSnapshot> loadingdata(
-      String datatype, String universistyname) async {
-    final authentication = FirebaseAuth.instance;
-    final user = authentication.currentUser;
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    DocumentReference docRef = firestore.collection('user').doc(user?.uid);
-    DocumentSnapshot docSnapshot = await docRef.get();
-    await docRef.update({datatype: universistyname});
-    return docSnapshot;
-  }
+  String roomName = "";
 
 // Add chatting room
   void addroom() async {
     // 입력된 문자가 없을 경우 리턴
-    if (roomname.isEmpty) return;
+    if (roomName.isEmpty) return;
 
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-    CollectionReference chatColRef = firestore.collection('chat');
-    final authentication = FirebaseAuth.instance;
-    final user = authentication.currentUser;
+    CollectionReference chatColRef =
+        widget.chatListParent.firestore.collection('chat');
 
     // add user to chatting room field
     chatColRef.add({
-      'roomName': roomname,
+      'roomName': roomName,
       'commanderID': '',
-      'userList': <Map<String, dynamic>>[ChatUser(userID: user!.uid).toJson()],
+      'userList': <Map<String, dynamic>>[
+        ChatUser(userID: widget.chatListParent.currentUser.uid).toJson()
+      ],
     }).then((DocumentReference doc) {
-      CollectionReference userColRef = firestore.collection('user');
-
-      userColRef.doc(user.uid).update({
+      widget.chatListParent.currUserDocRef.update({
         'chatList': FieldValue.arrayUnion([doc.id]),
       }).then((value) {
         print("Value Added to Array");
       }).catchError((error) {
         print("Failed to add value to array: $error");
       });
-      print("Document Added, ID: ${doc.id}"); // 문서의 ID를 출력합니다.
+
+      widget.chatListParent.addRoom(doc.id, roomName);
     }).catchError((error) {
       print("Failed to add document: $error");
     });
@@ -62,17 +52,17 @@ class _AddChatState extends State<AddChat> {
   Widget build(BuildContext context) {
     return Dialog(
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(30.0)),
+          borderRadius: BorderRadius.all(Radius.circular(20.0)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Container(
               decoration: const BoxDecoration(
-                color: Colors.purple,
+                color: Colors.deepPurple,
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30.0),
-                  topRight: Radius.circular(30.0),
+                  topLeft: Radius.circular(20.0),
+                  topRight: Radius.circular(20.0),
                 ),
               ),
               padding: const EdgeInsets.only(left: 15.0),
@@ -91,36 +81,41 @@ class _AddChatState extends State<AddChat> {
                         addroom();
                         Navigator.of(context).pop();
                       },
-                      icon: const Icon(Icons.check))
+                      icon: const Icon(Icons.add_circle_rounded))
                 ],
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 15.0, right: 15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("톡방 이름 :",
-                      style:
-                          TextStyle(fontWeight: FontWeight.w500, fontSize: 20)),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white, // 버튼 배경색 지정
-                    ),
-                    child: SizedBox(
-                      width: 150,
-                      height: 30,
-                      child: TextField(
-                        onChanged: (value) {
-                          setState(() {
-                            roomname = value;
-                          });
-                        },
+              padding: const EdgeInsets.only(left: 8.0, right: 8),
+              child: ElevatedButton(
+                onPressed: null,
+                style: ElevatedButton.styleFrom(
+                  disabledBackgroundColor: Colors.white,
+                ),
+                child: SizedBox(
+                  height: 40,
+                  child: Center(
+                    child: TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          roomName = value;
+                        });
+                      },
+                      textAlign: TextAlign.center,
+                      decoration: const InputDecoration(
+                        // border: const OutlineInputBorder(),
+                        hintText: "톡방 이름",
+                        hintStyle: TextStyle(
+                          fontSize: 14,
+                          color: Palette.textColor1,
+                        ),
+                        contentPadding: EdgeInsets.only(bottom: 3),
                       ),
+                      style: const TextStyle(fontSize: 14),
+                      keyboardType: TextInputType.text,
                     ),
                   ),
-                ],
+                ),
               ),
             ),
             const SizedBox(

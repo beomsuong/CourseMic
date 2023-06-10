@@ -1,44 +1,18 @@
+import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:capston/chatting/chat/chat_list.dart';
-import 'mypage/mypage.dart';
+import 'mypage/profile.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  final String currentUserID;
+  const MyHomePage({super.key, required this.currentUserID});
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class GradientText extends StatelessWidget {
-  const GradientText({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      'CourseMic',
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-        foreground: Paint()
-          ..shader = const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.blue, Color.fromARGB(142, 141, 5, 187)],
-          ).createShader(
-            const Rect.fromLTWH(50.0, 0.0, 200.0, 0.0),
-          ),
-      ),
-    );
-  }
-}
-
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
-  final List<Widget> _pages = [
-    //각 페이지 이동 시 사용하는 리스트형 위젯 각 페이지 클래스를 실행한다
-    // ChatScreen(),
-    const RoomList(),
-    const Mypage(),
-  ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -49,20 +23,48 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.messenger_outline),
-            label: '채팅방',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle),
-            label: '마이페이지',
-          ),
-        ],
+      body: IndexedStack(index: _currentIndex, children: [
+        const ChatList(),
+        Profile(
+          userID: widget.currentUserID,
+          bMyProfile: true,
+          bChild: false,
+        ),
+      ]),
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 0.5,
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          backgroundColor: Palette.lightGray,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          currentIndex: _currentIndex,
+          onTap: _onItemTapped,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(
+                  _currentIndex == 0
+                      ? Icons.messenger_rounded
+                      : Icons.messenger_outline_rounded,
+                  color: Palette.pastelPurple),
+              label: '채팅방',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                  _currentIndex == 1
+                      ? Icons.account_circle_rounded
+                      : Icons.account_circle_outlined,
+                  color: Palette.pastelPurple),
+              label: '마이페이지',
+            ),
+          ],
+        ),
       ),
     );
   }
