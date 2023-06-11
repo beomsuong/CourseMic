@@ -25,6 +25,11 @@ class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
   late Stream<QuerySnapshot<Object?>> imgMsgStream;
 
   bool isBtnEnable = false;
+  @override
+  void initState() {
+    super.initState();
+    checkBtnStatus();
+  }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> loadImpMsgList() async* {
     var snapshot = await widget.chatScreenState.chatDocRef

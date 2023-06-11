@@ -275,6 +275,7 @@ class ChatScreenState extends State<ChatScreen> {
           },
         ),
       );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       //! 스낵바 안보일 때 처리
       print('가장 최근 퀴즈가 없는거같다.');
