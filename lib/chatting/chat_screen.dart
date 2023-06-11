@@ -18,6 +18,7 @@ class ChatScreen extends StatefulWidget {
   final String roomID;
   final ChatListState chatListParent;
   late String lastMessage;
+
   ChatScreen(
       {Key? key,
       required this.roomID,
@@ -46,6 +47,7 @@ class ChatScreenState extends State<ChatScreen> {
   late Future<void> chatFuture;
 
   late final String roomCode;
+
   // late FToast fToast;
   // Widget toast = Container(
   //   padding: const EdgeInsets.all(12),
@@ -273,8 +275,6 @@ class ChatScreenState extends State<ChatScreen> {
           },
         ),
       );
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       //! 스낵바 안보일 때 처리
       print('가장 최근 퀴즈가 없는거같다.');
@@ -285,6 +285,9 @@ class ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
+        //!
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+
         widget.chatListParent.updateRoom(widget.roomID, chat.roomName,
             widget.lastMessage, chat.getUser(userID: currentUser.uid)!.role);
         return true;
