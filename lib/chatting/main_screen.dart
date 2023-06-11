@@ -36,15 +36,6 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
   File? userPickedImage;
 
   late FToast fToast;
-  Widget successToast = Container(
-    padding: const EdgeInsets.all(12),
-    margin: const EdgeInsets.only(bottom: 36),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(20.0),
-      color: Palette.toastGray,
-    ),
-    child: const Text("자동 로그인 성공!", style: TextStyle(color: Colors.white)),
-  );
 
   @override
   void initState() {
