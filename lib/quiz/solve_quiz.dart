@@ -322,6 +322,7 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
                                 widget.solveQuizParent.bSubmit = true;
                                 Navigator.pop(context);
                                 Navigator.pop(context);
+                                Navigator.pop(context);
                               },
                               child: const Text('확인'),
                             ),
