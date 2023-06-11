@@ -5,6 +5,7 @@ import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class solve_quiz extends StatefulWidget {
   final ChatScreenState chatScreenState;
@@ -15,21 +16,33 @@ class solve_quiz extends StatefulWidget {
       : super(key: key);
 
   @override
-  _solve_quizState createState() => _solve_quizState();
+  solve_quizState createState() => solve_quizState();
 }
 
-class _solve_quizState extends State<solve_quiz> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  int score = 10;
+class solve_quizState extends State<solve_quiz> {
+  bool bSubmit = false;
+
+  late FToast fToast;
+  Widget errorToast = Container(
+    padding: const EdgeInsets.all(12),
+    margin: const EdgeInsets.only(bottom: 36),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(20.0),
+      color: Palette.toastGray,
+    ),
+    child: const Text("퀴즈를 풀어주세요", style: TextStyle(color: Colors.white)),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    fToast = FToast();
+    fToast.init(context);
+  }
 
   Future<void> setQuiz(Timestamp quiz_C_date, List<String> quiz_passer) async {
     try {
-      await _firestore
-          .collection('chat')
-          .doc(widget.roomID)
-          .collection('quiz')
-          .doc()
-          .set({
+      await widget.chatScreenState.chatDocRef.collection('quiz').doc().set({
         'quiz_C_date': quiz_C_date,
         'quiz_passer': quiz_passer,
       });
@@ -41,11 +54,9 @@ class _solve_quizState extends State<solve_quiz> {
   Future<void> updateOrCreateQuiz() async {
     try {
       print('그 메서드 불러와짐');
-      final CollectionReference chatRef = _firestore.collection('chat');
-      final DocumentReference roomRef =
-          chatRef.doc(widget.roomID); // 방 도큐먼트 레퍼런스
-      final CollectionReference quizRef =
-          roomRef.collection('quiz'); // 해당 방의 퀴즈 컬렉션 레퍼런스
+
+      final CollectionReference quizRef = widget.chatScreenState.chatDocRef
+          .collection('quiz'); // 해당 방의 퀴즈 컬렉션 레퍼런스
 
       final QuerySnapshot querySnapshot =
           await quizRef.orderBy('quiz_C_date', descending: true).limit(1).get();
@@ -60,7 +71,6 @@ class _solve_quizState extends State<solve_quiz> {
         final Timestamp currentTimestamp = Timestamp.now();
         final Duration difference =
             currentTimestamp.toDate().difference(latestTimestamp.toDate());
-        const score = 5;
 
         if (difference.inHours < 24) {
           //! 24시간 이내
@@ -96,9 +106,7 @@ class _solve_quizState extends State<solve_quiz> {
   }
 
   Future<List<imp_msg>> getimpMsgList() async {
-    QuerySnapshot querySnapshot = await _firestore
-        .collection('chat')
-        .doc(widget.roomID)
+    QuerySnapshot querySnapshot = await widget.chatScreenState.chatDocRef
         .collection('imp_msg')
         .orderBy('timeStamp', descending: true)
         .limit(5)
@@ -114,37 +122,54 @@ class _solve_quizState extends State<solve_quiz> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("QUIZ"),
-        centerTitle: true,
-      ),
-      body: FutureBuilder<List<imp_msg>>(
-        future: getimpMsgList(),
-        builder: (BuildContext context, AsyncSnapshot<List<imp_msg>> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Text("Error: ${snapshot.error}");
-          } else if (snapshot.hasData) {
-            List<imp_msg> impMsgList = snapshot.data!;
-            if (impMsgList.length >= 5) {
-              return BuildOrderQuiz(
-                roomID: widget.roomID,
-                impMsgList: impMsgList,
-                updateOrCreateQuiz: updateOrCreateQuiz,
-              );
+    return WillPopScope(
+      onWillPop: () async {
+        if (!bSubmit) {
+          fToast.showToast(
+              child: errorToast,
+              toastDuration: const Duration(milliseconds: 1250),
+              fadeDuration: const Duration(milliseconds: 600));
+        }
+        return bSubmit;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("QUIZ"),
+          centerTitle: true,
+          automaticallyImplyLeading: false,
+        ),
+        body: FutureBuilder<List<imp_msg>>(
+          future: getimpMsgList(),
+          builder:
+              (BuildContext context, AsyncSnapshot<List<imp_msg>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Text("Error: ${snapshot.error}");
+            } else if (snapshot.hasData) {
+              List<imp_msg> impMsgList = snapshot.data!;
+              if (impMsgList.length >= 5) {
+                return BuildOrderQuiz(
+                  roomID: widget.roomID,
+                  impMsgList: impMsgList,
+                  updateOrCreateQuiz: updateOrCreateQuiz,
+                  solveQuizParent: this,
+                  chatDataParent: widget.chatScreenState,
+                );
+              } else {
+                return BuildWriterQuiz(
+                  roomID: widget.roomID,
+                  impMsgList: impMsgList,
+                  updateOrCreateQuiz: updateOrCreateQuiz,
+                  solveQuizParent: this,
+                  chatDataParent: widget.chatScreenState,
+                );
+              }
             } else {
-              return BuildWriterQuiz(
-                roomID: widget.roomID,
-                impMsgList: impMsgList,
-                updateOrCreateQuiz: updateOrCreateQuiz,
-              );
+              return const Text("No data available");
             }
-          } else {
-            return const Text("No data available");
-          }
-        },
+          },
+        ),
       ),
     );
   }
@@ -154,17 +179,23 @@ class BuildOrderQuiz extends StatefulWidget {
   final String roomID;
   final List<imp_msg> impMsgList;
   final Function updateOrCreateQuiz;
+  final solve_quizState solveQuizParent;
+  final ChatScreenState chatDataParent;
 
   const BuildOrderQuiz({
     Key? key,
     required this.roomID,
     required this.impMsgList,
     required this.updateOrCreateQuiz,
+    required this.solveQuizParent,
+    required this.chatDataParent,
   }) : super(key: key);
 
   @override
   _BuildOrderQuizState createState() => _BuildOrderQuizState();
 }
+
+const score = 5;
 
 class _BuildOrderQuizState extends State<BuildOrderQuiz> {
   late List<imp_msg> reorderedList;
@@ -205,7 +236,7 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text("Q. 다음 중요메세지들을 오랜된 메세지(맨 위)부터 차례대로 나열하세요. (5점)",
+          const Text("Q. 다음 중요메세지들을 오랜된 메세지(맨 위)부터 차례대로 나열하세요. (5 포인트)",
               style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 30),
           ReorderableListView.builder(
@@ -265,7 +296,7 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
                           content: const Wrap(
                             children: [
                               Text(
-                                '10점',
+                                '5 포인트',
                                 style: TextStyle(
                                     color: Palette.brightBlue,
                                     fontWeight: FontWeight.bold),
@@ -276,9 +307,21 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
                           actions: [
                             TextButton(
                               onPressed: () {
+                                widget
+                                    .chatDataParent
+                                    .chat
+                                    .userList[widget.chatDataParent.chat
+                                        .getIndexOfUser(
+                                            userID: widget.chatDataParent
+                                                .currentUser.uid)]
+                                    .participation += score;
+                                // 혹시 성능에 문제가 있을 경우, 부분적으로 업데이트 되도록 수정 필요
+                                widget.chatDataParent.chatDocRef.update(
+                                    widget.chatDataParent.chat.toJson());
+
+                                widget.solveQuizParent.bSubmit = true;
                                 Navigator.pop(context);
                                 Navigator.pop(context);
-                                //Navigator.pop(context);
                               },
                               child: const Text('확인'),
                             ),
@@ -299,8 +342,9 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
                           actions: [
                             TextButton(
                               onPressed: () {
+                                widget.solveQuizParent.bSubmit = true;
                                 Navigator.pop(context);
-                                // Navigator.pop(context);
+                                Navigator.pop(context);
                               },
                               child: const Text('확인'),
                             )
@@ -329,12 +373,16 @@ class BuildWriterQuiz extends StatefulWidget {
   final String roomID;
   final List<imp_msg> impMsgList;
   final Function() updateOrCreateQuiz; // updateOrCreateQuiz 콜백 함수
+  final solve_quizState solveQuizParent;
+  final ChatScreenState chatDataParent;
 
   const BuildWriterQuiz({
     Key? key,
     required this.roomID,
     required this.impMsgList,
     required this.updateOrCreateQuiz,
+    required this.solveQuizParent,
+    required this.chatDataParent,
   }) : super(key: key);
 
   @override
@@ -383,7 +431,7 @@ class _BuildWriterQuizState extends State<BuildWriterQuiz> {
               content: const Wrap(
                 children: [
                   Text(
-                    '10 포인트',
+                    '5 포인트',
                     style: TextStyle(
                       color: Palette.brightBlue,
                       fontWeight: FontWeight.bold,
@@ -395,9 +443,18 @@ class _BuildWriterQuizState extends State<BuildWriterQuiz> {
               actions: [
                 TextButton(
                     onPressed: () {
+                      widget
+                          .chatDataParent
+                          .chat
+                          .userList[widget.chatDataParent.chat.getIndexOfUser(
+                              userID: widget.chatDataParent.currentUser.uid)]
+                          .participation += score;
+                      // 혹시 성능에 문제가 있을 경우, 부분적으로 업데이트 되도록 수정 필요
+                      widget.chatDataParent.chatDocRef
+                          .update(widget.chatDataParent.chat.toJson());
+
                       Navigator.pop(context);
                       Navigator.pop(context);
-                      // Navigator.pop(context);
                     },
                     child: const Text('확인'))
               ],
