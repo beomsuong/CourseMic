@@ -28,6 +28,7 @@ class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
   @override
   void initState() {
     super.initState();
+    imgMsgStream = loadImpMsgList();
     checkBtnStatus();
   }
 
@@ -105,7 +106,6 @@ class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
 //-----------------------------------------------------
   @override
   Widget build(BuildContext context) {
-    imgMsgStream = loadImpMsgList();
     return Scaffold(
       appBar: AppBar(
           // appBar background
@@ -170,6 +170,9 @@ class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
                           onPressed: () {
                             print(documents[index].id);
                             deleteImpMsg(widget.roomID, impMsgId);
+                            setState(() {
+                              imgMsgStream = loadImpMsgList();
+                            });
                             Navigator.pop(context);
                           },
                           child: const Text('삭제'),
