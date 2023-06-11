@@ -110,8 +110,8 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Row(
-                                      children: const [
+                                    const Row(
+                                      children: [
                                         Icon(Icons.person),
                                         SizedBox(
                                           child: Text(
@@ -181,8 +181,8 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Row(
-                                      children: const [
+                                    const Row(
+                                      children: [
                                         Icon(Icons.subject_rounded),
                                         SizedBox(
                                           child: Text(
@@ -209,9 +209,9 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
                                   ],
                                 ),
                               ),
-                              Card(
+                              const Card(
                                 child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
+                                  padding: EdgeInsets.all(8.0),
                                   child: Align(
                                     alignment: Alignment.centerLeft,
                                     child: Column(
@@ -219,7 +219,7 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
                                         SizedBox(
                                           height: 30,
                                           child: Row(
-                                            children: const [
+                                            children: [
                                               Text(
                                                 '현재 참여중인 과제 : ' 'N' '(개)',
                                                 style: TextStyle(
@@ -229,11 +229,11 @@ class _ViewuserprofileState extends State<Viewuserprofile> {
                                             ],
                                           ),
                                         ),
-                                        const Divider(),
+                                        Divider(),
                                         SizedBox(
                                           height: 30,
                                           child: Row(
-                                            children: const [
+                                            children: [
                                               Text(
                                                 '완료한 과제 : ' '0' '(개)',
                                                 style: TextStyle(
