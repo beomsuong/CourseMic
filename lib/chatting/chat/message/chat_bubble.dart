@@ -20,7 +20,6 @@ class ChatBubbles extends StatelessWidget {
   final Timestamp sendTime;
   final String roomID;
 
-  late String copyedMessage;
   late FToast fToast = FToast();
   Widget toast = Container(
     padding: const EdgeInsets.all(12),
@@ -71,8 +70,7 @@ class ChatBubbles extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          copyedMessage = message;
-                          copyMessage();
+                          Clipboard.setData(ClipboardData(text: message));
                           Navigator.pop(context);
                         },
                         child: const Text('복사'),
@@ -188,13 +186,5 @@ class ChatBubbles extends StatelessWidget {
         ),
       ]),
     );
-  }
-
-  void copyMessage() {
-    Clipboard.setData(ClipboardData(text: copyedMessage));
-    fToast.showToast(
-        child: toast,
-        toastDuration: const Duration(milliseconds: 1250),
-        fadeDuration: const Duration(milliseconds: 550));
   }
 }
