@@ -27,9 +27,7 @@ class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
   bool isBtnEnable = false;
 
   Stream<QuerySnapshot<Map<String, dynamic>>> loadImpMsgList() async* {
-    var snapshot = await FirebaseFirestore.instance
-        .collection('chat')
-        .doc(widget.roomID)
+    var snapshot = await widget.chatScreenState.chatDocRef
         .collection('imp_msg')
         .orderBy('timeStamp', descending: true) // 시간 역순으로 정렬
         .get();
@@ -207,9 +205,9 @@ class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: isBtnEnable
-            ? () {
+      floatingActionButton: isBtnEnable
+          ? FloatingActionButton(
+              onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -219,10 +217,10 @@ class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
                     ),
                   ),
                 );
-              }
-            : null,
-        child: const Text("Quiz!"),
-      ),
+              },
+              child: const Text("Quiz!"),
+            )
+          : null,
     );
   }
 }
@@ -257,9 +255,7 @@ class SimpleImportantMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('chat')
-            .doc(roomID)
+        stream: chatScreenState.chatDocRef
             .collection('imp_msg')
             .orderBy('timeStamp', descending: true) // 최근 시간 순으로 정렬
             .snapshots(),
