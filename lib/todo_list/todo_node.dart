@@ -151,7 +151,7 @@ class _ToDoNodeState extends State<ToDoNode> {
                                   Icon(Icons.delete, color: widget.iconColor))
                           : GestureDetector(
                               onTap: addToDo,
-                              child: const Text('Add',
+                              child: const Text('추가',
                                   style:
                                       TextStyle(color: Palette.pastelPurple))),
                     ),
@@ -336,6 +336,8 @@ class _ToDoNodeState extends State<ToDoNode> {
       return;
     }
 
+    widget.toDo.createDate = Timestamp.now();
+
     widget.chatDataParent.toDoColRef
         .doc(controller.text)
         .set(widget.toDo.toJson());
@@ -343,6 +345,7 @@ class _ToDoNodeState extends State<ToDoNode> {
     // clear addToDoNode
     controller.text = '';
     widget.toDo.resetToDo();
+    users = setUsers();
 
     widget.buildParent.rebuildToDo();
     widget.chatDataParent.updateProgressPercent();

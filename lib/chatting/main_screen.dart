@@ -18,6 +18,8 @@ class LoginSignupScreen extends StatefulWidget {
 }
 
 class _LoginSignupScreenState extends State<LoginSignupScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   static const secureStorage = FlutterSecureStorage();
   late String? userInfo = "";
 
@@ -52,6 +54,11 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
 
     userEmail = userInfo!.split(" ")[1];
     userPassword = userInfo!.split(" ")[3];
+
+    setState(() {
+      emailController.text = userEmail;
+      passwordController.text = userPassword;
+    });
 
     try {
       final newUser = await _authentication.signInWithEmailAndPassword(
@@ -412,7 +419,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                               child: Column(
                                 children: [
                                   TextFormField(
-                                    initialValue: userEmail,
+                                    controller: emailController,
                                     key: const ValueKey(4),
                                     validator: (value) {
                                       if (value!.isEmpty ||
@@ -457,7 +464,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                   ),
                                   TextFormField(
                                     obscureText: true,
-                                    initialValue: userPassword,
+                                    controller: passwordController,
                                     key: const ValueKey(5),
                                     validator: (value) {
                                       if (value!.isEmpty || value.length < 6) {
