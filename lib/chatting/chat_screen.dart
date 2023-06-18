@@ -13,6 +13,7 @@ import 'package:capston/chatting/chat/message/message.dart';
 import 'package:capston/chatting/chat/message/new_message.dart';
 import 'package:flutter/services.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ChatScreen extends StatefulWidget {
   final String roomID;
@@ -319,30 +320,52 @@ class ChatScreenState extends State<ChatScreen> {
                           Padding(
                             padding:
                                 const EdgeInsets.only(left: 12.0, bottom: 8),
-                            child: Row(children: [
-                              const Text(
-                                '코드',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              Text(
-                                roomCode,
-                                style: const TextStyle(color: Palette.darkGray),
-                              ),
-                              const SizedBox(
-                                width: 4,
-                              ),
-                              GestureDetector(
-                                onTap: () => Clipboard.setData(
-                                    ClipboardData(text: roomCode)),
-                                child: const Icon(Icons.copy_rounded,
-                                    color: Palette.darkGray, size: 20),
-                              ),
-                            ]),
+                            child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Text(
+                                        '코드',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text(
+                                        roomCode,
+                                        style: const TextStyle(
+                                            color: Palette.darkGray),
+                                      ),
+                                      const SizedBox(
+                                        width: 4,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () => Clipboard.setData(
+                                            ClipboardData(text: roomCode)),
+                                        child: const Icon(Icons.copy_rounded,
+                                            color: Palette.darkGray, size: 20),
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 10.0),
+                                    child: GestureDetector(
+                                        onTap: () {
+                                          Share.share(
+                                              "CourseMic 을 다운 받고 무임승차 없는 조별과제를 진행해보세요!"
+                                              "\n\n플레이스토어 링크"
+                                              "\n\n채팅방 코드 : $roomCode");
+                                        },
+                                        child: const Icon(
+                                            Icons.ios_share_rounded,
+                                            color: Palette.darkGray,
+                                            size: 20)),
+                                  ),
+                                ]),
                           ),
                           const Padding(
                             padding: EdgeInsets.only(left: 8.0, right: 8),
