@@ -10,6 +10,7 @@ class MyUser {
   late String contactTime;
   late String imageURL;
   late List<dynamic> chatList;
+  late int exp;
 
   MyUser({
     required this.name,
@@ -19,6 +20,7 @@ class MyUser {
     this.contactTime = "???",
     required this.imageURL,
     required this.chatList,
+    required this.exp,
   });
 
   factory MyUser.fromJson(DocumentSnapshot<Object?> json) {
@@ -29,7 +31,8 @@ class MyUser {
         department: json['department'],
         contactTime: json['contactTime'],
         imageURL: json['imageURL'],
-        chatList: json['chatList']);
+        chatList: json['chatList'],
+        exp: json['exp']);
   }
 
   Map<String, dynamic> toJson() {
@@ -41,6 +44,7 @@ class MyUser {
       "contactTime": contactTime,
       "imageURL": imageURL,
       "chatList": chatList,
+      "exp": exp,
     };
   }
 
@@ -67,6 +71,9 @@ class MyUser {
         break;
       case "chatList":
         data = chatList;
+        break;
+      case "exp":
+        data = exp;
         break;
     }
 

@@ -128,6 +128,7 @@ class ProfileState extends State<Profile> {
               return const Center(child: CircularProgressIndicator());
             }
             myUser = MyUser.fromJson(snapshot.data!);
+            List<dynamic> level = calculateLevel(myUser.exp);
 
             return ListView(
               children: <Widget>[
@@ -323,9 +324,9 @@ class ProfileState extends State<Profile> {
                     Padding(
                       padding: EdgeInsets.only(
                           top: widget.bMyProfile ? 5 : 15, bottom: 5),
-                      child: const Text(
-                        'Level 0',
-                        style: TextStyle(
+                      child: Text(
+                        'Level ${level[0]}',
+                        style: const TextStyle(
                             fontSize: 25, fontWeight: FontWeight.w900),
                       ),
                     ),
@@ -339,15 +340,15 @@ class ProfileState extends State<Profile> {
                         style: TextStyle(
                             fontSize: 12, fontWeight: FontWeight.w900),
                       ),
-                      trailing: const Text(
+                      trailing: Text(
                         //우측 문자열 trailing
-                        "80%",
-                        style: TextStyle(
+                        "${(level[1] * 100).floor()}%",
+                        style: const TextStyle(
                             fontSize: 12, fontWeight: FontWeight.w900),
                       ),
-                      percent: 0.8,
-                      center: const Text("80.0%",
-                          style: TextStyle(color: Colors.white)),
+                      percent: level[1],
+                      center: Text("${(level[1] * 100).floor()}%",
+                          style: const TextStyle(color: Colors.white)),
                       backgroundColor: Palette.lightGray,
                       linearGradient: const LinearGradient(colors: [
                         Palette.brightViolet,
@@ -358,11 +359,16 @@ class ProfileState extends State<Profile> {
                       animationDuration: 2500,
                       barRadius: const Radius.circular(30.0),
                     ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ],
             );
           }),
     );
+  }
+
+  List<dynamic> calculateLevel(int exp) {
+    return [(exp ~/ 300), (exp / 300) - (exp ~/ 300)];
   }
 }
