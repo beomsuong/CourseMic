@@ -35,6 +35,7 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
           dynamicWidget = ToDoPage(
             roomID: widget.roomID,
             chatScreenState: widget.chatScreenState,
+            bMini: true,
           );
           break;
         case "중요한 메세지? 모아보기":

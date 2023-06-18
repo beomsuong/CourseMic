@@ -318,8 +318,6 @@ class _ToDoNodeState extends State<ToDoNode> {
                     widget.chatDataParent.chatDocRef
                         .update(widget.chatDataParent.chat.toJson());
 
-                    widget.buildParent.rebuildToDo();
-                    widget.chatDataParent.updateProgressPercent();
                     Navigator.of(context).pop();
                   },
                   child: const Text('확인', style: purpleText)),
@@ -346,9 +344,6 @@ class _ToDoNodeState extends State<ToDoNode> {
     controller.text = '';
     widget.toDo.resetToDo();
     users = setUsers();
-
-    widget.buildParent.rebuildToDo();
-    widget.chatDataParent.updateProgressPercent();
   }
 
   void updateToDo() {
@@ -362,16 +357,11 @@ class _ToDoNodeState extends State<ToDoNode> {
     widget.chatDataParent.toDoColRef.doc(widget.toDo.task).delete();
     // replace old to new
     widget.toDo.task = controller.text;
-
-    widget.buildParent.rebuildToDo();
   }
 
   // TODO : Add delete dialog
   void deleteToDo() {
     widget.chatDataParent.toDoColRef.doc(widget.toDo.task).delete();
-
-    widget.buildParent.rebuildToDo();
-    widget.chatDataParent.updateProgressPercent();
   }
 
   void showDeadline() async {

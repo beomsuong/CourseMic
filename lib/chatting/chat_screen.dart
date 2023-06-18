@@ -43,7 +43,7 @@ class ChatScreenState extends State<ChatScreen> {
   List<dynamic> userChatList = List<String>.empty(growable: true);
 
   late final CollectionReference toDoColRef;
-  late Future<double> progressPercentFuture;
+  late Stream<QuerySnapshot<Object?>> progressPercentStream;
   late Future<void> chatFuture;
 
   late final String roomCode;
@@ -71,7 +71,7 @@ class ChatScreenState extends State<ChatScreen> {
     chatDocRef = firestore.collection('chat').doc(widget.roomID);
     toDoColRef =
         firestore.collection("chat").doc(widget.roomID).collection("todo");
-    progressPercentFuture = calculateProgressPercent();
+    progressPercentStream = toDoColRef.snapshots();
     chatFuture = readInitChatData();
     showInitialSnackBar();
   }
@@ -102,33 +102,6 @@ class ChatScreenState extends State<ChatScreen> {
   void updateChat() {
     setState(() {
       chatFuture = readInitChatData();
-    });
-  }
-
-  String progressCount = "";
-  Future<double> calculateProgressPercent() async {
-    double progressPercent = 0.0;
-    await toDoColRef
-        .where('state', isEqualTo: ToDoState.Done.index)
-        .get()
-        .then((snapshot) {
-      progressPercent =
-          snapshot.docs.isEmpty ? 0.0 : snapshot.docs.length.toDouble();
-      progressCount = progressPercent.toInt().toString();
-    });
-    if (progressPercent == 0.0) return progressPercent;
-    await toDoColRef.get().then(
-      (snapshot) {
-        progressPercent /= snapshot.docs.length;
-        progressCount += "/${snapshot.docs.length}";
-      },
-    );
-    return progressPercent;
-  }
-
-  void updateProgressPercent() {
-    setState(() {
-      progressPercentFuture = calculateProgressPercent();
     });
   }
 
@@ -492,14 +465,18 @@ class ChatScreenState extends State<ChatScreen> {
                                                 fontWeight: FontWeight.bold))),
                                     TextButton(
                                         onPressed: () async {
-                                          chat.userList
-                                              .removeAt(chat.getIndexOfUser(
-                                            userID: currentUser.uid,
-                                          ));
+                                          if (chat.userList.length == 1) {
+                                            chatDocRef.delete();
+                                          } else {
+                                            chat.userList
+                                                .removeAt(chat.getIndexOfUser(
+                                              userID: currentUser.uid,
+                                            ));
+                                            chatDocRef
+                                                .update(chat.userListToJson());
+                                          }
 
                                           userChatList.remove(widget.roomID);
-                                          chatDocRef
-                                              .update(chat.userListToJson());
                                           userDocRef.update({
                                             'chatList': userChatList,
                                           });
@@ -529,9 +506,28 @@ class ChatScreenState extends State<ChatScreen> {
         ),
         body: Column(
           children: [
-            FutureBuilder(
-                future: progressPercentFuture,
-                builder: (context, snapshot) {
+            StreamBuilder(
+                stream: progressPercentStream,
+                builder:
+                    (context, AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
+                  double progressPercent = 0.0;
+                  String progressCount = "0";
+                  if (snapshot.hasData) {
+                    var todoDocs = snapshot.data!.docs;
+
+                    if (todoDocs.isNotEmpty) {
+                      progressPercent = todoDocs.length.toDouble();
+                      int doneCount = todoDocs
+                          .where((element) =>
+                              element["state"] == ToDoState.Done.index)
+                          .length;
+                      progressPercent = doneCount / progressPercent;
+
+                      progressCount = doneCount.toString();
+                      progressCount += " / ${todoDocs.length}";
+                    }
+                  }
+
                   return GestureDetector(
                     onTap: () => Navigator.push(
                       context,
@@ -547,8 +543,8 @@ class ChatScreenState extends State<ChatScreen> {
                       animation: true,
                       animationDuration: 500,
                       lineHeight: 15.0,
-                      percent: snapshot.hasData ? snapshot.data! : 0.0,
-                      center: Text(progressCount.isEmpty ? "" : progressCount,
+                      percent: progressPercent,
+                      center: Text(progressCount,
                           style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w500,

@@ -8,12 +8,15 @@ import 'package:capston/palette.dart';
 class ToDoPage extends StatefulWidget {
   final roomID;
   final ChatScreenState chatScreenState;
-  final ToDoListState? miniToDoState;
+  final bool bMini;
+  final ToDoPageState? todoPageState;
+
   const ToDoPage(
       {super.key,
       required this.roomID,
       required this.chatScreenState,
-      this.miniToDoState});
+      this.bMini = false,
+      this.todoPageState});
 
   @override
   State<ToDoPage> createState() => ToDoPageState();
@@ -21,22 +24,17 @@ class ToDoPage extends StatefulWidget {
 
 // 추후 수정
 class ToDoPageState extends State<ToDoPage> {
-  late final ToDoList toDoList;
+  bool bMyTodo = false;
 
   @override
   void initState() {
     super.initState();
-    toDoList = ToDoList(
-      roomID: widget.roomID,
-      chatDataState: widget.chatScreenState,
-      miniToDoState: widget.miniToDoState,
-    );
   }
 
   // ToDoPage + ToDoList > ToDoPage
   @override
   Widget build(BuildContext context) {
-    return widget.miniToDoState == null
+    return widget.bMini
         ? Column(
             children: [
               Container(
@@ -62,7 +60,7 @@ class ToDoPageState extends State<ToDoPage> {
                           builder: (context) => ToDoPage(
                             roomID: widget.roomID,
                             chatScreenState: widget.chatScreenState,
-                            miniToDoState: toDoList.myState,
+                            todoPageState: this,
                           ),
                         ),
                       ),
@@ -76,10 +74,26 @@ class ToDoPageState extends State<ToDoPage> {
                 ),
               ),
               Expanded(
-                child: toDoList,
+                child: ToDoList(
+                  roomID: widget.roomID,
+                  chatDataState: widget.chatScreenState,
+                  bMini: widget.bMini,
+                  todoDataParent: widget.todoPageState ?? this,
+                ),
               ),
             ],
           )
-        : toDoList;
+        : ToDoList(
+            roomID: widget.roomID,
+            chatDataState: widget.chatScreenState,
+            bMini: widget.bMini,
+            todoDataParent: widget.todoPageState ?? this,
+          );
+  }
+
+  toggleMyTodo() {
+    setState(() {
+      bMyTodo = !bMyTodo;
+    });
   }
 }

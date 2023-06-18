@@ -29,19 +29,21 @@ class ToDo {
     this.score = 10,
   });
 
-  ToDo.fromJson(QueryDocumentSnapshot<Object?> json)
-      : this(
-          index: json['index'] as int,
-          state: ToDoState.values[json['state']!],
-          task: json.id,
-          detail: json['detail'],
-          createDate: json['createDate'] as Timestamp,
-          deadline: json['deadline'] as Timestamp,
-          userIDs: <String>[
-            for (var jsonData in json['userIDs']! as List<dynamic>) jsonData,
-          ],
-          score: json['score'] as int,
-        );
+  // factory 를 통해 기존 생성자 인스턴스 반환 및 재활용?
+  factory ToDo.fromJson(QueryDocumentSnapshot<Object?> json) {
+    return ToDo(
+      index: json['index'] as int,
+      state: ToDoState.values[json['state']!],
+      task: json.id,
+      detail: json['detail'],
+      createDate: json['createDate'] as Timestamp,
+      deadline: json['deadline'] as Timestamp,
+      userIDs: <String>[
+        for (var jsonData in json['userIDs']! as List<dynamic>) jsonData,
+      ],
+      score: json['score'] as int,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {

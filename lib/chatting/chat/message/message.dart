@@ -44,7 +44,9 @@ class _MessagesState extends State<Messages> {
           );
         }
         final chatDocs = snapshot.data!.docs as List<DocumentSnapshot>;
-        widget.chatDataParent.widget.lastMessage = chatDocs.first["text"];
+        if (chatDocs.isNotEmpty) {
+          widget.chatDataParent.widget.lastMessage = chatDocs.first["text"];
+        }
         return ListView.builder(
           reverse: true,
           itemCount: chatDocs.length,
