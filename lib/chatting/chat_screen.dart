@@ -16,12 +16,14 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 
 class ChatScreen extends StatefulWidget {
   final String roomID;
+  final String roomName;
   final ChatListState chatListParent;
   late String lastMessage;
 
   ChatScreen(
       {Key? key,
       required this.roomID,
+      required this.roomName,
       required this.chatListParent,
       this.lastMessage = ""})
       : super(key: key);
@@ -44,7 +46,7 @@ class ChatScreenState extends State<ChatScreen> {
 
   late final CollectionReference toDoColRef;
   late Stream<QuerySnapshot<Object?>> progressPercentStream;
-  late Future<void> chatFuture;
+  late Stream<DocumentSnapshot<Object?>> chatStream;
 
   late final String roomCode;
 
@@ -71,38 +73,28 @@ class ChatScreenState extends State<ChatScreen> {
     chatDocRef = firestore.collection('chat').doc(widget.roomID);
     toDoColRef =
         firestore.collection("chat").doc(widget.roomID).collection("todo");
+
+    readInitChatData();
     progressPercentStream = toDoColRef.snapshots();
-    chatFuture = readInitChatData();
-    showInitialSnackBar();
+    chatStream = chatDocRef.snapshots();
+    showQuizSnackBar();
   }
 
   Future<void> readInitChatData() async {
     // get user chatList data
+    await chatDocRef.get().then((value) {
+      chat = Chat.fromJson(value);
+    });
+
     userDocRef.get().then((value) {
       userChatList = value.get('chatList');
     });
 
-    // get chat data
-    await readRoomName();
     for (var user in chat.userList) {
       firestore.collection('user').doc(user.userID).get().then((value) {
         userNameList[user.userID] = value.data()!['name'];
       });
     }
-  }
-
-  // also read chat data
-  Future<String> readRoomName() async {
-    await chatDocRef.get().then((value) {
-      chat = Chat.fromJson(value);
-    });
-    return chat.roomName;
-  }
-
-  void updateChat() {
-    setState(() {
-      chatFuture = readInitChatData();
-    });
   }
 
   Widget roleUser(String userID, String userName, int userRole) {
@@ -217,7 +209,7 @@ class ChatScreenState extends State<ChatScreen> {
     return passerList.contains(currentUserId);
   }
 
-  void showInitialSnackBar() async {
+  void showQuizSnackBar() async {
     DocumentSnapshot<Map<String, dynamic>>? latestQuiz = await getLatestQuiz();
 
     if (latestQuiz != null &&
@@ -248,6 +240,7 @@ class ChatScreenState extends State<ChatScreen> {
           },
         ),
       );
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       //! 스낵바 안보일 때 처리
@@ -262,7 +255,7 @@ class ChatScreenState extends State<ChatScreen> {
         //!
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
 
-        widget.chatListParent.updateRoom(widget.roomID, chat.roomName,
+        widget.chatListParent.updateRoom(widget.roomID, widget.roomName,
             widget.lastMessage, chat.getUser(userID: currentUser.uid)!.role);
         return true;
       },
@@ -278,13 +271,9 @@ class ChatScreenState extends State<ChatScreen> {
           title: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              FutureBuilder(
-                  future: readRoomName(),
-                  builder: (context, snapshot) {
-                    return Text(snapshot.hasData ? snapshot.data! : "RoomName",
-                        style: const TextStyle(
-                            color: Colors.black, fontWeight: FontWeight.w500));
-                  }),
+              Text(widget.roomName,
+                  style: const TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.w500)),
               const SizedBox(
                 width: 4,
               ),
@@ -296,15 +285,21 @@ class ChatScreenState extends State<ChatScreen> {
             ],
           ),
         ),
+        onEndDrawerChanged: (_) {
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
         endDrawer: Drawer(
-          child: FutureBuilder(
-              future: chatFuture,
+          child: StreamBuilder(
+              stream: chatStream,
               builder: (context, snapshot) {
-                if (snapshot.hasError) {
+                if (!snapshot.hasData || snapshot.hasError) {
                   return const CircularProgressIndicator(
                     color: Palette.pastelPurple,
                   );
                 }
+
+                chat = Chat.fromJson(snapshot.data!);
+
                 return Column(
                   children: <Widget>[
                     Expanded(
@@ -559,9 +554,14 @@ class ChatScreenState extends State<ChatScreen> {
                   );
                 }),
             Expanded(
-                child: Messages(
-              roomID: widget.roomID,
-              chatDataParent: this,
+                child: GestureDetector(
+              onTap: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+              },
+              child: Messages(
+                roomID: widget.roomID,
+                chatDataParent: this,
+              ),
             )),
             NewMessage(
               roomID: widget.roomID,

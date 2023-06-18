@@ -9,24 +9,28 @@ class MyUser {
   late String department;
   late String contactTime;
   late String imageURL;
+  late List<dynamic> chatList;
 
-  MyUser(
-      {required this.name,
-      this.MBTI = "???",
-      this.university = "???",
-      this.department = "???",
-      this.contactTime = "???",
-      required this.imageURL});
+  MyUser({
+    required this.name,
+    this.MBTI = "???",
+    this.university = "???",
+    this.department = "???",
+    this.contactTime = "???",
+    required this.imageURL,
+    required this.chatList,
+  });
 
-  MyUser.fromJson(DocumentSnapshot<Object?> json)
-      : this(
-          name: json['name'],
-          MBTI: json['MBTI'],
-          university: json['university'],
-          department: json['department'],
-          contactTime: json['contactTime'],
-          imageURL: json['imageURL'],
-        );
+  factory MyUser.fromJson(DocumentSnapshot<Object?> json) {
+    return MyUser(
+        name: json['name'],
+        MBTI: json['MBTI'],
+        university: json['university'],
+        department: json['department'],
+        contactTime: json['contactTime'],
+        imageURL: json['imageURL'],
+        chatList: json['chatList']);
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -36,6 +40,7 @@ class MyUser {
       "department": department,
       "contactTime": contactTime,
       "imageURL": imageURL,
+      "chatList": chatList,
     };
   }
 
@@ -59,6 +64,9 @@ class MyUser {
         break;
       case "imageURL":
         data = imageURL;
+        break;
+      case "chatList":
+        data = chatList;
         break;
     }
 
