@@ -28,12 +28,11 @@ class ProfileState extends State<Profile> {
   late MyUser myUser;
   late DocumentReference userDocRef;
 
-  Future<DocumentSnapshot> readUserData() async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    userDocRef = firestore.collection('user').doc(widget.userID);
-    DocumentSnapshot docSnapshot = await userDocRef.get();
-
-    return docSnapshot;
+  @override
+  void initState() {
+    super.initState();
+    userDocRef =
+        FirebaseFirestore.instance.collection('user').doc(widget.userID);
   }
 
   SizedBox print_info(String a, String b) {
@@ -122,10 +121,9 @@ class ProfileState extends State<Profile> {
             )
         ],
       ),
-      body: FutureBuilder<DocumentSnapshot>(
-          future: readUserData(),
-          builder:
-              (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+      body: StreamBuilder(
+          stream: userDocRef.snapshots(),
+          builder: (BuildContext context, snapshot) {
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
@@ -274,9 +272,9 @@ class ProfileState extends State<Profile> {
                               ],
                             ),
                           ),
-                          const Card(
+                          Card(
                             child: Padding(
-                              padding: EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(8.0),
                               child: Align(
                                 alignment: Alignment.centerLeft,
                                 child: Column(
@@ -286,16 +284,16 @@ class ProfileState extends State<Profile> {
                                       child: Row(
                                         children: [
                                           Text(
-                                            '현재 참여중인 과제 : ' 'N' '(개)',
-                                            style: TextStyle(
+                                            '현재 참여중인 과제 : ${myUser.chatList.length}(개)',
+                                            style: const TextStyle(
                                               fontSize: 15,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    Divider(color: Palette.darkGray),
-                                    SizedBox(
+                                    const Divider(color: Palette.darkGray),
+                                    const SizedBox(
                                       height: 30,
                                       child: Row(
                                         children: [
