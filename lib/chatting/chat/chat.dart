@@ -11,15 +11,16 @@ class Chat {
       this.commanderID = '',
       this.userList = const <ChatUser>[]});
 
-  Chat.fromJson(DocumentSnapshot<Object?> json)
-      : this(
-          roomName: json['roomName'],
-          commanderID: json['commanderID'],
-          userList: <ChatUser>[
-            for (var jsonData in (json['userList'] as List<dynamic>))
-              ChatUser.fromData(jsonData),
-          ],
-        );
+  factory Chat.fromJson(DocumentSnapshot<Object?> json) {
+    return Chat(
+      roomName: json['roomName'],
+      commanderID: json['commanderID'],
+      userList: <ChatUser>[
+        for (var jsonData in (json['userList'] as List<dynamic>))
+          ChatUser.fromData(jsonData),
+      ],
+    );
+  }
 
   // don't use set, use update!!!
   Map<String, dynamic> toJson() {

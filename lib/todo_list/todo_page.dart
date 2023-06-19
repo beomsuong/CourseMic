@@ -8,12 +8,15 @@ import 'package:capston/palette.dart';
 class ToDoPage extends StatefulWidget {
   final roomID;
   final ChatScreenState chatScreenState;
-  bool bMini;
-  ToDoPage(
+  final bool bMini;
+  final ToDoPageState? todoPageState;
+
+  const ToDoPage(
       {super.key,
       required this.roomID,
       required this.chatScreenState,
-      this.bMini = false});
+      this.bMini = false,
+      this.todoPageState});
 
   @override
   State<ToDoPage> createState() => ToDoPageState();
@@ -21,6 +24,14 @@ class ToDoPage extends StatefulWidget {
 
 // 추후 수정
 class ToDoPageState extends State<ToDoPage> {
+  bool bMyTodo = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  // ToDoPage + ToDoList > ToDoPage
   @override
   Widget build(BuildContext context) {
     return widget.bMini
@@ -49,6 +60,7 @@ class ToDoPageState extends State<ToDoPage> {
                           builder: (context) => ToDoPage(
                             roomID: widget.roomID,
                             chatScreenState: widget.chatScreenState,
+                            todoPageState: this,
                           ),
                         ),
                       ),
@@ -65,35 +77,23 @@ class ToDoPageState extends State<ToDoPage> {
                 child: ToDoList(
                   roomID: widget.roomID,
                   chatDataState: widget.chatScreenState,
+                  bMini: widget.bMini,
+                  todoDataParent: widget.todoPageState ?? this,
                 ),
               ),
             ],
           )
-        : Scaffold(
-            backgroundColor: Palette.lightGray,
-            appBar: PreferredSize(
-              preferredSize: const Size.fromHeight(55),
-              child: AppBar(
-                  toolbarHeight: 100,
-                  centerTitle: true,
-                  elevation: 1,
-                  title: Text(
-                    "${widget.chatScreenState.chat.roomName} 할 일 목록",
-                    style: const TextStyle(color: Colors.black, fontSize: 20),
-                  ),
-                  backgroundColor: Colors.white,
-                  automaticallyImplyLeading: true,
-                  leading: IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded,
-                        color: Palette.darkGray),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  )),
-            ),
-            body: ToDoList(
-              roomID: widget.roomID,
-              chatDataState: widget.chatScreenState,
-            ));
+        : ToDoList(
+            roomID: widget.roomID,
+            chatDataState: widget.chatScreenState,
+            bMini: widget.bMini,
+            todoDataParent: widget.todoPageState ?? this,
+          );
+  }
+
+  toggleMyTodo() {
+    setState(() {
+      bMyTodo = !bMyTodo;
+    });
   }
 }

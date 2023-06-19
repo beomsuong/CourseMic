@@ -13,15 +13,18 @@ import 'package:capston/chatting/chat/message/message.dart';
 import 'package:capston/chatting/chat/message/new_message.dart';
 import 'package:flutter/services.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ChatScreen extends StatefulWidget {
   final String roomID;
+  final String roomName;
   final ChatListState chatListParent;
   late String lastMessage;
 
   ChatScreen(
       {Key? key,
       required this.roomID,
+      required this.roomName,
       required this.chatListParent,
       this.lastMessage = ""})
       : super(key: key);
@@ -43,8 +46,8 @@ class ChatScreenState extends State<ChatScreen> {
   List<dynamic> userChatList = List<String>.empty(growable: true);
 
   late final CollectionReference toDoColRef;
-  late Future<double> progressPercentFuture;
-  late Future<void> chatFuture;
+  late Stream<QuerySnapshot<Object?>> progressPercentStream;
+  late Stream<DocumentSnapshot<Object?>> chatStream;
 
   late final String roomCode;
 
@@ -71,65 +74,28 @@ class ChatScreenState extends State<ChatScreen> {
     chatDocRef = firestore.collection('chat').doc(widget.roomID);
     toDoColRef =
         firestore.collection("chat").doc(widget.roomID).collection("todo");
-    progressPercentFuture = calculateProgressPercent();
-    chatFuture = readInitChatData();
-    showInitialSnackBar();
+
+    readInitChatData();
+    progressPercentStream = toDoColRef.snapshots();
+    chatStream = chatDocRef.snapshots();
+    showQuizSnackBar();
   }
 
   Future<void> readInitChatData() async {
     // get user chatList data
+    await chatDocRef.get().then((value) {
+      chat = Chat.fromJson(value);
+    });
+
     userDocRef.get().then((value) {
       userChatList = value.get('chatList');
     });
 
-    // get chat data
-    await readRoomName();
     for (var user in chat.userList) {
       firestore.collection('user').doc(user.userID).get().then((value) {
         userNameList[user.userID] = value.data()!['name'];
       });
     }
-  }
-
-  // also read chat data
-  Future<String> readRoomName() async {
-    await chatDocRef.get().then((value) {
-      chat = Chat.fromJson(value);
-    });
-    return chat.roomName;
-  }
-
-  void updateChat() {
-    setState(() {
-      chatFuture = readInitChatData();
-    });
-  }
-
-  String progressCount = "";
-  Future<double> calculateProgressPercent() async {
-    double progressPercent = 0.0;
-    await toDoColRef
-        .where('state', isEqualTo: ToDoState.Done.index)
-        .get()
-        .then((snapshot) {
-      progressPercent =
-          snapshot.docs.isEmpty ? 0.0 : snapshot.docs.length.toDouble();
-      progressCount = progressPercent.toInt().toString();
-    });
-    if (progressPercent == 0.0) return progressPercent;
-    await toDoColRef.get().then(
-      (snapshot) {
-        progressPercent /= snapshot.docs.length;
-        progressCount += "/${snapshot.docs.length}";
-      },
-    );
-    return progressPercent;
-  }
-
-  void updateProgressPercent() {
-    setState(() {
-      progressPercentFuture = calculateProgressPercent();
-    });
   }
 
   Widget roleUser(String userID, String userName, int userRole) {
@@ -244,7 +210,7 @@ class ChatScreenState extends State<ChatScreen> {
     return passerList.contains(currentUserId);
   }
 
-  void showInitialSnackBar() async {
+  void showQuizSnackBar() async {
     DocumentSnapshot<Map<String, dynamic>>? latestQuiz = await getLatestQuiz();
 
     if (latestQuiz != null &&
@@ -275,6 +241,7 @@ class ChatScreenState extends State<ChatScreen> {
           },
         ),
       );
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       //! 스낵바 안보일 때 처리
@@ -288,7 +255,7 @@ class ChatScreenState extends State<ChatScreen> {
       onWillPop: () async {
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
 
-        widget.chatListParent.updateRoom(widget.roomID, chat.roomName,
+        widget.chatListParent.updateRoom(widget.roomID, widget.roomName,
             widget.lastMessage, chat.getUser(userID: currentUser.uid)!.role);
         return true;
       },
@@ -304,13 +271,9 @@ class ChatScreenState extends State<ChatScreen> {
           title: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              FutureBuilder(
-                  future: readRoomName(),
-                  builder: (context, snapshot) {
-                    return Text(snapshot.hasData ? snapshot.data! : "RoomName",
-                        style: const TextStyle(
-                            color: Colors.black, fontWeight: FontWeight.w500));
-                  }),
+              Text(widget.roomName,
+                  style: const TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.w500)),
               const SizedBox(
                 width: 4,
               ),
@@ -322,15 +285,21 @@ class ChatScreenState extends State<ChatScreen> {
             ],
           ),
         ),
+        onEndDrawerChanged: (_) {
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
         endDrawer: Drawer(
-          child: FutureBuilder(
-              future: chatFuture,
+          child: StreamBuilder(
+              stream: chatStream,
               builder: (context, snapshot) {
-                if (snapshot.hasError) {
+                if (!snapshot.hasData || snapshot.hasError) {
                   return const CircularProgressIndicator(
                     color: Palette.pastelPurple,
                   );
                 }
+
+                chat = Chat.fromJson(snapshot.data!);
+
                 return Column(
                   children: <Widget>[
                     Expanded(
@@ -350,30 +319,52 @@ class ChatScreenState extends State<ChatScreen> {
                           Padding(
                             padding:
                                 const EdgeInsets.only(left: 12.0, bottom: 8),
-                            child: Row(children: [
-                              const Text(
-                                '코드',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              Text(
-                                roomCode,
-                                style: const TextStyle(color: Palette.darkGray),
-                              ),
-                              const SizedBox(
-                                width: 4,
-                              ),
-                              GestureDetector(
-                                onTap: () => Clipboard.setData(
-                                    ClipboardData(text: roomCode)),
-                                child: const Icon(Icons.copy_rounded,
-                                    color: Palette.darkGray, size: 20),
-                              ),
-                            ]),
+                            child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Text(
+                                        '코드',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text(
+                                        roomCode,
+                                        style: const TextStyle(
+                                            color: Palette.darkGray),
+                                      ),
+                                      const SizedBox(
+                                        width: 4,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () => Clipboard.setData(
+                                            ClipboardData(text: roomCode)),
+                                        child: const Icon(Icons.copy_rounded,
+                                            color: Palette.darkGray, size: 20),
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 10.0),
+                                    child: GestureDetector(
+                                        onTap: () {
+                                          Share.share(
+                                              "CourseMic 을 다운 받고 무임승차 없는 조별과제를 진행해보세요!"
+                                              "\n\n플레이스토어 링크"
+                                              "\n\n채팅방 코드 : $roomCode");
+                                        },
+                                        child: const Icon(
+                                            Icons.ios_share_rounded,
+                                            color: Palette.darkGray,
+                                            size: 20)),
+                                  ),
+                                ]),
                           ),
                           const Padding(
                             padding: EdgeInsets.only(left: 8.0, right: 8),
@@ -491,14 +482,18 @@ class ChatScreenState extends State<ChatScreen> {
                                                 fontWeight: FontWeight.bold))),
                                     TextButton(
                                         onPressed: () async {
-                                          chat.userList
-                                              .removeAt(chat.getIndexOfUser(
-                                            userID: currentUser.uid,
-                                          ));
+                                          if (chat.userList.length == 1) {
+                                            chatDocRef.delete();
+                                          } else {
+                                            chat.userList
+                                                .removeAt(chat.getIndexOfUser(
+                                              userID: currentUser.uid,
+                                            ));
+                                            chatDocRef
+                                                .update(chat.userListToJson());
+                                          }
 
                                           userChatList.remove(widget.roomID);
-                                          chatDocRef
-                                              .update(chat.userListToJson());
                                           userDocRef.update({
                                             'chatList': userChatList,
                                           });
@@ -528,9 +523,28 @@ class ChatScreenState extends State<ChatScreen> {
         ),
         body: Column(
           children: [
-            FutureBuilder(
-                future: progressPercentFuture,
-                builder: (context, snapshot) {
+            StreamBuilder(
+                stream: progressPercentStream,
+                builder:
+                    (context, AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
+                  double progressPercent = 0.0;
+                  String progressCount = "0";
+                  if (snapshot.hasData) {
+                    var todoDocs = snapshot.data!.docs;
+
+                    if (todoDocs.isNotEmpty) {
+                      progressPercent = todoDocs.length.toDouble();
+                      int doneCount = todoDocs
+                          .where((element) =>
+                              element["state"] == ToDoState.Done.index)
+                          .length;
+                      progressPercent = doneCount / progressPercent;
+
+                      progressCount = doneCount.toString();
+                      progressCount += " / ${todoDocs.length}";
+                    }
+                  }
+
                   return GestureDetector(
                     onTap: () => Navigator.push(
                       context,
@@ -546,8 +560,8 @@ class ChatScreenState extends State<ChatScreen> {
                       animation: true,
                       animationDuration: 500,
                       lineHeight: 15.0,
-                      percent: snapshot.hasData ? snapshot.data! : 0.0,
-                      center: Text(progressCount.isEmpty ? "" : progressCount,
+                      percent: progressPercent,
+                      center: Text(progressCount,
                           style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w500,
@@ -562,9 +576,14 @@ class ChatScreenState extends State<ChatScreen> {
                   );
                 }),
             Expanded(
-                child: Messages(
-              roomID: widget.roomID,
-              chatDataParent: this,
+                child: GestureDetector(
+              onTap: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+              },
+              child: Messages(
+                roomID: widget.roomID,
+                chatDataParent: this,
+              ),
             )),
             NewMessage(
               roomID: widget.roomID,

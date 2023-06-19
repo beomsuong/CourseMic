@@ -100,6 +100,7 @@ class ChatListState extends State<ChatList> {
             builder: (context) {
               return ChatScreen(
                 roomID: id,
+                roomName: name,
                 chatListParent: this,
                 lastMessage: message,
               );

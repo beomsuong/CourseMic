@@ -131,7 +131,6 @@ class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
           // 해당 채팅방의 중요한 메시지만 필터링하여 보여줌
 
           return ListView.builder(
-            reverse: false,
             itemCount: documents.length,
             itemBuilder: (context, index) {
               final data = documents[index].data() as Map<String, dynamic>;

@@ -19,12 +19,13 @@ class ChatUser {
       this.participation = 0,
       this.doneCount = 0});
 
-  ChatUser.fromData(Map<String, dynamic> data)
-      : this(
-            userID: data['userID'],
-            role: data['role'] as int,
-            participation: data['participation'] as int,
-            doneCount: data['doneCount'] as int);
+  factory ChatUser.fromData(Map<String, dynamic> data) {
+    return ChatUser(
+        userID: data['userID'],
+        role: data['role'] as int,
+        participation: data['participation'] as int,
+        doneCount: data['doneCount'] as int);
+  }
 
   Map<String, dynamic> toJson() {
     return {

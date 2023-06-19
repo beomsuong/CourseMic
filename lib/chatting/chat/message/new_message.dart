@@ -48,7 +48,6 @@ class _NewMessageState extends State<NewMessage> {
     return Container(
       // send message container background
       color: Colors.white,
-      padding: const EdgeInsets.only(bottom: 8),
       child: Column(
         children: [
           Row(
@@ -64,22 +63,25 @@ class _NewMessageState extends State<NewMessage> {
                   icon: Icon(block ? Icons.close_rounded : Icons.add_rounded),
                   color: Palette.darkGray),
               Expanded(
-                child: TextField(
-                  //메세지 입력 칸
-                  maxLines: null,
-                  controller: _controller,
-                  decoration:
-                      const InputDecoration(labelText: 'Send a message...'),
-                  onTap: () {
-                    setState(() {
-                      block = false;
-                    });
-                  },
-                  onChanged: (value) {
-                    setState(() {
-                      _userEnterMessage = value;
-                    });
-                  },
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: TextField(
+                    //메세지 입력 칸
+                    maxLines: null,
+                    controller: _controller,
+                    decoration:
+                        const InputDecoration(labelText: 'Send a message...'),
+                    onTap: () {
+                      setState(() {
+                        block = false;
+                      });
+                    },
+                    onChanged: (value) {
+                      setState(() {
+                        _userEnterMessage = value;
+                      });
+                    },
+                  ),
                 ),
               ),
               IconButton(
@@ -91,12 +93,9 @@ class _NewMessageState extends State<NewMessage> {
             ],
           ),
           block
-              ? Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: ChatPlusFunc(
-                    roomID: widget.roomID,
-                    chatScreenState: widget.chatScreenState,
-                  ),
+              ? ChatPlusFunc(
+                  roomID: widget.roomID,
+                  chatScreenState: widget.chatScreenState,
                 )
               : const SizedBox(width: 0, height: 0)
         ],

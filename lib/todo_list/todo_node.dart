@@ -151,7 +151,7 @@ class _ToDoNodeState extends State<ToDoNode> {
                                   Icon(Icons.delete, color: widget.iconColor))
                           : GestureDetector(
                               onTap: addToDo,
-                              child: const Text('Add',
+                              child: const Text('추가',
                                   style:
                                       TextStyle(color: Palette.pastelPurple))),
                     ),
@@ -318,8 +318,6 @@ class _ToDoNodeState extends State<ToDoNode> {
                     widget.chatDataParent.chatDocRef
                         .update(widget.chatDataParent.chat.toJson());
 
-                    widget.buildParent.rebuildToDo();
-                    widget.chatDataParent.updateProgressPercent();
                     Navigator.of(context).pop();
                   },
                   child: const Text('확인', style: purpleText)),
@@ -336,6 +334,8 @@ class _ToDoNodeState extends State<ToDoNode> {
       return;
     }
 
+    widget.toDo.createDate = Timestamp.now();
+
     widget.chatDataParent.toDoColRef
         .doc(controller.text)
         .set(widget.toDo.toJson());
@@ -343,9 +343,7 @@ class _ToDoNodeState extends State<ToDoNode> {
     // clear addToDoNode
     controller.text = '';
     widget.toDo.resetToDo();
-
-    widget.buildParent.rebuildToDo();
-    widget.chatDataParent.updateProgressPercent();
+    users = setUsers();
   }
 
   void updateToDo() {
@@ -359,16 +357,11 @@ class _ToDoNodeState extends State<ToDoNode> {
     widget.chatDataParent.toDoColRef.doc(widget.toDo.task).delete();
     // replace old to new
     widget.toDo.task = controller.text;
-
-    widget.buildParent.rebuildToDo();
   }
 
   // TODO : Add delete dialog
   void deleteToDo() {
     widget.chatDataParent.toDoColRef.doc(widget.toDo.task).delete();
-
-    widget.buildParent.rebuildToDo();
-    widget.chatDataParent.updateProgressPercent();
   }
 
   void showDeadline() async {

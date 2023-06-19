@@ -45,7 +45,9 @@ dependencies:
   file_picker: ^5.3.2
   flutter_chat_bubble: ^2.0.2
   provider: ^6.0.5
-  intl: ^0.18.1
+  intl: ^0.18.0
+  flutter_localizations:
+    sdk: flutter
   percent_indicator: ^4.0.1 #퍼센티지 바 디펜던시
   omni_datetime_picker: ^1.0.7
   drag_and_drop_lists: ^0.3.3
@@ -53,6 +55,8 @@ dependencies:
   flutter_secure_storage: ^8.0.0
   cherry_toast: ^1.2.1
   flutter_launcher_icons: ^0.13.1
+  cr_calendar: ^1.1.0
+  share_plus: ^7.0.2
 
 flutter_launcher_icons:
   path: "assets/images/icon.png"
