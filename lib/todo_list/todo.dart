@@ -38,9 +38,7 @@ class ToDo {
       detail: json['detail'],
       createDate: json['createDate'] as Timestamp,
       deadline: json['deadline'] as Timestamp,
-      userIDs: <String>[
-        for (var jsonData in json['userIDs']! as List<dynamic>) jsonData,
-      ],
+      userIDs: List<String>.from(json['userIDs']),
       score: json['score'] as int,
     );
   }
