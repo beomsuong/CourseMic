@@ -62,27 +62,32 @@ class ChatBubbles extends StatelessWidget {
     final BubbleType decideBubbleType =
         isMe ? BubbleType.sendBubble : BubbleType.receiverBubble;
     final EdgeInsets padding = isMe
-        ? const EdgeInsets.fromLTRB(0, 10, 10, 0)
-        : const EdgeInsets.fromLTRB(45, 10, 0, 0);
+        ? const EdgeInsets.fromLTRB(0, 5, 0, 0)
+        : const EdgeInsets.fromLTRB(45, 5, 0, 0);
     final Color decideBckgndColor =
         isMe ? const Color(0xFF8754f8) : const Color(0xffE7E7ED);
     final Color txtColor = isMe ? Colors.white : Colors.black;
 
     return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (!isMe) ...[
           //조건이 거짓이면 조건문의 리스트가 빈 리스트가 됨
-          Text(
-            userName,
-            style: const TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.black),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(50, 0, 0, 0),
+            child: Text(
+              userName,
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.black),
+            ),
           )
         ],
         Padding(
           padding: padding,
           child: ChatBubble(
             clipper: ChatBubbleClipper4(type: decideBubbleType),
-            alignment: Alignment.topRight,
+            alignment: isMe ? Alignment.topRight : Alignment.topLeft,
             margin: const EdgeInsets.only(bottom: 10),
             backGroundColor: decideBckgndColor,
             child: Container(
@@ -123,77 +128,107 @@ class ChatBubbles extends StatelessWidget {
     );
   }
 
+  Future<dynamic> showMsgFuncDialog(BuildContext context) {
+    return showDialog(
+      // 메시지 액션 다이얼로그
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        contentPadding: EdgeInsets.symmetric(
+          vertical: MediaQuery.of(context).size.height * 0.05,
+          horizontal: MediaQuery.of(context).size.width * 0.1,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text('메시지 액션 메뉴'),
+            const SizedBox(height: 15), // 공백용. 나중에 처리
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ButtonBar(
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.thumb_up),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.thumb_down),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.question_mark),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.handyman),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.check_rounded),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.watch_later_rounded),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.smart_toy_outlined),
+                  ),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return Profile(
+                        userID: userid,
+                        bMyProfile: false,
+                      );
+                    },
+                  ),
+                );
+                // Navigator.pop(context);
+              },
+              child: const Text('프로필'),
+            ),
+            TextButton(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: message));
+                Navigator.pop(context);
+              },
+              child: const Text('복사'),
+            ),
+            TextButton(
+              onPressed: () {
+                print(message);
+                saveImportantMessage(
+                  // 중요한 메세지 컬렉션에 저장
+                  message,
+                  message,
+                  sendTime,
+                  userName,
+                  roomID,
+                );
+                Navigator.pop(context);
+              },
+              child: const Text('중요메세지 설정'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onLongPressStart: (LongPressStartDetails longPressStartDetails) => {
         //메시지 longpress하면 트리거
-        showDialog(
-          // 메시지 액션 다이얼로그
-          context: context,
-          builder: (BuildContext context) => Dialog(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Text('메시지 액션 메뉴'),
-                  const SizedBox(height: 15), //공백용. 나중에 처리
-                  Column(
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return Profile(
-                                  userID: userid,
-                                  bMyProfile: false,
-                                );
-                              },
-                            ),
-                          );
-                          //Navigator.pop(context);
-                        },
-                        child: const Text('프로필'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: message));
-                          Navigator.pop(context);
-                        },
-                        child: const Text('복사'),
-                      ),
-                      // TextButton(
-                      //   onPressed: () {
-                      //     Navigator.pop(context);
-                      //   },
-                      //   child: const Text('답장'), // 구현 미정
-                      // ),
-                      TextButton(
-                        onPressed: () {
-                          print(message);
-                          saveImportantMessage(
-                            //중요한 메세지 컬렉션에 저장
-                            message,
-                            message,
-                            sendTime,
-                            userName,
-                            roomID,
-                          );
-                          Navigator.pop(context);
-                        },
-                        child: const Text('중요메세지 설정'),
-                      )
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+        showMsgFuncDialog(context),
       },
       child: Stack(children: [
         // 챗버블
@@ -205,47 +240,8 @@ class ChatBubbles extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        getFormattedTime(),
-                        style: const TextStyle(
-                            fontSize: 10, color: Palette.darkGray),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 10, 45, 0),
-                    child: ChatBubble(
-                      clipper: ChatBubbleClipper8(type: BubbleType.sendBubble),
-                      alignment: Alignment.topRight,
-                      margin: const EdgeInsets.only(bottom: 10),
-                      backGroundColor: const Color(0xFF8754f8),
-                      child: Container(
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.7,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: isMe
-                              ? CrossAxisAlignment.end
-                              : CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              userName,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white),
-                            ),
-                            Text(
-                              message,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  sendTimeDisplay(),
+                  showChatBubble(context),
                 ],
               ),
             if (!isMe) //! 나 아니여~
