@@ -41,6 +41,8 @@ class _NewMessageState extends State<NewMessage> {
       'userImage': userData['imageURL'],
     });
     _controller.clear();
+
+    // 알림
   }
 
   @override
