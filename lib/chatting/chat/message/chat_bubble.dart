@@ -34,9 +34,93 @@ class ChatBubbles extends StatelessWidget {
   );
 
   String getFormattedTime() {
+    //formatted 메세지 보낸 시간 변수
     final DateTime dateTime = sendTime.toDate();
     final DateFormat formatter = DateFormat('HH:mm');
     return formatter.format(dateTime);
+  }
+
+  Widget sendTimeDisplay() {
+    //메세지 보낸 시간 표시 위젯
+    final EdgeInsets padding = isMe
+        ? const EdgeInsets.fromLTRB(0, 0, 5, 15)
+        : const EdgeInsets.fromLTRB(5, 0, 0, 15);
+
+    return Padding(
+      padding: padding,
+      child: Text(
+        getFormattedTime(),
+        style: const TextStyle(fontSize: 13, color: Palette.darkGray),
+      ),
+    );
+  }
+
+  Widget showChatBubble(BuildContext context) {
+    //isMe 조건으로 통합 위젯화
+    final CrossAxisAlignment crossAxisAlignment =
+        isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start;
+    final BubbleType decideBubbleType =
+        isMe ? BubbleType.sendBubble : BubbleType.receiverBubble;
+    final EdgeInsets padding = isMe
+        ? const EdgeInsets.fromLTRB(0, 10, 10, 0)
+        : const EdgeInsets.fromLTRB(45, 10, 0, 0);
+    final Color decideBckgndColor =
+        isMe ? const Color(0xFF8754f8) : const Color(0xffE7E7ED);
+    final Color txtColor = isMe ? Colors.white : Colors.black;
+
+    return Column(
+      children: [
+        if (!isMe) ...[
+          //조건이 거짓이면 조건문의 리스트가 빈 리스트가 됨
+          Text(
+            userName,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.black),
+          )
+        ],
+        Padding(
+          padding: padding,
+          child: ChatBubble(
+            clipper: ChatBubbleClipper4(type: decideBubbleType),
+            alignment: Alignment.topRight,
+            margin: const EdgeInsets.only(bottom: 10),
+            backGroundColor: decideBckgndColor,
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.6,
+              ),
+              child: Column(
+                crossAxisAlignment: crossAxisAlignment,
+                children: [
+                  Text(
+                    message,
+                    style: TextStyle(color: txtColor),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Positioned showProfileImage() {
+    //본인 외의 유저만 프로필 사진 표시
+    Widget profileImage = const SizedBox.shrink(); // 초기값 설정
+    if (!isMe) {
+      profileImage = CircleAvatar(
+        backgroundImage: NetworkImage(
+          userImage,
+        ),
+      );
+    }
+    return Positioned(
+      top: 0,
+      right: isMe ? 5 : null,
+      left: isMe ? null : 5,
+      child: profileImage,
+    );
   }
 
   @override
@@ -112,12 +196,14 @@ class ChatBubbles extends StatelessWidget {
         ),
       },
       child: Stack(children: [
+        // 챗버블
         Row(
           mainAxisAlignment:
               isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           children: [
             if (isMe) //! 나일 때
               Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Column(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -162,65 +248,17 @@ class ChatBubbles extends StatelessWidget {
                   ),
                 ],
               ),
-            if (!isMe)
+            if (!isMe) //! 나 아니여~
               Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(45, 10, 0, 0),
-                    child: ChatBubble(
-                      clipper:
-                          ChatBubbleClipper8(type: BubbleType.receiverBubble),
-                      backGroundColor: const Color(0xffE7E7ED),
-                      margin: const EdgeInsets.only(bottom: 10),
-                      child: Container(
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.7,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: isMe
-                              ? CrossAxisAlignment.end
-                              : CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              userName,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            Text(
-                              message,
-                              style: const TextStyle(color: Colors.black),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        getFormattedTime(),
-                        style: const TextStyle(
-                            fontSize: 10, color: Palette.darkGray),
-                      ),
-                    ],
-                  ),
+                  showChatBubble(context),
+                  sendTimeDisplay(),
                 ],
               )
           ],
         ),
-        Positioned(
-          top: 0,
-          right: isMe ? 5 : null,
-          left: isMe ? null : 5,
-          child: CircleAvatar(
-            backgroundImage: NetworkImage(
-              userImage,
-            ),
-          ),
-        ),
+        showProfileImage(),
       ]),
     );
   }
