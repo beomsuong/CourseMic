@@ -278,7 +278,7 @@ class ChatScreenState extends State<ChatScreen> {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       //! 스낵바 안보일 때 처리
-      print('가장 최근 퀴즈가 없는거같다.');
+      print('가장 최근 퀴즈가 없음');
     }
   }
 
@@ -286,7 +286,6 @@ class ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        //!
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
 
         widget.chatListParent.updateRoom(widget.roomID, chat.roomName,
