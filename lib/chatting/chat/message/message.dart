@@ -79,20 +79,16 @@ class _MessagesState extends State<Messages> {
               case LogType.text:
               case LogType.media:
                 final MSG msg = MSG.fromJson(chatDoc);
-                return GestureDetector(
-                  onDoubleTap: () {
-                    print('message double taps');
-                  },
-                  child: ChatBubbles(
-                    msg.content,
-                    msg.uid == user!.uid,
-                    msg.uid,
-                    userName,
-                    userImageURL,
-                    msg.sendTime,
-                    widget.roomID,
-                    key: ValueKey(chatDoc.id),
-                  ),
+                return ChatBubbles(
+                  msg.content,
+                  msg.uid == user!.uid,
+                  msg.uid,
+                  userName,
+                  userImageURL,
+                  msg.sendTime,
+                  widget.roomID,
+                  msg.react,
+                  key: ValueKey(chatDoc.id),
                 );
               case LogType.enter:
               case LogType.exit:
