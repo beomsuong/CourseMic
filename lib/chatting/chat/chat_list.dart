@@ -44,7 +44,8 @@ class ChatListState extends State<ChatList> with WidgetsBindingObserver {
     chatColRef = firestore.collection('chat');
     FCMLocalNotification.initializeNotification(context);
     secureStorage.read(key: "lastNotification").then((lastNoification) async {
-      if (lastNoification!.isEmpty) return;
+      if (lastNoification == null) return;
+      if (lastNoification.isEmpty) return;
       // secureStorage.write(key: "lastNotification", value: "");
       var roomID = lastNoification.split(" ")[1];
       lastMessage = lastNoification.split(" ")[3];
