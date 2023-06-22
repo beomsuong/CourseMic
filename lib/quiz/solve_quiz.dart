@@ -1,6 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:capston/chatting/chat_screen.dart';
+import 'package:capston/notification.dart';
 import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
@@ -46,6 +47,9 @@ class solve_quizState extends State<solve_quiz> {
         'quiz_C_date': quiz_C_date,
         'quiz_passer': quiz_passer,
       });
+      FCMLocalNotification.sendQuizNotification(
+          roomID: widget.roomID,
+          roomName: widget.chatScreenState.chat.roomName);
     } catch (error) {
       print('퀴즈 세팅 실패: $error');
     }

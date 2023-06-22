@@ -4,12 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:capston/firebase_options.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:capston/notification.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  Firebase.apps.isEmpty
+      ? await Firebase.initializeApp(
+          name: "CourseMic",
+          options: DefaultFirebaseOptions.currentPlatform,
+        )
+      : Firebase.app();
+
+  FCMLocalNotification.initializeNotification();
+  print(FCMLocalNotification.getMyDeviceToken());
   runApp(
     const MyApp(),
   );

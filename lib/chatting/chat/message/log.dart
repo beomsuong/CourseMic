@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:convert';
 
 enum LogType {
   text,
@@ -37,7 +36,7 @@ class MSG {
       uid: json["uid"],
       sendTime: json["sendTime"] as Timestamp,
       content: json["content"],
-      react: jsonDecode(json["react"]),
+      react: json["react"],
       readers: List<String>.from(json['readers']),
       replyID: json["replyID"],
     );
@@ -49,7 +48,7 @@ class MSG {
       "uid": uid,
       "sendTime": sendTime,
       "content": content,
-      "react": jsonEncode(react),
+      "react": react,
       "readers": readers,
       "replyID": replyID,
     };

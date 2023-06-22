@@ -1,13 +1,13 @@
 // ignore_for_file: avoid_init_to_null
 
 import 'package:capston/chatting/chat_screen.dart';
+import 'package:capston/notification.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:capston/widgets/CircularContainer.dart';
 import 'package:capston/palette.dart';
 import 'package:capston/todo_list/todo.dart';
-import 'package:capston/todo_list/todo_list.dart';
 import 'package:intl/intl.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
@@ -24,7 +24,6 @@ class ToDoNode extends StatefulWidget {
   Color fontColor;
 
   final ChatScreenState chatDataParent;
-  final ToDoListState buildParent;
 
   ToDoNode({
     super.key,
@@ -34,7 +33,6 @@ class ToDoNode extends StatefulWidget {
     this.iconColor = Palette.lightGray,
     this.fontColor = Palette.lightBlack,
     required this.chatDataParent,
-    required this.buildParent,
   });
 
   @override
@@ -340,10 +338,27 @@ class _ToDoNodeState extends State<ToDoNode> {
         .doc(controller.text)
         .set(widget.toDo.toJson());
 
+    sendToDoNotificationContain(widget.toDo.userIDs);
+
     // clear addToDoNode
     controller.text = '';
     widget.toDo.resetToDo();
     users = setUsers();
+  }
+
+  Future<void> sendToDoNotificationContain(List<String> userIDs) async {
+    for (var userID in userIDs) {
+      if (widget.chatDataParent.currentUser.uid == userID) continue;
+      FCMLocalNotification.sendToDoNotification(
+          deviceToken: (await FirebaseFirestore.instance
+                  .collection('user')
+                  .doc(userID)
+                  .get())
+              .get('deviceToken'),
+          roomID: widget.chatDataParent.widget.roomID,
+          roomName: widget.chatDataParent.chat.roomName,
+          task: widget.toDo.task);
+    }
   }
 
   void updateToDo() {
