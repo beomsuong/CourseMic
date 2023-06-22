@@ -1,6 +1,10 @@
+import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -9,6 +13,7 @@ class FCMLocalNotification {
 
   static final flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+  static const secureStorage = FlutterSecureStorage();
 
   static String currentRoomIDforNotification = "";
   static String? currentMyDeviceToken = "";
@@ -119,35 +124,41 @@ class FCMLocalNotification {
     }
   }
 
+  // background message to payload
   @pragma('vm:entry-point')
   static Future<void> firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
+    secureStorage.write(
+        key: "lastNotification",
+        value:
+            "roomID ${message.data["roomID"]} message ${message.notification?.body}");
     // 세부 내용이 필요한 경우 추가...
-    print("backgroundHandler message alert");
-
     RemoteNotification? notification = message.notification;
-    flutterLocalNotificationsPlugin.show(
-      notification.hashCode,
-      notification!.title,
-      notification.body,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'background_importance_channel',
-          'high_importance_notification',
-          importance: Importance.max,
+    if (notification != null) {
+      flutterLocalNotificationsPlugin.show(
+        notification.hashCode,
+        notification.title,
+        notification.body,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'high_importance_channel',
+            'high_importance_notification',
+            importance: Importance.max,
+          ),
+          iOS: DarwinNotificationDetails(),
         ),
-        iOS: DarwinNotificationDetails(),
-      ),
-      // payload: message.data['test_paremeter1']
-    );
+        payload: message.data['roomID'],
+      );
+    }
   }
 
-  @pragma('vm:entry-point')
-  static void backgroundHandler(NotificationResponse details) {
-    // 액션 추가... 파라미터는 details.payload 방식으로 전달
-  }
+  // @pragma('vm:entry-point')
+  // static void backgroundHandler(NotificationResponse details) async {
+  //   // 액션 추가... 파라미터는 details.payload 방식으로 전달
+  //   // print("페이로드: ${details.payload!}");
+  // }
 
-  static void initializeNotification() async {
+  static void initializeNotification(BuildContext context) async {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     flutterLocalNotificationsPlugin
@@ -166,10 +177,34 @@ class FCMLocalNotification {
         android: AndroidInitializationSettings("@drawable/notification_icon"),
         iOS: DarwinInitializationSettings(),
       ),
-      onDidReceiveNotificationResponse: (details) {
-        // 액션 추가...
+      onDidReceiveNotificationResponse: (details) async {
+        // 알림 클릭 관련 액션
+        if (currentRoomIDforNotification != details.payload &&
+            currentRoomIDforNotification.isNotEmpty) {
+          Navigator.of(context).pop();
+        }
+
+        var roomName = (await FirebaseFirestore.instance
+                .collection('chat')
+                .doc(details.payload)
+                .get())
+            .get('roomName');
+
+        if (context.mounted) {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return ChatScreen(
+                  roomID: details.payload!,
+                  roomName: roomName,
+                );
+              },
+            ),
+          );
+        }
       },
-      onDidReceiveBackgroundNotificationResponse: backgroundHandler,
+      // onDidReceiveBackgroundNotificationResponse: backgroundHandler,
     );
 
     await FirebaseMessaging.instance
@@ -179,7 +214,7 @@ class FCMLocalNotification {
       sound: true,
     );
 
-    // Foregorund Alert
+    // foreground message to payload
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       RemoteNotification? notification = message.notification;
       if (currentRoomIDforNotification == message.data['roomID']) return;
@@ -196,26 +231,44 @@ class FCMLocalNotification {
             ),
             iOS: DarwinNotificationDetails(),
           ),
-          // payload: message.data['test_paremeter1']
+          payload: message.data['roomID'],
         );
         print(
             "foreground message alert ${notification.hashCode}, ${notification.title}, ${notification.body}");
       }
     });
 
-    // Background Alert
+    // Disableground Alert
+    // RemoteMessage? message =
+    //     await FirebaseMessaging.instance.getInitialMessage();
+    // if (message != null) {
+    //   // 액션 부분 -> 파라미터는 message.data['test_parameter1'] 이런 방식으로...
+    //   print("background message alert");
+    //   var roomName = (await FirebaseFirestore.instance
+    //           .collection('chat')
+    //           .doc(message.data['roomID'])
+    //           .get())
+    //       .get('roomName');
+
+    //   if (context.mounted) {
+    //     await Navigator.push(
+    //       context,
+    //       MaterialPageRoute(
+    //         builder: (context) {
+    //           return ChatScreen(
+    //             roomID: message.data['roomID'],
+    //             roomName: roomName,
+    //           );
+    //         },
+    //       ),
+    //     );
+    //   }
+    // }
+  }
+
+  static Future<String> getInitalMessage() async {
     RemoteMessage? message =
         await FirebaseMessaging.instance.getInitialMessage();
-    if (message != null) {
-      // 액션 부분 -> 파라미터는 message.data['test_parameter1'] 이런 방식으로...
-      print("background message alert");
-    }
+    return message?.notification?.body ?? " ";
   }
 }
-
-
-// sendNotificationToDevice(
-//                   deviceToken: myDeviceToken,
-//                   title: '푸시 알림 테스트',
-//                   content: '푸시 알림 내용',
-//                   data: {'test_parameter1': 1, 'test_parameter2': '테스트1'}),

@@ -1,9 +1,11 @@
 import 'package:capston/chatting/chat/chat.dart';
 import 'package:capston/mypage/my_user.dart';
+import 'package:capston/notification.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:capston/palette.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 import 'package:capston/chatting/chat/add_chat.dart';
@@ -11,6 +13,7 @@ import 'package:capston/chatting/chat/search_chat.dart';
 import 'package:capston/chatting/chat_screen.dart';
 
 import 'package:capston/widgets/GradientText.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ChatList extends StatefulWidget {
   const ChatList({Key? key}) : super(key: key);
@@ -20,22 +23,100 @@ class ChatList extends StatefulWidget {
 
 typedef RoomList = List<List<dynamic>>;
 
-class ChatListState extends State<ChatList> {
+class ChatListState extends State<ChatList> with WidgetsBindingObserver {
   final FirebaseAuth authentication = FirebaseAuth.instance;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  static const secureStorage = FlutterSecureStorage();
 
   late final User currentUser;
   late final DocumentReference currUserDocRef;
   late final CollectionReference chatColRef;
+  String? lastMessage;
 
   Map<Timestamp, Widget> chatWidgetMap = {};
 
   @override
   initState() {
+    WidgetsBinding.instance.addObserver(this);
     super.initState();
     currentUser = authentication.currentUser!;
     currUserDocRef = firestore.collection('user').doc(currentUser.uid);
     chatColRef = firestore.collection('chat');
+    FCMLocalNotification.initializeNotification(context);
+    secureStorage.read(key: "lastNotification").then((lastNoification) async {
+      if (lastNoification!.isEmpty) return;
+      // secureStorage.write(key: "lastNotification", value: "");
+      var roomID = lastNoification.split(" ")[1];
+      lastMessage = lastNoification.split(" ")[3];
+
+      secureStorage.write(key: "lastNotification", value: "");
+      var roomName = (await chatColRef.doc(roomID).get()).get('roomName');
+
+      if (!mounted) return;
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) {
+            return ChatScreen(
+              roomID: roomID,
+              roomName: roomName,
+            );
+          },
+        ),
+      );
+    });
+    // backgroundNotificationToChat();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      backgroundNotificationToChat();
+    }
+    // switch (state) {
+    //   case AppLifecycleState.resumed:
+    //     break;
+    //   case AppLifecycleState.inactive:
+    //     break;
+    //   case AppLifecycleState.paused:
+    //     break;
+    //   case AppLifecycleState.detached:
+    //     break;
+    // }
+  }
+
+  void backgroundNotificationToChat() async {
+    RemoteMessage? message =
+        await FirebaseMessaging.instance.getInitialMessage();
+    if (message != null && lastMessage != message.notification!.body) {
+      // 액션 부분 -> 파라미터는 message.data['test_parameter1'] 이런 방식으로...
+      lastMessage = message.notification!.body;
+      var roomName = (await FirebaseFirestore.instance
+              .collection('chat')
+              .doc(message.data['roomID'])
+              .get())
+          .get('roomName');
+
+      if (!mounted) return;
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) {
+            return ChatScreen(
+              roomID: message.data['roomID'],
+              roomName: roomName,
+            );
+          },
+        ),
+      );
+    }
+    setState(() {});
   }
 
   @override
@@ -148,7 +229,6 @@ class Room extends StatelessWidget {
               return ChatScreen(
                 roomID: id,
                 roomName: name,
-                chatListParent: chatListParent,
               );
             },
           ),

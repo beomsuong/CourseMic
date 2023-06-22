@@ -1,5 +1,4 @@
 import 'package:capston/chatting/chat/chat.dart';
-import 'package:capston/chatting/chat/chat_list.dart';
 import 'package:capston/chatting/chat/message/log.dart';
 import 'package:capston/chatting/modify_role.dart';
 import 'package:capston/mypage/profile.dart';
@@ -21,13 +20,11 @@ import 'package:share_plus/share_plus.dart';
 class ChatScreen extends StatefulWidget {
   final String roomID;
   final String roomName;
-  final ChatListState chatListParent;
 
   const ChatScreen({
     Key? key,
     required this.roomID,
     required this.roomName,
-    required this.chatListParent,
   }) : super(key: key);
 
   @override

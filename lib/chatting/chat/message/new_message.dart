@@ -27,16 +27,20 @@ class _NewMessageState extends State<NewMessage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
+    widget.chatScreenState.chat.recentMessage = _userEnterMessage;
+    widget.chatScreenState.chatDocRef
+        .update(widget.chatScreenState.chat.toJson());
     addTextMSG(
       roomID: widget.roomID,
       uid: user.uid,
       content: _userEnterMessage,
     );
-    FCMLocalNotification.sendNotificationWithTopic(
-        topic: widget.roomID,
-        title: widget.chatScreenState.chat.roomName,
-        content: _userEnterMessage,
-        data: {'roomID': widget.roomID});
+    FCMLocalNotification.sendMessageNotification(
+      roomID: widget.roomID,
+      roomName: widget.chatScreenState.chat.roomName,
+      userName: (await widget.chatScreenState.userDocRef.get()).get("name"),
+      message: _userEnterMessage,
+    );
     _controller.clear();
     setState(() {
       _userEnterMessage = "";
