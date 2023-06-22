@@ -36,18 +36,18 @@ class _SearchChatState extends State<SearchChat> {
         final chatDocsSnapshot = await widget.chatListParent.firestore
             .collection('chat')
             .doc(doc.id)
-            .collection('message')
-            .orderBy('time', descending: true)
+            .collection('log')
+            .orderBy('sendTime', descending: true)
             .limit(1)
             .get();
 
         roomID = doc.id;
 
         if (chatDocsSnapshot.docs.isNotEmpty) {
-          Timestamp timestamp = chatDocsSnapshot.docs[0]['time'];
+          Timestamp timestamp = chatDocsSnapshot.docs[0]['sendTime'];
           DateTime dateTime = timestamp.toDate();
           String formattedDate = DateFormat('yy/MM/dd').format(dateTime);
-          lastMessage = chatDocsSnapshot.docs[0]['text'];
+          lastMessage = chatDocsSnapshot.docs[0]['content'];
           lastMessageDate = formattedDate;
         }
         if (searchedChat!.getIndexOfUser(

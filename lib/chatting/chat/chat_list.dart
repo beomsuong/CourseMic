@@ -62,19 +62,19 @@ class ChatListState extends State<ChatList> {
       final chatDocsSnapshot = await firestore
           .collection('chat')
           .doc(roomID)
-          .collection('message')
-          .orderBy('time', descending: true)
+          .collection('log')
+          .orderBy('sendTime', descending: true)
           .limit(1)
           .get();
 
       if (chatDocsSnapshot.docs.isNotEmpty) {
-        final lastMessage = chatDocsSnapshot.docs[0]['text'];
+        final lastMessage = chatDocsSnapshot.docs[0]['content'];
         roomList.add([
           roomID,
           roomName,
           lastMessage,
           userrole,
-          chatDocsSnapshot.docs[0]['time']
+          chatDocsSnapshot.docs[0]['sendTime']
         ]);
       } else {
         roomList.add(
