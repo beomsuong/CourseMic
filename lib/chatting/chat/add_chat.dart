@@ -1,4 +1,5 @@
 import 'package:capston/chatting/chat/chat_list.dart';
+import 'package:capston/chatting/chat/message/log.dart';
 import 'package:capston/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -39,6 +40,8 @@ class _AddChatState extends State<AddChat> {
         'chatList': FieldValue.arrayUnion([doc.id]),
       }).then((value) {
         print("Value Added to Array");
+        addEnterEventLog(
+            roomID: doc.id, uid: widget.chatListParent.currentUser.uid);
         FirebaseMessaging.instance.subscribeToTopic(doc.id);
       }).catchError((error) {
         print("Failed to add value to array: $error");

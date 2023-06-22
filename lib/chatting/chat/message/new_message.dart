@@ -2,7 +2,6 @@ import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/notification.dart';
 import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'chat_plus_func.dart';
 import 'package:capston/chatting/chat/message/log.dart';
@@ -33,10 +32,6 @@ class _NewMessageState extends State<NewMessage> {
       uid: user.uid,
       content: _userEnterMessage,
     );
-    final userData = await FirebaseFirestore.instance
-        .collection('user')
-        .doc(user!.uid)
-        .get();
     FCMLocalNotification.sendNotificationWithTopic(
         topic: widget.roomID,
         title: widget.chatScreenState.chat.roomName,

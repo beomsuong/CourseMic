@@ -16,7 +16,6 @@ void main() async {
       : Firebase.app();
 
   FCMLocalNotification.initializeNotification();
-  print(FCMLocalNotification.getMyDeviceToken());
   runApp(
     const MyApp(),
   );

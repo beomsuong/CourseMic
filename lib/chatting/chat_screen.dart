@@ -1,5 +1,6 @@
 import 'package:capston/chatting/chat/chat.dart';
 import 'package:capston/chatting/chat/chat_list.dart';
+import 'package:capston/chatting/chat/message/log.dart';
 import 'package:capston/chatting/modify_role.dart';
 import 'package:capston/mypage/profile.dart';
 import 'package:capston/notification.dart';
@@ -21,15 +22,13 @@ class ChatScreen extends StatefulWidget {
   final String roomID;
   final String roomName;
   final ChatListState chatListParent;
-  late String lastMessage;
 
-  ChatScreen(
-      {Key? key,
-      required this.roomID,
-      required this.roomName,
-      required this.chatListParent,
-      this.lastMessage = ""})
-      : super(key: key);
+  const ChatScreen({
+    Key? key,
+    required this.roomID,
+    required this.roomName,
+    required this.chatListParent,
+  }) : super(key: key);
 
   @override
   ChatScreenState createState() => ChatScreenState();
@@ -486,6 +485,12 @@ class ChatScreenState extends State<ChatScreen> {
                                                 fontWeight: FontWeight.bold))),
                                     TextButton(
                                         onPressed: () async {
+                                          FirebaseMessaging.instance
+                                              .unsubscribeFromTopic(
+                                                  widget.roomID);
+                                          addExitEventLog(
+                                              roomID: widget.roomID,
+                                              uid: currentUser.uid);
                                           if (chat.userList.length == 1) {
                                             chatDocRef.delete();
                                           } else {
@@ -496,14 +501,10 @@ class ChatScreenState extends State<ChatScreen> {
                                             chatDocRef
                                                 .update(chat.userListToJson());
                                           }
-
                                           userChatList.remove(widget.roomID);
                                           userDocRef.update({
                                             'chatList': userChatList,
                                           });
-                                          FirebaseMessaging.instance
-                                              .unsubscribeFromTopic(
-                                                  widget.roomID);
 
                                           // pop Dialog
                                           Navigator.of(context).pop();

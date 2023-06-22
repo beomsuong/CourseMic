@@ -149,7 +149,6 @@ class Room extends StatelessWidget {
                 roomID: id,
                 roomName: name,
                 chatListParent: chatListParent,
-                lastMessage: recentMessage,
               );
             },
           ),

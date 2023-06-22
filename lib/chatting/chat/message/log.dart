@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum LogType {
@@ -15,13 +17,13 @@ class MSG {
   late Timestamp sendTime;
   late String content;
 
-  late Map<String, String> react;
+  late Map<String, dynamic> react;
   late List<String> readers;
 
   late String replyID;
 
   MSG({
-    this.type = LogType.text,
+    required this.type,
     required this.uid,
     required this.sendTime,
     this.content = "",
@@ -30,13 +32,13 @@ class MSG {
     this.replyID = "",
   });
 
-  factory MSG.fromJson(QueryDocumentSnapshot<Object?> json) {
+  factory MSG.fromJson(DocumentSnapshot<Object?> json) {
     return MSG(
       type: LogType.values[json["type"]],
       uid: json["uid"],
       sendTime: json["sendTime"] as Timestamp,
       content: json["content"],
-      react: json["react"],
+      react: jsonDecode(json["react"]),
       readers: List<String>.from(json['readers']),
       replyID: json["replyID"],
     );
@@ -48,7 +50,7 @@ class MSG {
       "uid": uid,
       "sendTime": sendTime,
       "content": content,
-      "react": react,
+      "react": jsonEncode(react),
       "readers": readers,
       "replyID": replyID,
     };
@@ -61,12 +63,12 @@ class EventLog {
   late Timestamp sendTime;
 
   EventLog({
-    this.type = LogType.date,
+    required this.type,
     required this.uid,
     required this.sendTime,
   });
 
-  factory EventLog.fromJson(QueryDocumentSnapshot<Object?> json) {
+  factory EventLog.fromJson(DocumentSnapshot<Object?> json) {
     return EventLog(
       type: LogType.values[json["type"]],
       uid: json["uid"],
@@ -140,7 +142,8 @@ void addLog(
     case LogType.exit:
     case LogType.date:
     case LogType.end:
-      final EventLog eventLog = EventLog(uid: uid, sendTime: Timestamp.now());
+      final EventLog eventLog =
+          EventLog(type: type, uid: uid, sendTime: Timestamp.now());
       logColRef.add(eventLog.toJson());
       break;
   }

@@ -1,9 +1,10 @@
+import 'package:capston/chatting/chat/message/log.dart';
 import 'package:capston/chatting/chat_screen.dart';
+import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat_bubble.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/rendering.dart';
 
 class Messages extends StatefulWidget {
   final String roomID;
@@ -21,6 +22,9 @@ class _MessagesState extends State<Messages> {
   Map<String, String> userMap = {};
   Map<String, String> userImage = {};
 
+  final String unknownImageURL =
+      "https://firebasestorage.googleapis.com/v0/b/coursermic.appspot.com/o/user.png?alt=media&token=1866f8ce-d6bd-4676-9125-3910b3aa6817";
+
   @override
   void initState() {
     super.initState();
@@ -31,89 +35,98 @@ class _MessagesState extends State<Messages> {
         .collection('log')
         .orderBy('sendTime', descending: true)
         .snapshots();
-
-    fetchUserDetails();
   }
 
-  Future<void> fetchUserDetails() async {
-    final chatDocs = await FirebaseFirestore.instance
-        .collection('chat')
-        .doc(widget.roomID)
-        .collection('log')
-        .get();
-
+  Stream<QuerySnapshot<Object?>> fetchUserDetails(
+      QuerySnapshot<Object?> message) async* {
     // 유저마다 한 번만 호출되도록 Set을 사용
-    final uniqueUserIDs = chatDocs.docs.map((doc) => doc['uid']).toSet();
+    final uniqueUserIDs = message.docs.map((doc) => doc['uid']).toSet();
 
     for (final userID in uniqueUserIDs) {
-      final userName = await readUserName(userID);
-      final userImageURL = await getUserImageURL(userID);
-      userMap[userID] = userName;
-      userImage[userID] = userImageURL;
+      final user = await readUserNameAndURL(userID);
+      userMap[userID] = user[0]; // [0] : userName
+      userImage[userID] = user[1]; // [1] : userImageURL
     }
 
-    setState(() {});
+    yield message;
   }
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
-    return StreamBuilder(
-      stream: messageStream,
-      builder: (context, snapshot) {
+    return StreamBuilder<QuerySnapshot<Object?>>(
+      stream: messageStream.asyncExpand((message) => fetchUserDetails(message)),
+      builder: (context, AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
-        final chatDocs = snapshot.data!.docs as List<DocumentSnapshot>;
-        if (chatDocs.isNotEmpty) {
-          widget.chatDataParent.widget.lastMessage = chatDocs.first["content"];
-        }
+        final chatDocs = snapshot.data!.docs;
+
         return ListView.builder(
           reverse: true,
           itemCount: chatDocs.length,
           itemBuilder: (context, index) {
             final chatDoc = chatDocs[index];
             final userID = chatDoc['uid'];
-            final userName = userMap[userID] ?? 'Unknown';
-            final userImageURL = userImage[userID] ?? 'unknown.jpg';
+            final userName = userMap[userID]!;
+            final userImageURL = userImage[userID]!;
+            final type = LogType.values[chatDoc['type']];
 
-            return GestureDetector(
-              onDoubleTap: () {
-                print('message double taps');
-              },
-              child: ChatBubbles(
-                chatDoc['content'],
-                chatDoc['uid'].toString() == user!.uid,
-                chatDoc['uid'],
-                userName,
-                userImageURL,
-                chatDoc['sendTime'],
-                widget.roomID,
-                key: ValueKey(chatDoc.id),
-              ),
-            );
+            switch (type) {
+              case LogType.text:
+              case LogType.media:
+                final MSG msg = MSG.fromJson(chatDoc);
+                return GestureDetector(
+                  onDoubleTap: () {
+                    print('message double taps');
+                  },
+                  child: ChatBubbles(
+                    msg.content,
+                    msg.uid == user!.uid,
+                    msg.uid,
+                    userName,
+                    userImageURL,
+                    msg.sendTime,
+                    widget.roomID,
+                    key: ValueKey(chatDoc.id),
+                  ),
+                );
+              case LogType.enter:
+              case LogType.exit:
+                final EventLog eventLog = EventLog.fromJson(chatDoc);
+                return Center(
+                    child: Card(
+                        color: Palette.darkGray.withOpacity(0.5),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                              left: 8, right: 8, top: 3, bottom: 3),
+                          child: Text(
+                            "$userName님이 ${eventLog.type == LogType.enter ? "들어왔습니다." : "나갔습니다."}",
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 12),
+                          ),
+                        )));
+              case LogType.date:
+              case LogType.end:
+                break;
+            }
+            return null;
           },
         );
       },
     );
   }
 
-  Future<String> readUserName(String userID) async {
+  Future<List<String>> readUserNameAndURL(String userID) async {
     var docSnapshot = await userRef.doc(userID).get();
     if (docSnapshot.exists) {
-      return docSnapshot.get('name');
+      return [docSnapshot.get('name'), docSnapshot.get('imageURL')];
     }
-    return 'Unknown';
-  }
-
-  Future<String> getUserImageURL(String userID) async {
-    var docSnapshot = await userRef.doc(userID).get();
-    if (docSnapshot.exists) {
-      return docSnapshot.get('imageURL') as String;
-    }
-    return 'unknown.jpg';
+    return ['Unknown', unknownImageURL];
   }
 }

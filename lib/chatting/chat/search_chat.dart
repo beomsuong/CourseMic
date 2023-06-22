@@ -1,10 +1,10 @@
 import 'package:capston/chatting/chat/chat.dart';
 import 'package:capston/chatting/chat/chat_list.dart';
+import 'package:capston/chatting/chat/message/log.dart';
 import 'package:capston/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:capston/chatting/chat/chat_user.dart';
 
 class SearchChat extends StatefulWidget {
@@ -20,8 +20,6 @@ class _SearchChatState extends State<SearchChat> {
   bool bInSearchedChat = false;
   bool bFind = false;
 
-  String lastMessage = '';
-  String lastMessageDate = '';
   String userInput = '';
   String roomID = '';
   Chat? searchedChat;
@@ -33,24 +31,8 @@ class _SearchChatState extends State<SearchChat> {
     for (var doc in querySnapshot.docs) {
       if (shortRoomCode == doc.id.substring(0, 4)) {
         searchedChat = Chat.fromJson(doc);
-
-        final chatDocsSnapshot = await widget.chatListParent.firestore
-            .collection('chat')
-            .doc(doc.id)
-            .collection('log')
-            .orderBy('sendTime', descending: true)
-            .limit(1)
-            .get();
-
         roomID = doc.id;
 
-        if (chatDocsSnapshot.docs.isNotEmpty) {
-          Timestamp timestamp = chatDocsSnapshot.docs[0]['sendTime'];
-          DateTime dateTime = timestamp.toDate();
-          String formattedDate = DateFormat('yy/MM/dd').format(dateTime);
-          lastMessage = chatDocsSnapshot.docs[0]['content'];
-          lastMessageDate = formattedDate;
-        }
         if (searchedChat!.getIndexOfUser(
                 userID: widget.chatListParent.currentUser.uid) !=
             -1) {
@@ -88,6 +70,8 @@ class _SearchChatState extends State<SearchChat> {
       'userList': FieldValue.arrayUnion(
           [ChatUser(userID: widget.chatListParent.currentUser.uid).toJson()])
     });
+    addEnterEventLog(
+        roomID: roomID, uid: widget.chatListParent.currentUser.uid);
     FirebaseMessaging.instance.subscribeToTopic(roomID);
   }
 
@@ -209,21 +193,6 @@ class _SearchChatState extends State<SearchChat> {
                                             ),
                                           ),
                                         ),
-                                        SizedBox(
-                                          width: 120,
-                                          height: 35,
-                                          child: Text(
-                                            "최근 메시지 :",
-                                            textAlign: TextAlign.right,
-                                            style: TextStyle(
-                                              color: bInSearchedChat
-                                                  ? Palette.pastelWarning
-                                                  : Palette.pastelBlack,
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 20,
-                                            ),
-                                          ),
-                                        ),
                                       ],
                                     ),
                                   ),
@@ -257,23 +226,6 @@ class _SearchChatState extends State<SearchChat> {
                                           searchedChat != null
                                               ? "${searchedChat!.userList.length} 명"
                                               : ' ',
-                                          textAlign: TextAlign.left,
-                                          style: TextStyle(
-                                            color: bInSearchedChat
-                                                ? Palette.pastelWarning
-                                                : Palette.pastelBlack,
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 20,
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: 120,
-                                        height: 35,
-                                        child: Text(
-                                          lastMessageDate.isEmpty
-                                              ? "없음"
-                                              : lastMessageDate,
                                           textAlign: TextAlign.left,
                                           style: TextStyle(
                                             color: bInSearchedChat
