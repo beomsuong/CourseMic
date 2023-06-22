@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat_bubble.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/rendering.dart';
 
 class Messages extends StatefulWidget {
   final String roomID;
@@ -18,6 +19,7 @@ class _MessagesState extends State<Messages> {
   late final CollectionReference userRef;
   late final Stream messageStream;
   Map<String, String> userMap = {};
+  Map<String, String> userImage = {};
 
   @override
   void initState() {
@@ -26,9 +28,31 @@ class _MessagesState extends State<Messages> {
     messageStream = FirebaseFirestore.instance
         .collection('chat')
         .doc(widget.roomID)
-        .collection('message')
-        .orderBy('time', descending: true)
+        .collection('log')
+        .orderBy('sendTime', descending: true)
         .snapshots();
+
+    fetchUserDetails();
+  }
+
+  Future<void> fetchUserDetails() async {
+    final chatDocs = await FirebaseFirestore.instance
+        .collection('chat')
+        .doc(widget.roomID)
+        .collection('log')
+        .get();
+
+    // 유저마다 한 번만 호출되도록 Set을 사용
+    final uniqueUserIDs = chatDocs.docs.map((doc) => doc['uid']).toSet();
+
+    for (final userID in uniqueUserIDs) {
+      final userName = await readUserName(userID);
+      final userImageURL = await getUserImageURL(userID);
+      userMap[userID] = userName;
+      userImage[userID] = userImageURL;
+    }
+
+    setState(() {});
   }
 
   @override
@@ -45,41 +69,51 @@ class _MessagesState extends State<Messages> {
         }
         final chatDocs = snapshot.data!.docs as List<DocumentSnapshot>;
         if (chatDocs.isNotEmpty) {
-          widget.chatDataParent.widget.lastMessage = chatDocs.first["text"];
+          widget.chatDataParent.widget.lastMessage = chatDocs.first["content"];
         }
         return ListView.builder(
           reverse: true,
           itemCount: chatDocs.length,
           itemBuilder: (context, index) {
-            String userID = chatDocs[index]['userID'];
-            userMap.containsKey(userID)
-                ? null
-                : readUserName(userID)
-                    .then((userName) => storeUserName(userID, userName));
-            return ChatBubbles(
-                chatDocs[index]['text'],
-                chatDocs[index]['userID'].toString() == user!.uid,
-                chatDocs[index]['userID'],
-                userMap[userID] ?? 'userName',
-                chatDocs[index]['userImage'],
-                chatDocs[index]['time'],
-                widget.roomID);
+            final chatDoc = chatDocs[index];
+            final userID = chatDoc['uid'];
+            final userName = userMap[userID] ?? 'Unknown';
+            final userImageURL = userImage[userID] ?? 'unknown.jpg';
+
+            return GestureDetector(
+              onDoubleTap: () {
+                print('message double taps');
+              },
+              child: ChatBubbles(
+                chatDoc['content'],
+                chatDoc['uid'].toString() == user!.uid,
+                chatDoc['uid'],
+                userName,
+                userImageURL,
+                chatDoc['sendTime'],
+                widget.roomID,
+                key: ValueKey(chatDoc.id),
+              ),
+            );
           },
         );
       },
     );
   }
 
-  void storeUserName(String userID, String userName) => setState(() {
-        userMap[userID] = userName;
-      });
   Future<String> readUserName(String userID) async {
     var docSnapshot = await userRef.doc(userID).get();
     if (docSnapshot.exists) {
       return docSnapshot.get('name');
     }
-    return '알수없음';
+    return 'Unknown';
+  }
+
+  Future<String> getUserImageURL(String userID) async {
+    var docSnapshot = await userRef.doc(userID).get();
+    if (docSnapshot.exists) {
+      return docSnapshot.get('imageURL') as String;
+    }
+    return 'unknown.jpg';
   }
 }
-
-//TODO: chatDocs-roomname필요한지 확인하기
