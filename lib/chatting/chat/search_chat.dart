@@ -2,6 +2,7 @@ import 'package:capston/chatting/chat/chat.dart';
 import 'package:capston/chatting/chat/chat_list.dart';
 import 'package:capston/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:capston/chatting/chat/chat_user.dart';
@@ -87,8 +88,7 @@ class _SearchChatState extends State<SearchChat> {
       'userList': FieldValue.arrayUnion(
           [ChatUser(userID: widget.chatListParent.currentUser.uid).toJson()])
     });
-
-    widget.chatListParent.addRoom(roomID, searchedChat!.roomName, lastMessage);
+    FirebaseMessaging.instance.subscribeToTopic(roomID);
   }
 
   @override

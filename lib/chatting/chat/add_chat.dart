@@ -1,6 +1,7 @@
 import 'package:capston/chatting/chat/chat_list.dart';
 import 'package:capston/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:capston/chatting/chat/chat_user.dart';
 
@@ -38,11 +39,10 @@ class _AddChatState extends State<AddChat> {
         'chatList': FieldValue.arrayUnion([doc.id]),
       }).then((value) {
         print("Value Added to Array");
+        FirebaseMessaging.instance.subscribeToTopic(doc.id);
       }).catchError((error) {
         print("Failed to add value to array: $error");
       });
-
-      widget.chatListParent.addRoom(doc.id, roomName);
     }).catchError((error) {
       print("Failed to add document: $error");
     });

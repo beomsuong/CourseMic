@@ -2,11 +2,13 @@ import 'package:capston/chatting/chat/chat.dart';
 import 'package:capston/chatting/chat/chat_list.dart';
 import 'package:capston/chatting/modify_role.dart';
 import 'package:capston/mypage/profile.dart';
+import 'package:capston/notification.dart';
 import 'package:capston/palette.dart';
 import 'package:capston/quiz/solve_quiz.dart';
 import 'package:capston/todo_list/todo.dart';
 import 'package:capston/todo_list/todo_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:capston/chatting/chat/message/message.dart';
@@ -79,6 +81,10 @@ class ChatScreenState extends State<ChatScreen> {
     progressPercentStream = toDoColRef.snapshots();
     chatStream = chatDocRef.snapshots();
     showQuizSnackBar();
+    FCMLocalNotification.currentRoomIDforNotification = widget.roomID;
+
+    // 기존 유저들 구독 완료되면 삭제
+    FirebaseMessaging.instance.subscribeToTopic(widget.roomID);
   }
 
   Future<void> readInitChatData() async {
@@ -254,9 +260,7 @@ class ChatScreenState extends State<ChatScreen> {
     return WillPopScope(
       onWillPop: () async {
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
-
-        widget.chatListParent.updateRoom(widget.roomID, widget.roomName,
-            widget.lastMessage, chat.getUser(userID: currentUser.uid)!.role);
+        FCMLocalNotification.currentRoomIDforNotification = "";
         return true;
       },
       child: Scaffold(
@@ -497,8 +501,9 @@ class ChatScreenState extends State<ChatScreen> {
                                           userDocRef.update({
                                             'chatList': userChatList,
                                           });
-                                          widget.chatListParent
-                                              .leaveRoom(widget.roomID);
+                                          FirebaseMessaging.instance
+                                              .unsubscribeFromTopic(
+                                                  widget.roomID);
 
                                           // pop Dialog
                                           Navigator.of(context).pop();

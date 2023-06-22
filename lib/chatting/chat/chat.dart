@@ -5,21 +5,23 @@ class Chat {
   final String roomName;
   late String commanderID;
   late List<ChatUser> userList;
+  late String recentMessage;
 
   Chat(
       {required this.roomName,
       this.commanderID = '',
-      this.userList = const <ChatUser>[]});
+      this.userList = const <ChatUser>[],
+      required this.recentMessage});
 
   factory Chat.fromJson(DocumentSnapshot<Object?> json) {
     return Chat(
-      roomName: json['roomName'],
-      commanderID: json['commanderID'],
-      userList: <ChatUser>[
-        for (var jsonData in (json['userList'] as List<dynamic>))
-          ChatUser.fromData(jsonData),
-      ],
-    );
+        roomName: json['roomName'],
+        commanderID: json['commanderID'],
+        userList: <ChatUser>[
+          for (var jsonData in (json['userList'] as List<dynamic>))
+            ChatUser.fromData(jsonData),
+        ],
+        recentMessage: json["recentMessage"]);
   }
 
   // don't use set, use update!!!
@@ -28,7 +30,8 @@ class Chat {
       'commanderID': commanderID,
       'userList': <Map<String, dynamic>>[
         for (var user in userList) user.toJson(),
-      ]
+      ],
+      'recentMessage': recentMessage,
     };
   }
 

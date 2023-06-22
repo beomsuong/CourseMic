@@ -1,3 +1,5 @@
+import 'package:capston/chatting/chat/chat.dart';
+import 'package:capston/mypage/my_user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -24,74 +26,119 @@ class ChatListState extends State<ChatList> {
 
   late final User currentUser;
   late final DocumentReference currUserDocRef;
+  late final CollectionReference chatColRef;
 
-  Map<String, Widget> roomWidgetList = {};
-
-  bool bFuture = false;
+  Map<Timestamp, Widget> chatWidgetMap = {};
 
   @override
   initState() {
     super.initState();
     currentUser = authentication.currentUser!;
     currUserDocRef = firestore.collection('user').doc(currentUser.uid);
+    chatColRef = firestore.collection('chat');
   }
 
-  Future<RoomList> initChatList() async {
-    RoomList roomList = [];
-    late List<dynamic> roomIdList;
-    await currUserDocRef.get().then((snapshot) {
-      roomIdList = snapshot.get('chatList');
-    });
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: const GradientText(text: "채팅방"),
+          centerTitle: false,
+          elevation: 0.5,
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.white,
+          actions: [
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SearchChat(
+                            chatListParent: this,
+                          )),
+                );
+              },
+              icon: const Icon(
+                Icons.search_rounded,
+                color: Palette.pastelPurple,
+                size: 30,
+              ), // 원하는 아이콘을 선택합니다.
+            ),
+          ],
+        ),
+        body: StreamBuilder(
+          stream: currUserDocRef.snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(
+                  child: CircularProgressIndicator()); // 로딩 중일 때 표시될 위젯
+            }
+            if (snapshot.data!.get('chatList').isEmpty) {
+              return const Center(
+                  child: Text("현재 참여중인 채팅방이 없습니다.",
+                      style: TextStyle(fontWeight: FontWeight.w500)));
+            }
+            MyUser currentMyUser = MyUser.fromJson(snapshot.data!);
 
-    late List<dynamic> userList;
-    for (var roomID in roomIdList) {
-      DocumentReference roomDocRef = firestore.collection('chat').doc(roomID);
-      DocumentSnapshot roomnameSnapshot = await roomDocRef.get();
-
-      String roomName = roomnameSnapshot.get('roomName');
-      int userrole = 0;
-
-      userList = roomnameSnapshot.get('userList');
-      for (var user in userList) {
-        if (user['userID'] == currentUser.uid) {
-          userrole = user['role'];
-          break;
-        }
-      }
-
-      final chatDocsSnapshot = await firestore
-          .collection('chat')
-          .doc(roomID)
-          .collection('message')
-          .orderBy('time', descending: true)
-          .limit(1)
-          .get();
-
-      if (chatDocsSnapshot.docs.isNotEmpty) {
-        final lastMessage = chatDocsSnapshot.docs[0]['text'];
-        roomList.add([
-          roomID,
-          roomName,
-          lastMessage,
-          userrole,
-          chatDocsSnapshot.docs[0]['time']
-        ]);
-      } else {
-        roomList.add(
-          [roomID, roomName, '', userrole, ''],
-        );
-      }
-    }
-    roomList.sort((a, b) {
-      if (a[4] == '') return -1;
-      if (b[4] == '') return 1;
-      return (b[4] as Timestamp).compareTo(a[4] as Timestamp);
-    });
-
-    return roomList;
+            return ListView(
+              children: [
+                for (var roomID in currentMyUser.chatList)
+                  StreamBuilder(
+                      stream: chatColRef.doc(roomID).snapshots(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(
+                              child:
+                                  CircularProgressIndicator()); // 로딩 중일 때 표시될 위젯
+                        }
+                        Chat chat = Chat.fromJson(snapshot.data!);
+                        return Room(
+                          chatListParent: this,
+                          id: roomID,
+                          name: chat.roomName,
+                          recentMessage: chat.recentMessage,
+                          userRole: chat.getUser(userID: currentUser.uid)!.role,
+                        );
+                      }),
+              ],
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+            tooltip: '톡방 추가',
+            child: const Icon(Icons.playlist_add_rounded),
+            onPressed: () async {
+              await showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AddChat(
+                    chatListParent: this,
+                  );
+                },
+              );
+            }));
   }
+}
 
-  Widget room(String id, String name, String message, int role) {
+class Room extends StatelessWidget {
+  ChatListState chatListParent;
+
+  late final String id;
+  late final String name;
+  String recentMessage;
+  int userRole;
+
+  Room({
+    super.key,
+    required this.chatListParent,
+    required this.id,
+    required this.name,
+    required this.recentMessage,
+    required this.userRole,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return InkWell(
       onTap: () async {
         await Navigator.push(
@@ -101,20 +148,19 @@ class ChatListState extends State<ChatList> {
               return ChatScreen(
                 roomID: id,
                 roomName: name,
-                chatListParent: this,
-                lastMessage: message,
+                chatListParent: chatListParent,
+                lastMessage: recentMessage,
               );
             },
           ),
         );
-        setState(() {});
       },
       child: SizedBox(
         height: 80,
         child: Padding(
           padding: const EdgeInsets.only(top: 8, left: 8, right: 8), //톡방간 간격
           child: Row(children: [
-            if (role == 0)
+            if (userRole == 0)
               SizedBox(
                 width: 70,
                 height: 60,
@@ -123,7 +169,7 @@ class ChatListState extends State<ChatList> {
                   scale: 2.5,
                 ),
               )
-            else if (role >= 16)
+            else if (userRole >= 16)
               SizedBox(
                 width: 70,
                 height: 60,
@@ -133,7 +179,7 @@ class ChatListState extends State<ChatList> {
                   color: Palette.pastelPurple,
                 ),
               )
-            else if (role >= 8)
+            else if (userRole >= 8)
               SizedBox(
                 width: 70,
                 height: 60,
@@ -143,7 +189,7 @@ class ChatListState extends State<ChatList> {
                   color: Palette.pastelPurple,
                 ),
               )
-            else if (role >= 4)
+            else if (userRole >= 4)
               SizedBox(
                 width: 70,
                 height: 60,
@@ -153,7 +199,7 @@ class ChatListState extends State<ChatList> {
                   color: Palette.pastelPurple,
                 ),
               )
-            else if (role >= 2)
+            else if (userRole >= 2)
               SizedBox(
                 width: 70,
                 height: 60,
@@ -163,7 +209,7 @@ class ChatListState extends State<ChatList> {
                   color: Palette.pastelPurple,
                 ),
               )
-            else if (role >= 1)
+            else if (userRole >= 1)
               SizedBox(
                 width: 70,
                 height: 60,
@@ -187,7 +233,7 @@ class ChatListState extends State<ChatList> {
                         // 톡방 제목은 굵게
                       ),
                       Text(
-                        message,
+                        recentMessage,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         softWrap: false,
@@ -199,95 +245,5 @@ class ChatListState extends State<ChatList> {
         ),
       ),
     ); // SizedBox를 제거하고 Text 위젯만 반환
-  }
-
-  void addRoom(String id, String name, [String lastMessage = ""]) {
-    setState(() {
-      roomWidgetList[id] = room(id, name, lastMessage, 0);
-    });
-  }
-
-  void leaveRoom(String id) {
-    setState(() {
-      roomWidgetList.remove(id);
-    });
-  }
-
-  void updateRoom(String id, String name, String lastMessage, int userRole) {
-    setState(() {
-      roomWidgetList[id] = room(id, name, lastMessage, userRole);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const GradientText(text: "채팅방"),
-          centerTitle: false,
-          elevation: 0.5,
-          automaticallyImplyLeading: false,
-          backgroundColor: Colors.white,
-          actions: [
-            IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => SearchChat(
-                            chatListParent: this,
-                          )),
-                );
-                setState(() {});
-              },
-              icon: const Icon(
-                Icons.search_rounded,
-                color: Palette.pastelPurple,
-                size: 30,
-              ), // 원하는 아이콘을 선택합니다.
-            ),
-          ],
-        ),
-        body: FutureBuilder(
-          future: initChatList(),
-          builder: (BuildContext context, AsyncSnapshot<RoomList> snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(
-                  child: CircularProgressIndicator()); // 로딩 중일 때 표시될 위젯
-            }
-            if ((snapshot.data!).isEmpty) {
-              return const Center(
-                  child: Text("현재 참여중인 채팅방이 없습니다.",
-                      style: TextStyle(fontWeight: FontWeight.w500)));
-            }
-
-            if (!bFuture) {
-              bFuture = true;
-              for (var data in snapshot.data!) {
-                roomWidgetList[data[0]] =
-                    room(data[0], data[1], data[2], data[3]);
-              }
-            }
-
-            return ListView(
-              children: [
-                for (var roomID in roomWidgetList.keys) roomWidgetList[roomID]!,
-              ],
-            );
-          },
-        ),
-        floatingActionButton: FloatingActionButton(
-            tooltip: '톡방 추가',
-            child: const Icon(Icons.playlist_add_rounded),
-            onPressed: () async {
-              await showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AddChat(
-                    chatListParent: this,
-                  );
-                },
-              );
-            }));
   }
 }

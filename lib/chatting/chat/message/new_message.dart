@@ -1,6 +1,7 @@
 //import 'dart:math';
 
 import 'package:capston/chatting/chat_screen.dart';
+import 'package:capston/notification.dart';
 import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -40,7 +41,15 @@ class _NewMessageState extends State<NewMessage> {
       'userName': userData.data()!['name'],
       'userImage': userData['imageURL'],
     });
+    FCMLocalNotification.sendNotificationWithTopic(
+        topic: widget.roomID,
+        title: widget.chatScreenState.chat.roomName,
+        content: _userEnterMessage,
+        data: {'roomID': widget.roomID});
     _controller.clear();
+    setState(() {
+      _userEnterMessage = "";
+    });
 
     // 알림
   }

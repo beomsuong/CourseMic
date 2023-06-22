@@ -161,7 +161,6 @@ class ToDoListState extends State<ToDoList> {
                                   deadline: Timestamp.now(),
                                   userIDs: List<String>.empty(growable: true)),
                               chatDataParent: widget.chatDataState,
-                              buildParent: this,
                             ),
                           ),
                       ],
@@ -186,7 +185,6 @@ class ToDoListState extends State<ToDoList> {
                               key: ValueKey(doc.id),
                               toDo: todo,
                               chatDataParent: widget.chatDataState,
-                              buildParent: this,
                             ),
                           ));
                     }
