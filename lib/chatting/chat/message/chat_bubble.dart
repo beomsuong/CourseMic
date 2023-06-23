@@ -366,7 +366,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                 ),
                 showProfileImage(),
                 Positioned(
-                  bottom: widget.isMe ? 10 : 10,
+                  bottom: 1,
                   left: widget.isMe ? null : 60,
                   right: widget.isMe ? 10 : null,
                   child: showReactCount(),
@@ -437,7 +437,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
               width: 40,
               child: TextButton(
                 onPressed: () {
-                  react = "fixing";
+                  react = "fix";
                   doReactMsg(widget.userid, react!);
                   Navigator.pop(context);
                 },
