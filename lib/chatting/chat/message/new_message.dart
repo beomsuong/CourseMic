@@ -14,13 +14,19 @@ class NewMessage extends StatefulWidget {
       : super(key: key);
 
   @override
-  _NewMessageState createState() => _NewMessageState();
+  NewMessageState createState() => NewMessageState();
 }
 
-class _NewMessageState extends State<NewMessage> {
+class NewMessageState extends State<NewMessage> {
   final _controller = TextEditingController();
   bool block = false;
   var _userEnterMessage = '';
+
+  setBlockFalse() {
+    setState(() {
+      block = false;
+    });
+  }
 
   void _sendMessage() async {
     // FocusScope.of(context).unfocus();

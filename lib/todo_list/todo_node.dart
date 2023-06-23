@@ -43,8 +43,6 @@ class _ToDoNodeState extends State<ToDoNode> {
   // ToDoUpper(task)
   TextEditingController controller = TextEditingController();
   FocusNode focusNode = FocusNode();
-  // ToDoLower(user)
-  List<Widget> users = List.empty(growable: true);
 
   @override
   void initState() {
@@ -57,7 +55,6 @@ class _ToDoNodeState extends State<ToDoNode> {
         }
       });
     }
-    users = setUsers();
   }
 
   @override
@@ -166,10 +163,42 @@ class _ToDoNodeState extends State<ToDoNode> {
                 child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                GestureDetector(
-                  onTap: widget.toDo.state != ToDoState.Done ? showUser : null,
-                  child: Row(
-                    children: users,
+                Expanded(
+                  child: GestureDetector(
+                    onTap:
+                        widget.toDo.state != ToDoState.Done ? showUser : null,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 1, left: 4, right: 8),
+                      child:
+                          ListView(scrollDirection: Axis.horizontal, children: [
+                        if (widget.toDo.userIDs.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 10.0),
+                            child: Text(
+                              "일할 사람을 배정해주세요",
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  color: Palette.darkGray,
+                                  height: 2.5),
+                              textHeightBehavior: textHeightBehavior,
+                            ),
+                          )
+                        else
+                          for (var userID in widget.toDo.userIDs)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10.0),
+                              child: Text(
+                                widget.chatDataParent.userNameList[userID] ??
+                                    "Unknown",
+                                style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Palette.darkGray,
+                                    height: 2.5),
+                                textHeightBehavior: textHeightBehavior,
+                              ),
+                            ),
+                      ]),
+                    ),
                   ),
                 ),
                 GestureDetector(
@@ -343,7 +372,6 @@ class _ToDoNodeState extends State<ToDoNode> {
     // clear addToDoNode
     controller.text = '';
     widget.toDo.resetToDo();
-    users = setUsers();
   }
 
   Future<void> sendToDoNotificationContain(List<String> userIDs) async {
@@ -480,7 +508,6 @@ class _ToDoNodeState extends State<ToDoNode> {
                       widget.toDo.userIDs.contains(userID)
                           ? widget.toDo.userIDs.remove(userID)
                           : widget.toDo.userIDs.add(userID);
-                      users = setUsers();
                     });
                   },
                 ),
@@ -495,7 +522,6 @@ class _ToDoNodeState extends State<ToDoNode> {
                   onPressed: () {
                     setState(() {
                       widget.toDo.userIDs = currentUserIDs;
-                      users = setUsers();
                     });
                     Navigator.of(context).pop();
                     return;
@@ -514,35 +540,6 @@ class _ToDoNodeState extends State<ToDoNode> {
             ],
           )
         ]);
-  }
-
-  List<Widget> setUsers() {
-    if (widget.toDo.userIDs.isEmpty) {
-      return <Widget>[
-        const Padding(
-          padding: EdgeInsets.only(left: 10.0),
-          child: Text(
-            "일할 사람을 배정해주세요",
-            style:
-                TextStyle(fontSize: 10, color: Palette.darkGray, height: 2.5),
-            textHeightBehavior: textHeightBehavior,
-          ),
-        ),
-      ];
-    }
-
-    return <Widget>[
-      for (var userID in widget.toDo.userIDs)
-        Padding(
-          padding: const EdgeInsets.only(left: 10.0),
-          child: Text(
-            widget.chatDataParent.userNameList[userID]!,
-            style: const TextStyle(
-                fontSize: 10, color: Palette.darkGray, height: 2.5),
-            textHeightBehavior: textHeightBehavior,
-          ),
-        )
-    ];
   }
 
   void showScore() {
