@@ -1,15 +1,15 @@
+import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/mypage/profile.dart';
 import 'package:capston/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/gestures.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'save_important_message.dart';
-import 'package:capston/widgets/CircularContainer.dart';
 
 class ChatBubbles extends StatefulWidget {
   const ChatBubbles(
@@ -19,7 +19,8 @@ class ChatBubbles extends StatefulWidget {
     this.userName,
     this.userImage,
     this.sendTime,
-    this.roomID, {
+    this.roomID,
+    this.react, {
     Key? key,
   }) : super(key: key);
 
@@ -30,75 +31,106 @@ class ChatBubbles extends StatefulWidget {
   final String userImage;
   final Timestamp sendTime;
   final String roomID;
+  final Map<String, dynamic> react;
 
   @override
   State<ChatBubbles> createState() => _ChatBubblesState();
 }
 
+final user = FirebaseAuth.instance.currentUser;
+
 class _ChatBubblesState extends State<ChatBubbles> {
   late FToast fToast = FToast();
-
-  //double tap 처리용 변수들
-  TapDownDetails? _doubleTapDetails;
-  late Offset _reactButtonBarPosition = Offset.zero;
-  bool _showReactButtonBar = false;
-
-  //Overlay용 변수들
-  OverlayEntry? _overlayEntry;
-  OverlayEntry? _currentOverlayEntry;
-
-  void _handleDoubleTap(TapDownDetails details) {
-    print('Double Tapped on Position: ${_doubleTapDetails?.globalPosition}');
-    setState(() {
-      _doubleTapDetails = details;
-
-      _reactButtonBarPosition = details.localPosition;
-      _showReactButtonBar = true;
-
-      _removeCurrentOverlayEntry(); // 이전의 오버레이 제거
-      _currentOverlayEntry = _createOverlayEntry();
-      Overlay.of(context)?.insert(_currentOverlayEntry!);
-    });
-  }
-
-  OverlayEntry _createOverlayEntry() {
-    final renderBox = context.findRenderObject() as RenderBox;
-    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-    final position =
-        renderBox.localToGlobal(_reactButtonBarPosition, ancestor: overlay);
-    final overlayPosition = position - overlay.localToGlobal(Offset.zero);
-
-    return OverlayEntry(builder: (context) {
-      return Stack(
-        children: [
-          Positioned(
-            left: overlayPosition.dx,
-            top: overlayPosition.dy,
-            child: const ReactButtonBar(),
-          ),
-        ],
-      );
-    });
-  }
-
-  void _removeOverlayEntry() {
-    setState(() {
-      _showReactButtonBar = false;
-    });
-
-    _overlayEntry?.remove();
-    _overlayEntry = null;
-  }
-
-  void _removeCurrentOverlayEntry() {
-    _currentOverlayEntry?.remove();
-    _currentOverlayEntry = null;
-  }
 
   @override
   void initState() {
     super.initState();
     fToast = FToast();
+  }
+
+  Future<void> doReactMsg(String uid, String react) async {
+    try {
+      final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('chat')
+          .doc(widget.roomID)
+          .collection('log') //내가 가리킨 채팅과 파이어베이스에서 찾으려는 채팅이
+          .where('uid', isEqualTo: uid) //보낸 사람이 같고
+          .where('content', isEqualTo: widget.message) //내용이 같고
+          .where('sendTime', isEqualTo: widget.sendTime) //보낸 시간이 같으면
+          .get();
+
+      final DocumentSnapshot docSnapshot = querySnapshot.docs.first;
+      final Map<String, dynamic> reactMap = docSnapshot.get('react') ?? {};
+
+      if (querySnapshot.docs.isNotEmpty) {
+        if (reactMap.containsKey(user!.uid) && reactMap[user!.uid] == react) {
+          reactMap.remove(user!.uid);
+          await docSnapshot.reference.update({'react': reactMap});
+          print('메세지 반응 삭제 성공!');
+        } else {
+          reactMap[user!.uid] = react;
+          await docSnapshot.reference.update({'react': reactMap});
+          print('메세지 반응 저장 성공!');
+        }
+      }
+    } catch (error) {
+      print('메세지 반응 저장 실패!');
+    }
+  }
+
+  Container showReactCount() {
+    final Map<String, int> reactCount = {};
+    widget.react.forEach((key, value) {
+      reactCount[value] = (reactCount[value] ?? 0) + 1;
+    });
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          children: reactCount.entries.map((entry) {
+            final emoji = _getEmoji(entry.key);
+            final count = entry.value;
+
+            return Row(
+              children: [
+                Text(
+                  emoji,
+                  style: const TextStyle(fontSize: 13),
+                ),
+                const SizedBox(width: 1),
+                Text(
+                  count.toString(),
+                  style: const TextStyle(color: Palette.primary, fontSize: 12),
+                ),
+                const SizedBox(width: 1),
+                //const VerticalDivider(color: Colors.white, thickness: 1),
+              ],
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  String _getEmoji(String key) {
+    switch (key) {
+      case "good":
+        return "👍";
+      case "check":
+        return "✔️";
+      case "think":
+        return "🤔";
+      case "pin":
+        return "📌";
+      case "fix":
+        return "🛠️";
+      default:
+        return "";
+    }
   }
 
   Widget toast = Container(
@@ -122,16 +154,19 @@ class _ChatBubblesState extends State<ChatBubbles> {
   }
 
   Widget sendTimeDisplay() {
-    //메세지 보낸 시간 표시 위젯
     final EdgeInsets padding = widget.isMe
-        ? const EdgeInsets.fromLTRB(0, 0, 5, 15)
-        : const EdgeInsets.fromLTRB(5, 0, 0, 5);
+        ? const EdgeInsets.fromLTRB(0, 25, 5, 5)
+        : const EdgeInsets.fromLTRB(5, 25, 0, 5);
+
+    final EdgeInsets paddingWithReact = widget.react.isNotEmpty
+        ? padding.copyWith(bottom: padding.top - 5)
+        : padding;
 
     return Padding(
-      padding: padding,
+      padding: paddingWithReact,
       child: Text(
         getFormattedTime(),
-        style: const TextStyle(fontSize: 13, color: Palette.darkGray),
+        style: const TextStyle(fontSize: 11, color: Palette.darkGray),
       ),
     );
   }
@@ -160,33 +195,48 @@ class _ChatBubblesState extends State<ChatBubbles> {
             child: Text(
               widget.userName,
               style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+                  fontWeight: FontWeight.w300,
+                  color: Colors.black,
+                  fontSize: 12),
             ),
           )
         ],
         Row(
           children: [
+            if (widget.isMe)
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [sendTimeDisplay()],
+              ),
             Padding(
               padding: padding,
-              child: ChatBubble(
-                clipper: ChatBubbleClipper4(type: decideBubbleType),
-                alignment: widget.isMe ? Alignment.topRight : Alignment.topLeft,
-                margin: const EdgeInsets.only(bottom: 10),
-                backGroundColor: decideBckgndColor,
-                child: Container(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.6,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: crossAxisAlignment,
-                    children: [
-                      Text(
-                        widget.message,
-                        style: TextStyle(color: txtColor),
-                      ),
-                    ],
+              child: Container(
+                margin:
+                    EdgeInsets.only(bottom: widget.react.isNotEmpty ? 10 : 0),
+                child: ChatBubble(
+                  clipper: ChatBubbleClipper8(type: decideBubbleType),
+                  alignment:
+                      widget.isMe ? Alignment.topRight : Alignment.topLeft,
+                  margin:
+                      EdgeInsets.only(bottom: widget.react.isNotEmpty ? 10 : 0),
+                  backGroundColor: decideBckgndColor,
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.5,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: crossAxisAlignment,
+                      children: [
+                        Text(
+                          widget.message,
+                          style: TextStyle(
+                            color: txtColor,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -197,7 +247,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                 children: [
                   sendTimeDisplay(),
                 ],
-              )
+              ),
           ],
         ),
       ],
@@ -209,9 +259,8 @@ class _ChatBubblesState extends State<ChatBubbles> {
     Widget profileImage = const SizedBox.shrink(); // 초기값 설정
     if (!widget.isMe) {
       profileImage = CircleAvatar(
-        backgroundImage: NetworkImage(
-          widget.userImage,
-        ),
+        backgroundImage: NetworkImage(widget.userImage),
+        radius: 18,
       );
     }
     return Positioned(
@@ -228,15 +277,14 @@ class _ChatBubblesState extends State<ChatBubbles> {
       context: context,
       builder: (BuildContext context) => AlertDialog(
         contentPadding: EdgeInsets.symmetric(
-          vertical: MediaQuery.of(context).size.height * 0.05,
-          horizontal: MediaQuery.of(context).size.width * 0.1,
+          vertical: MediaQuery.of(context).size.height * 0.01,
+          horizontal: MediaQuery.of(context).size.width * 0.01,
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text('메시지 액션 메뉴'),
-            const SizedBox(height: 15), // 공백용. 나중에 처리
+            reactbuttonBar(),
+            dialogDivider(),
             TextButton(
               onPressed: () {
                 Navigator.push(
@@ -250,7 +298,6 @@ class _ChatBubblesState extends State<ChatBubbles> {
                     },
                   ),
                 );
-                // Navigator.pop(context);
               },
               child: const Text('프로필'),
             ),
@@ -263,19 +310,18 @@ class _ChatBubblesState extends State<ChatBubbles> {
             ),
             TextButton(
               onPressed: () {
-                print(widget.message);
                 saveImportantMessage(
-                  // 중요한 메세지 컬렉션에 저장
-                  widget.message,
-                  widget.message,
-                  widget.sendTime,
-                  widget.userName,
-                  widget.roomID,
-                );
+                    // 중요한 메세지 컬렉션에 저장
+                    widget.message,
+                    widget.message,
+                    widget.sendTime,
+                    widget.userName,
+                    widget.roomID);
                 Navigator.pop(context);
               },
               child: const Text('중요메세지 설정'),
             ),
+            dialogDivider(),
           ],
         ),
       ),
@@ -286,102 +332,131 @@ class _ChatBubblesState extends State<ChatBubbles> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        _removeOverlayEntry();
         return true;
       },
       child: GestureDetector(
         onLongPressStart: (LongPressStartDetails longPressStartDetails) =>
             showMsgFuncDialog(context), //메시지 longpress하면 트리거
-        onDoubleTapDown: (TapDownDetails details) {
-          _removeOverlayEntry();
-
-          _removeCurrentOverlayEntry();
-          _handleDoubleTap(details);
-          print('메인 위젯 더블 탭 액션 수행 하는 곳');
-        },
-        onTap: () {
-          _removeOverlayEntry();
-          _removeCurrentOverlayEntry();
-        },
-        onVerticalDragUpdate: (details) {
-          _removeOverlayEntry();
-
-          _removeCurrentOverlayEntry();
-        },
-        child: Stack(
+        child: Column(
           children: [
-            // 챗버블
-            Row(
-              mainAxisAlignment:
-                  widget.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            Stack(
               children: [
-                if (widget.isMe) //! 나일 때
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      sendTimeDisplay(),
-                      showChatBubble(context),
-                    ],
-                  ),
-                if (!widget.isMe) //! 나 아니여~
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      showChatBubble(context),
-                    ],
-                  ),
+                // 챗버블
+                Row(
+                  mainAxisAlignment: widget.isMe
+                      ? MainAxisAlignment.end
+                      : MainAxisAlignment.start,
+                  children: [
+                    if (widget.isMe) //! 나일 때
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          //sendTimeDisplay(),
+                          showChatBubble(context),
+                        ],
+                      ),
+                    if (!widget.isMe) //! 나 아니여~
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          showChatBubble(context),
+                        ],
+                      ),
+                  ],
+                ),
+                showProfileImage(),
+                Positioned(
+                  bottom: 1,
+                  left: widget.isMe ? null : 60,
+                  right: widget.isMe ? 10 : null,
+                  child: showReactCount(),
+                )
               ],
             ),
-            showProfileImage(),
           ],
         ),
       ),
     );
   }
-}
 
-class ReactButtonBar extends StatelessWidget {
-  const ReactButtonBar({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 200,
+  Widget reactbuttonBar() {
+    String? react;
+    return SizedBox(
+      width: 250,
       height: 50,
-      decoration: BoxDecoration(
-          color: Colors.grey, borderRadius: BorderRadius.circular(10)),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: ButtonBar(
+          alignment: MainAxisAlignment.center,
           children: [
-            TextButton(
+            SizedBox(
+              width: 40,
+              child: TextButton(
                 onPressed: () {
-                  print('버튼 바 버튼 터치됨');
+                  react = "good";
+                  doReactMsg(widget.userid, react!);
+                  Navigator.pop(context);
                 },
-                child: const Text('👍')),
-            TextButton(
+                child: const Text('👍'),
+              ),
+            ),
+            SizedBox(
+              width: 40,
+              child: TextButton(
                 onPressed: () {
-                  print('버튼 바 버튼 터치됨');
+                  react = "check";
+                  doReactMsg(widget.userid, react!);
+                  Navigator.pop(context);
                 },
-                child: const Text('✔️')),
-            TextButton(
+                child: const Text('✔️'),
+              ),
+            ),
+            SizedBox(
+              width: 40,
+              child: TextButton(
                 onPressed: () {
-                  print('버튼 바 버튼 터치됨');
+                  react = "think";
+                  doReactMsg(widget.userid, react!);
+                  Navigator.pop(context);
                 },
-                child: const Text('🤔')),
-            TextButton(
+                child: const Text('🤔'),
+              ),
+            ),
+            SizedBox(
+              width: 40,
+              child: TextButton(
                 onPressed: () {
-                  print('버튼 바 버튼 터치됨');
+                  react = "pin";
+                  doReactMsg(widget.userid, react!);
+                  Navigator.pop(context);
                 },
-                child: const Text('📌')),
-            TextButton(
+                child: const Text('📌'),
+              ),
+            ),
+            SizedBox(
+              width: 40,
+              child: TextButton(
                 onPressed: () {
-                  print('버튼 바 버튼 터치됨');
+                  react = "fix";
+                  doReactMsg(widget.userid, react!);
+                  Navigator.pop(context);
                 },
-                child: const Text('🛠️')),
+                child: const Text('🛠️'),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+  //! end of chatbubble class
+}
+
+Divider dialogDivider() {
+  return const Divider(
+    height: 1,
+    color: Palette.pastelBlack,
+    indent: 30,
+    endIndent: 30,
+  );
 }
