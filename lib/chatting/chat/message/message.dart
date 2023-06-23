@@ -89,6 +89,7 @@ class _MessagesState extends State<Messages> {
                   msg.sendTime,
                   widget.roomID,
                   msg.react,
+                  widget.chatDataParent,
                   key: ValueKey(chatDoc.id),
                 );
               case LogType.enter:

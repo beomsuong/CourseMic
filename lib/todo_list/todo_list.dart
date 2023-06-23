@@ -153,14 +153,18 @@ class ToDoListState extends State<ToDoList> {
                           DragAndDropItem(
                             canDrag: false,
                             // AddToDo
-                            child: ToDoNode(
-                              bDelete: false,
-                              toDo: ToDo(
-                                  state: state,
-                                  createDate: Timestamp.now(),
-                                  deadline: Timestamp.now(),
-                                  userIDs: List<String>.empty(growable: true)),
-                              chatDataParent: widget.chatDataState,
+                            child: IgnorePointer(
+                              ignoring: widget.chatDataState.chat.bEndProject,
+                              child: ToDoNode(
+                                bDelete: false,
+                                toDo: ToDo(
+                                    state: state,
+                                    createDate: Timestamp.now(),
+                                    deadline: Timestamp.now(),
+                                    userIDs:
+                                        List<String>.empty(growable: true)),
+                                chatDataParent: widget.chatDataState,
+                              ),
                             ),
                           ),
                       ],

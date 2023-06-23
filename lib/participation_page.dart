@@ -1,4 +1,5 @@
 import 'package:capston/chatting/chat/chat.dart';
+import 'package:capston/chatting/chat/chat_user.dart';
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
@@ -83,9 +84,16 @@ class _ParticipationPageState extends State<ParticipationPage> {
               Expanded(
                 child: !bDetail
                     ? ParticipationGraph(
-                        chatDataParent: widget.chatDataParent, chat: chat)
+                        chatDataParent: widget.chatDataParent,
+                        userList: chat.userList)
                     : ParticipationDetail(
-                        chatDataParent: widget.chatDataParent, chat: chat),
+                        chatDataParent: widget.chatDataParent,
+                        userList: chat.userList,
+                        doneCount: chat
+                            .getUser(
+                                userID: widget.chatDataParent.currentUser.uid)!
+                            .doneCount,
+                      ),
               )
             ],
           );
@@ -95,9 +103,9 @@ class _ParticipationPageState extends State<ParticipationPage> {
 
 class ParticipationGraph extends StatefulWidget {
   final ChatScreenState chatDataParent;
-  final Chat chat;
+  final List<ChatUser> userList;
   const ParticipationGraph(
-      {super.key, required this.chatDataParent, required this.chat});
+      {super.key, required this.chatDataParent, required this.userList});
 
   @override
   State<ParticipationGraph> createState() => _ParticipationGraphState();
@@ -117,7 +125,7 @@ class _ParticipationGraphState extends State<ParticipationGraph> {
 
   void updateMaxParticipation() {
     int max = 0;
-    for (var user in widget.chat.userList) {
+    for (var user in widget.userList) {
       if (user.participation >= max) {
         max = user.participation;
       }
@@ -130,6 +138,7 @@ class _ParticipationGraphState extends State<ParticipationGraph> {
 
   @override
   Widget build(BuildContext context) {
+    updateMaxParticipation();
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -138,7 +147,7 @@ class _ParticipationGraphState extends State<ParticipationGraph> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              for (var user in widget.chat.userList)
+              for (var user in widget.userList)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: Text(
@@ -156,13 +165,13 @@ class _ParticipationGraphState extends State<ParticipationGraph> {
         ]),
         Wrap(children: [
           Padding(
-            padding: const EdgeInsets.only(left: 8.0, top: 8.0),
+            padding: const EdgeInsets.only(left: 8.0, top: 7.5),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                for (var user in widget.chat.userList)
+                for (var user in widget.userList)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 13.0),
+                    padding: const EdgeInsets.only(bottom: 14.5),
                     child: LinearPercentIndicator(
                       backgroundColor: Colors.transparent,
                       padding: const EdgeInsets.only(right: 8.0),
@@ -204,9 +213,13 @@ class _ParticipationGraphState extends State<ParticipationGraph> {
 
 class ParticipationDetail extends StatefulWidget {
   final ChatScreenState chatDataParent;
-  final Chat chat;
+  final List<ChatUser> userList;
+  final int doneCount;
   const ParticipationDetail(
-      {super.key, required this.chatDataParent, required this.chat});
+      {super.key,
+      required this.chatDataParent,
+      required this.userList,
+      required this.doneCount});
 
   @override
   State<ParticipationDetail> createState() => _ParticipationDetailState();
@@ -227,7 +240,7 @@ class _ParticipationDetailState extends State<ParticipationDetail> {
                 padding: EdgeInsets.only(bottom: 8.0),
                 child: Text("팀원 점수"),
               ),
-              for (var user in widget.chat.userList)
+              for (var user in widget.userList)
                 Text(
                     "${widget.chatDataParent.userNameList[user.userID]} : ${user.participation}포인트")
             ],
@@ -241,8 +254,7 @@ class _ParticipationDetailState extends State<ParticipationDetail> {
               const Text("채팅 : 0회"),
               const Text("자료공유 : 0회"),
               const Text("반응 : 0회"),
-              Text(
-                  "완료한 일 : ${widget.chat.getUser(userID: widget.chatDataParent.currentUser.uid)!.doneCount}회"),
+              Text("완료한 일 : ${widget.doneCount}회"),
             ],
           )
         ],

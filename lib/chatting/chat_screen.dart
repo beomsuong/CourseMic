@@ -75,6 +75,7 @@ class ChatScreenState extends State<ChatScreen> {
     toDoColRef =
         firestore.collection("chat").doc(widget.roomID).collection("todo");
 
+    chat = Chat(roomName: widget.roomName, recentMessage: "");
     readInitChatData();
     progressPercentStream = toDoColRef.snapshots();
     chatStream = chatDocRef.snapshots();
@@ -279,11 +280,19 @@ class ChatScreenState extends State<ChatScreen> {
               const SizedBox(
                 width: 4,
               ),
-              GestureDetector(
-                onTap: () => Clipboard.setData(ClipboardData(text: roomCode)),
-                child: const Icon(Icons.copy_rounded,
-                    color: Palette.darkGray, size: 20),
-              ),
+              StreamBuilder(
+                  stream: chatDocRef.snapshots(),
+                  builder: (context, snapshot) {
+                    return GestureDetector(
+                      onTap: snapshot.hasData &&
+                              snapshot.data?.get('bEndProject')
+                          ? null
+                          : () =>
+                              Clipboard.setData(ClipboardData(text: roomCode)),
+                      child: const Icon(Icons.copy_rounded,
+                          color: Palette.darkGray, size: 20),
+                    );
+                  }),
             ],
           ),
         ),
@@ -355,8 +364,10 @@ class ChatScreenState extends State<ChatScreen> {
                                         width: 4,
                                       ),
                                       GestureDetector(
-                                        onTap: () => Clipboard.setData(
-                                            ClipboardData(text: roomCode)),
+                                        onTap: chat.bEndProject
+                                            ? null
+                                            : () => Clipboard.setData(
+                                                ClipboardData(text: roomCode)),
                                         child: const Icon(Icons.copy_rounded,
                                             color: Palette.darkGray, size: 20),
                                       ),
@@ -365,12 +376,14 @@ class ChatScreenState extends State<ChatScreen> {
                                   Padding(
                                     padding: const EdgeInsets.only(right: 10.0),
                                     child: GestureDetector(
-                                        onTap: () {
-                                          Share.share(
-                                              "CourseMic 을 다운 받고 무임승차 없는 조별과제를 진행해보세요!"
-                                              "\n\n플레이스토어 링크"
-                                              "\n\n채팅방 코드 : $roomCode");
-                                        },
+                                        onTap: chat.bEndProject
+                                            ? null
+                                            : () {
+                                                Share.share(
+                                                    "CourseMic 을 다운 받고 무임승차 없는 조별과제를 진행해보세요!"
+                                                    "\n\n플레이스토어 링크"
+                                                    "\n\n채팅방 코드 : $roomCode");
+                                              },
                                         child: const Icon(
                                             Icons.ios_share_rounded,
                                             color: Palette.darkGray,
@@ -399,51 +412,63 @@ class ChatScreenState extends State<ChatScreen> {
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) {
-                                        return ModifyRole(
-                                          bCommander: chat.commanderID ==
-                                                  currentUser.uid
-                                              ? false
-                                              : chat.commanderID.isNotEmpty,
-                                          role: chat
-                                              .userList[chat.getIndexOfUser(
-                                                  userID: currentUser.uid)]
-                                              .role,
-                                          roomID: widget.roomID,
-                                          userID: currentUser.uid,
-                                          returnRole: (int returnRole) {
-                                            int currentRole = chat
-                                                .getUser(
-                                                    userID: currentUser.uid)!
-                                                .role;
-                                            chat
-                                                .userList[chat.getIndexOfUser(
-                                                    userID: currentUser.uid)]
-                                                .role = returnRole;
-                                            chatDocRef.update(
-                                              chat.userListToJson(),
-                                            );
+                                  onTap: chat.bEndProject
+                                      ? null
+                                      : () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) {
+                                                return ModifyRole(
+                                                  bCommander:
+                                                      chat.commanderID ==
+                                                              currentUser.uid
+                                                          ? false
+                                                          : chat.commanderID
+                                                              .isNotEmpty,
+                                                  role: chat
+                                                      .userList[
+                                                          chat.getIndexOfUser(
+                                                              userID:
+                                                                  currentUser
+                                                                      .uid)]
+                                                      .role,
+                                                  roomID: widget.roomID,
+                                                  userID: currentUser.uid,
+                                                  returnRole: (int returnRole) {
+                                                    int currentRole = chat
+                                                        .getUser(
+                                                            userID: currentUser
+                                                                .uid)!
+                                                        .role;
+                                                    chat
+                                                        .userList[
+                                                            chat.getIndexOfUser(
+                                                                userID:
+                                                                    currentUser
+                                                                        .uid)]
+                                                        .role = returnRole;
+                                                    chatDocRef.update(
+                                                      chat.userListToJson(),
+                                                    );
 
-                                            if (returnRole >= 16) {
-                                              chatDocRef.update({
-                                                'commanderID': currentUser.uid,
-                                              });
-                                            }
-                                            if (currentRole >= 16 &&
-                                                returnRole < 16) {
-                                              chatDocRef.update({
-                                                'commanderID': "",
-                                              });
-                                            }
-                                            setState(() {});
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ),
+                                                    if (returnRole >= 16) {
+                                                      chatDocRef.update({
+                                                        'commanderID':
+                                                            currentUser.uid,
+                                                      });
+                                                    }
+                                                    if (currentRole >= 16 &&
+                                                        returnRole < 16) {
+                                                      chatDocRef.update({
+                                                        'commanderID': "",
+                                                      });
+                                                    }
+                                                    setState(() {});
+                                                  },
+                                                );
+                                              },
+                                            ),
+                                          ),
                                   child: const Text(
                                     '+ 역할 수정하기',
                                     style: TextStyle(
@@ -733,7 +758,7 @@ class ChatScreenState extends State<ChatScreen> {
             NewMessage(
               key: newMessageKey,
               roomID: widget.roomID,
-              chatScreenState: this,
+              chatDataParent: this,
             ),
           ],
         ),

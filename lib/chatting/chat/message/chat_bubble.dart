@@ -1,3 +1,4 @@
+import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/mypage/profile.dart';
 import 'package:capston/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -18,7 +19,8 @@ class ChatBubbles extends StatefulWidget {
     this.userImage,
     this.sendTime,
     this.roomID,
-    this.react, {
+    this.react,
+    this.chatDataParent, {
     Key? key,
   }) : super(key: key);
 
@@ -30,6 +32,7 @@ class ChatBubbles extends StatefulWidget {
   final Timestamp sendTime;
   final String roomID;
   final Map<String, dynamic> react;
+  final ChatScreenState chatDataParent;
 
   @override
   State<ChatBubbles> createState() => _ChatBubblesState();
@@ -293,7 +296,9 @@ class _ChatBubblesState extends State<ChatBubbles> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            reactbuttonBar(),
+            IgnorePointer(
+                ignoring: widget.chatDataParent.chat.bEndProject,
+                child: reactbuttonBar()),
             // dialogDivider(),
             TextButton(
               onPressed: () {
@@ -319,16 +324,18 @@ class _ChatBubblesState extends State<ChatBubbles> {
               child: const Text('복사'),
             ),
             TextButton(
-              onPressed: () {
-                saveImportantMessage(
-                    // 중요한 메세지 컬렉션에 저장
-                    widget.message,
-                    widget.message,
-                    widget.sendTime,
-                    widget.userName,
-                    widget.roomID);
-                Navigator.pop(context);
-              },
+              onPressed: widget.chatDataParent.chat.bEndProject
+                  ? null
+                  : () {
+                      saveImportantMessage(
+                          // 중요한 메세지 컬렉션에 저장
+                          widget.message,
+                          widget.message,
+                          widget.sendTime,
+                          widget.userName,
+                          widget.roomID);
+                      Navigator.pop(context);
+                    },
               child: const Text('중요메세지 설정'),
             ),
             dialogDivider(),

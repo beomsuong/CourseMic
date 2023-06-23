@@ -161,11 +161,11 @@ class MyDayItemWidget extends StatelessWidget {
             padding: const EdgeInsets.only(top: 4),
             alignment: Alignment.topCenter,
             child: Container(
-              height: 18,
-              width: 18,
+              height: 22,
+              width: 22,
               decoration: BoxDecoration(
                 color: properties.isCurrentDay
-                    ? Palette.brightBlue
+                    ? Palette.pastelPurple
                     : Colors.transparent,
                 shape: BoxShape.circle,
               ),
@@ -174,7 +174,7 @@ class MyDayItemWidget extends StatelessWidget {
                     style: TextStyle(
                         color: properties.isCurrentDay
                             ? Colors.white
-                            : Palette.pastelPurple
+                            : Palette.lightBlack
                                 .withOpacity(properties.isInMonth ? 1 : 0.5),
                         fontWeight: properties.isInMonth
                             ? FontWeight.w500
