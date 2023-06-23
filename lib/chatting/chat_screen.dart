@@ -474,8 +474,8 @@ class ChatScreenState extends State<ChatScreen> {
                               : () {
                                   showWidget(
                                       title: Center(
-                                          child: Text(
-                                              '${chat.roomName} 프로젝트 마무리!')),
+                                          child:
+                                              Text('${chat.roomName} 과제 마무리!')),
                                       widget: Wrap(
                                           alignment: WrapAlignment.center,
                                           children: [
@@ -483,7 +483,7 @@ class ChatScreenState extends State<ChatScreen> {
                                                 textAlign: TextAlign.center,
                                                 text: const TextSpan(children: [
                                                   TextSpan(
-                                                      text: "프로젝트 마무리를 하면 ",
+                                                      text: "과제 마무리를 하면 ",
                                                       style: TextStyle(
                                                           color: Colors.black,
                                                           fontSize: 16)),
@@ -569,7 +569,7 @@ class ChatScreenState extends State<ChatScreen> {
                           icon: const Icon(
                             Icons.sports_kabaddi_outlined,
                           ),
-                          label: const Text("프로젝트 마무리하기"),
+                          label: const Text("과제 마무리하기"),
                         ),
                       ),
                     ),
