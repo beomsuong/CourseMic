@@ -113,9 +113,18 @@ class _MessagesState extends State<Messages> {
                         )));
               case LogType.date:
               case LogType.end:
-                break;
+                return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("프로젝트가 마무리되었습니다. 참여도를 정산해주세요!"),
+                      ElevatedButton.icon(
+                          onPressed: () {},
+                          icon: const Icon(
+                            Icons.hotel_class_rounded,
+                          ),
+                          label: const Text("참여도 정산하기")),
+                    ]);
             }
-            return null;
           },
         );
       },
