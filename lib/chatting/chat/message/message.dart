@@ -74,11 +74,25 @@ class _MessagesState extends State<Messages> {
             final userName = userMap[userID]!;
             final userImageURL = userImage[userID]!;
             final type = LogType.values[chatDoc['type']];
+            final logDocRef = FirebaseFirestore.instance
+                .collection('chat')
+                .doc(widget.roomID)
+                .collection('log')
+                .doc(chatDoc.id);
 
             switch (type) {
               case LogType.text:
               case LogType.media:
                 final MSG msg = MSG.fromJson(chatDoc);
+                if (!msg.readers
+                    .contains(widget.chatDataParent.currentUser.uid)) {
+                  //읽은 사람 중에 내가 없으면
+                  msg.readers.add(widget.chatDataParent.currentUser.uid);
+                  logDocRef.update({
+                    'readers': FieldValue.arrayUnion(
+                        [widget.chatDataParent.currentUser.uid])
+                  });
+                }
                 return ChatBubbles(
                   msg.content,
                   msg.uid == user!.uid,
@@ -88,6 +102,7 @@ class _MessagesState extends State<Messages> {
                   msg.sendTime,
                   widget.roomID,
                   msg.react,
+                  msg.readers,
                   key: ValueKey(chatDoc.id),
                 );
               case LogType.enter:
@@ -109,17 +124,35 @@ class _MessagesState extends State<Messages> {
                         )));
               case LogType.date:
               case LogType.end:
-                return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("프로젝트가 마무리되었습니다. 참여도를 정산해주세요!"),
-                      ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.hotel_class_rounded,
-                          ),
-                          label: const Text("참여도 정산하기")),
-                    ]);
+                final EndLog endLog = EndLog.fromJson(chatDoc);
+
+                return Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Card(
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 30, 20, 30),
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text("프로젝트가 마무리되었습니다! 참여도를 정산해주세요!",
+                                style: TextStyle()),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            ElevatedButton.icon(
+                                onPressed: endLog.calUserIDs.contains(
+                                        widget.chatDataParent.currentUser.uid)
+                                    ? null
+                                    : () {},
+                                icon: const Icon(
+                                  Icons.hotel_class_rounded,
+                                ),
+                                label: const Text("참여도 정산하기")),
+                          ]),
+                    ),
+                  ),
+                );
             }
           },
         );
