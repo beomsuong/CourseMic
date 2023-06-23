@@ -22,22 +22,11 @@ class ImportantMessagesPage extends StatefulWidget {
 }
 
 class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
-  late Stream<QuerySnapshot<Object?>> imgMsgStream;
-
   bool isBtnEnable = false;
   @override
   void initState() {
     super.initState();
-    imgMsgStream = loadImpMsgList();
     checkBtnStatus();
-  }
-
-  Stream<QuerySnapshot<Map<String, dynamic>>> loadImpMsgList() async* {
-    var snapshot = await widget.chatScreenState.chatDocRef
-        .collection('imp_msg')
-        .orderBy('timeStamp', descending: true) // 시간 역순으로 정렬
-        .get();
-    yield snapshot;
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>?> getLatestQuiz() async {
@@ -116,7 +105,10 @@ class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
               style:
                   TextStyle(color: Colors.white, fontWeight: FontWeight.w500))),
       body: StreamBuilder<QuerySnapshot>(
-        stream: imgMsgStream,
+        stream: widget.chatScreenState.chatDocRef
+            .collection('imp_msg')
+            .orderBy('timeStamp', descending: true) // 최근 시간 순으로 정렬
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(child: Text('오류가 발생했습니다.'));
@@ -169,9 +161,6 @@ class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
                           onPressed: () {
                             print(documents[index].id);
                             deleteImpMsg(widget.roomID, impMsgId);
-                            setState(() {
-                              imgMsgStream = loadImpMsgList();
-                            });
                             Navigator.pop(context);
                           },
                           child: const Text('삭제'),

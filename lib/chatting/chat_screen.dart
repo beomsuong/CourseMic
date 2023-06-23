@@ -1,5 +1,4 @@
 import 'package:capston/chatting/chat/chat.dart';
-import 'package:capston/chatting/chat/chat_list.dart';
 import 'package:capston/chatting/chat/message/log.dart';
 import 'package:capston/chatting/modify_role.dart';
 import 'package:capston/mypage/profile.dart';
@@ -21,13 +20,11 @@ import 'package:share_plus/share_plus.dart';
 class ChatScreen extends StatefulWidget {
   final String roomID;
   final String roomName;
-  final ChatListState chatListParent;
 
   const ChatScreen({
     Key? key,
     required this.roomID,
     required this.roomName,
-    required this.chatListParent,
   }) : super(key: key);
 
   @override
@@ -51,6 +48,8 @@ class ChatScreenState extends State<ChatScreen> {
   late Stream<DocumentSnapshot<Object?>> chatStream;
 
   late final String roomCode;
+
+  GlobalKey<NewMessageState> newMessageKey = GlobalKey();
 
   // late FToast fToast;
   // Widget toast = Container(
@@ -302,6 +301,16 @@ class ChatScreenState extends State<ChatScreen> {
                 }
 
                 chat = Chat.fromJson(snapshot.data!);
+                // 유저 들어오거나 나갈때, 이름 파싱
+                for (var user in chat.userList) {
+                  firestore
+                      .collection('user')
+                      .doc(user.userID)
+                      .get()
+                      .then((value) {
+                    userNameList[user.userID] = value.data()!['name'];
+                  });
+                }
 
                 return Column(
                   children: <Widget>[
@@ -456,6 +465,115 @@ class ChatScreenState extends State<ChatScreen> {
                       ),
                     ),
                     SizedBox(
+                      width: double.infinity,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: ElevatedButton.icon(
+                          onPressed: chat.bEndProject
+                              ? null
+                              : () {
+                                  showWidget(
+                                      title: Center(
+                                          child: Text(
+                                              '${chat.roomName} 프로젝트 마무리!')),
+                                      widget: Wrap(
+                                          alignment: WrapAlignment.center,
+                                          children: [
+                                            RichText(
+                                                textAlign: TextAlign.center,
+                                                text: const TextSpan(children: [
+                                                  TextSpan(
+                                                      text: "프로젝트 마무리를 하면 ",
+                                                      style: TextStyle(
+                                                          color: Colors.black,
+                                                          fontSize: 16)),
+                                                  TextSpan(
+                                                    text: "오직 읽기만",
+                                                    style: TextStyle(
+                                                        color: Colors.red,
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  TextSpan(
+                                                      text: "\n가능해집니다.",
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontSize: 16,
+                                                      )),
+                                                ])),
+                                            const Padding(
+                                              padding: EdgeInsets.only(top: 16),
+                                              child: Text(
+                                                "마지막 인사를 나누고 마무리를 눌러주세요!",
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                    color: Palette.pastelRed,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14),
+                                              ),
+                                            ),
+                                          ]),
+                                      actions: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          children: [
+                                            TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: const Text('취소',
+                                                    style: TextStyle(
+                                                        color:
+                                                            Palette.brightBlue,
+                                                        fontWeight:
+                                                            FontWeight.bold))),
+                                            TextButton(
+                                                onPressed: () async {
+                                                  // FirebaseMessaging.instance
+                                                  //     .unsubscribeFromTopic(
+                                                  //         widget.roomID);
+
+                                                  addEndEventLog(
+                                                      roomID: widget.roomID,
+                                                      uid: currentUser.uid);
+                                                  FCMLocalNotification
+                                                      .sendEndProjectNotification(
+                                                          roomID: widget.roomID,
+                                                          roomName:
+                                                              chat.roomName);
+
+                                                  chat.bEndProject = true;
+                                                  chatDocRef.update({
+                                                    "bEndProject":
+                                                        chat.bEndProject
+                                                  });
+
+                                                  if (!mounted) return;
+                                                  // pop Dialog
+                                                  Navigator.of(context).pop();
+                                                  // pop Drawer
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: const Text('마무리',
+                                                    style: TextStyle(
+                                                        color:
+                                                            Palette.brightRed,
+                                                        fontWeight:
+                                                            FontWeight.bold)))
+                                          ],
+                                        ),
+                                      ]);
+                                },
+                          icon: const Icon(
+                            Icons.sports_kabaddi_outlined,
+                          ),
+                          label: const Text("프로젝트 마무리하기"),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
                       height: 65,
                       child: ListTile(
                         tileColor: Palette.lightGray,
@@ -467,9 +585,12 @@ class ChatScreenState extends State<ChatScreen> {
                                 color: Palette.pastelPurple)),
                         onTap: () async {
                           showWidget(
-                              title: Text('${chat.roomName} 나가기'),
+                              title:
+                                  Center(child: Text('${chat.roomName} 나가기')),
                               widget: const Text(
-                                  '나가기를 하면 완료한 할 일 정보와 참여도 정보가 삭제됩니다.'),
+                                '나가기를 하면 완료한 할 일 정보와 참여도 정보가 삭제됩니다.',
+                                textAlign: TextAlign.center,
+                              ),
                               actions: [
                                 Row(
                                   mainAxisAlignment:
@@ -506,6 +627,23 @@ class ChatScreenState extends State<ChatScreen> {
                                             'chatList': userChatList,
                                           });
 
+                                          // Delete user in all Todo
+                                          var snapshot = (await toDoColRef
+                                              .where("userIDs",
+                                                  arrayContains:
+                                                      currentUser.uid)
+                                              .get());
+
+                                          for (var doc in snapshot.docs) {
+                                            var userIDs = List<String>.from(
+                                                doc.get('userIDs'));
+                                            userIDs.remove(currentUser.uid);
+                                            toDoColRef
+                                                .doc(doc.id)
+                                                .update({"userIDs": userIDs});
+                                          }
+
+                                          if (!mounted) return;
                                           // pop Dialog
                                           Navigator.of(context).pop();
                                           // pop Drawer
@@ -585,6 +723,7 @@ class ChatScreenState extends State<ChatScreen> {
                 child: GestureDetector(
               onTap: () {
                 FocusManager.instance.primaryFocus?.unfocus();
+                newMessageKey.currentState?.setBlockFalse();
               },
               child: Messages(
                 roomID: widget.roomID,
@@ -592,6 +731,7 @@ class ChatScreenState extends State<ChatScreen> {
               ),
             )),
             NewMessage(
+              key: newMessageKey,
               roomID: widget.roomID,
               chatScreenState: this,
             ),

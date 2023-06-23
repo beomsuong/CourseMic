@@ -2,19 +2,22 @@ import 'package:capston/chatting/chat/chat_user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Chat {
+  late bool bEndProject;
   final String roomName;
   late String commanderID;
   late List<ChatUser> userList;
   late String recentMessage;
 
   Chat(
-      {required this.roomName,
+      {this.bEndProject = false,
+      required this.roomName,
       this.commanderID = '',
       this.userList = const <ChatUser>[],
       required this.recentMessage});
 
   factory Chat.fromJson(DocumentSnapshot<Object?> json) {
     return Chat(
+        bEndProject: json['bEndProject'],
         roomName: json['roomName'],
         commanderID: json['commanderID'],
         userList: <ChatUser>[
@@ -24,7 +27,7 @@ class Chat {
         recentMessage: json["recentMessage"]);
   }
 
-  // don't use set, use update!!!
+  // don't use set, use update!!! / 다른 필드들은 개별적으로 업데이트
   Map<String, dynamic> toJson() {
     return {
       'commanderID': commanderID,
