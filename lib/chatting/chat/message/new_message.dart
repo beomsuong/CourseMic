@@ -72,26 +72,24 @@ class NewMessageState extends State<NewMessage> {
                 color: Palette.darkGray,
               ),
               Expanded(
-                child: IgnorePointer(
-                  ignoring: widget.chatDataParent.chat.bEndProject,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: TextField(
-                      maxLines: null,
-                      controller: _controller,
-                      decoration:
-                          const InputDecoration(labelText: 'Send a message...'),
-                      onTap: () {
-                        setState(() {
-                          block = false;
-                        });
-                      },
-                      onChanged: (value) {
-                        setState(() {
-                          _userEnterMessage = value;
-                        });
-                      },
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: TextField(
+                    maxLines: null,
+                    enabled: !widget.chatDataParent.chat.bEndProject,
+                    controller: _controller,
+                    decoration:
+                        const InputDecoration(labelText: 'Send a message...'),
+                    onTap: () {
+                      setState(() {
+                        block = false;
+                      });
+                    },
+                    onChanged: (value) {
+                      setState(() {
+                        _userEnterMessage = value;
+                      });
+                    },
                   ),
                 ),
               ),

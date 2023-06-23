@@ -67,6 +67,7 @@ class _MessagesState extends State<Messages> {
         final chatDocs = snapshot.data!.docs;
 
         return ListView.builder(
+          padding: const EdgeInsets.only(top: 10, bottom: 10),
           reverse: true,
           itemCount: chatDocs.length,
           itemBuilder: (context, index) {
@@ -114,7 +115,7 @@ class _MessagesState extends State<Messages> {
                 final EndLog endLog = EndLog.fromJson(chatDoc);
 
                 return Padding(
-                  padding: const EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.fromLTRB(10, 20, 10, 10),
                   child: Card(
                     color: Colors.white,
                     child: Padding(
