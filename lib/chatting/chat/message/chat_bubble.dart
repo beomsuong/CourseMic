@@ -22,8 +22,8 @@ class ChatBubbles extends StatefulWidget {
     this.userImage,
     this.sendTime,
     this.roomID,
-    this.react,
-    this.readers, {
+    this.readers, 
+    this.chatDataParent, {
     Key? key,
   }) : super(key: key);
 
@@ -36,6 +36,7 @@ class ChatBubbles extends StatefulWidget {
   final String roomID;
   final Map<String, dynamic> react;
   final List<String> readers;
+  final ChatScreenState chatDataParent;
 
   @override
   State<ChatBubbles> createState() => _ChatBubblesState();
@@ -90,9 +91,10 @@ class _ChatBubblesState extends State<ChatBubbles> {
     });
 
     return Container(
+      padding: widget.react.isEmpty ? null : const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        color: Colors.grey,
-        borderRadius: BorderRadius.circular(5),
+        color: Palette.darkGray,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: IntrinsicHeight(
         child: Row(
@@ -102,16 +104,25 @@ class _ChatBubblesState extends State<ChatBubbles> {
 
             return Row(
               children: [
-                Text(
-                  emoji,
-                  style: const TextStyle(fontSize: 13),
+                Container(
+                  width: 16,
+                  height: 16,
+                  decoration: const BoxDecoration(
+                      color: Colors.white, shape: BoxShape.circle),
+                  child: Center(
+                    child: Text(
+                      textAlign: TextAlign.center,
+                      emoji,
+                      style: const TextStyle(fontSize: 10, color: Colors.green),
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 1),
+                const SizedBox(width: 4),
                 Text(
                   count.toString(),
-                  style: const TextStyle(color: Palette.primary, fontSize: 12),
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
                 ),
-                const SizedBox(width: 1),
+                const SizedBox(width: 4),
                 //const VerticalDivider(color: Colors.white, thickness: 1),
               ],
             );
@@ -214,8 +225,8 @@ class _ChatBubblesState extends State<ChatBubbles> {
     final BubbleType decideBubbleType =
         widget.isMe ? BubbleType.sendBubble : BubbleType.receiverBubble;
     final EdgeInsets padding = widget.isMe
-        ? const EdgeInsets.fromLTRB(0, 5, 0, 0)
-        : const EdgeInsets.fromLTRB(45, 5, 0, 0);
+        ? const EdgeInsets.fromLTRB(0, 5, 0, 3)
+        : const EdgeInsets.fromLTRB(45, 5, 0, 3);
     final Color decideBckgndColor =
         widget.isMe ? const Color(0xFF8754f8) : const Color(0xffE7E7ED);
     final Color txtColor = widget.isMe ? Colors.white : Colors.black;
@@ -318,6 +329,8 @@ class _ChatBubblesState extends State<ChatBubbles> {
       // 메시지 액션 다이얼로그
       context: context,
       builder: (BuildContext context) => AlertDialog(
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(15))),
         contentPadding: EdgeInsets.symmetric(
           vertical: MediaQuery.of(context).size.height * 0.01,
           horizontal: MediaQuery.of(context).size.width * 0.01,
@@ -325,8 +338,10 @@ class _ChatBubblesState extends State<ChatBubbles> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            reactbuttonBar(),
-            dialogDivider(),
+            IgnorePointer(
+                ignoring: widget.chatDataParent.chat.bEndProject,
+                child: reactbuttonBar()),
+            // dialogDivider(),
             TextButton(
               onPressed: () {
                 Navigator.push(
@@ -351,16 +366,18 @@ class _ChatBubblesState extends State<ChatBubbles> {
               child: const Text('복사'),
             ),
             TextButton(
-              onPressed: () {
-                saveImportantMessage(
-                    // 중요한 메세지 컬렉션에 저장
-                    widget.message,
-                    widget.message,
-                    widget.sendTime,
-                    widget.userName,
-                    widget.roomID);
-                Navigator.pop(context);
-              },
+              onPressed: widget.chatDataParent.chat.bEndProject
+                  ? null
+                  : () {
+                      saveImportantMessage(
+                          // 중요한 메세지 컬렉션에 저장
+                          widget.message,
+                          widget.message,
+                          widget.sendTime,
+                          widget.userName,
+                          widget.roomID);
+                      Navigator.pop(context);
+                    },
               child: const Text('중요메세지 설정'),
             ),
             dialogDivider(),
@@ -409,8 +426,8 @@ class _ChatBubblesState extends State<ChatBubbles> {
                 ),
                 showProfileImage(),
                 Positioned(
-                  bottom: 1,
-                  left: widget.isMe ? null : 60,
+                  bottom: 0,
+                  left: widget.isMe ? null : 55,
                   right: widget.isMe ? 10 : null,
                   child: showReactCount(),
                 ),
@@ -424,68 +441,87 @@ class _ChatBubblesState extends State<ChatBubbles> {
 
   Widget reactbuttonBar() {
     String? react;
-    return SizedBox(
-      width: 250,
-      height: 50,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: ButtonBar(
-          alignment: MainAxisAlignment.center,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+      child: Container(
+        height: 40,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          color: Palette.darkGray,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              width: 40,
-              child: TextButton(
-                onPressed: () {
-                  react = "good";
-                  doReactMsg(widget.userid, react!);
-                  Navigator.pop(context);
-                },
-                child: const Text('👍'),
-              ),
+            TextButton(
+              style: TextButton.styleFrom(
+                  minimumSize: Size.zero,
+                  padding: const EdgeInsets.all(6),
+                  backgroundColor: Colors.white,
+                  shape: const CircleBorder(
+                      side: BorderSide(color: Colors.white))),
+              onPressed: () {
+                react = "good";
+                doReactMsg(widget.userid, react!);
+                Navigator.pop(context);
+              },
+              child: const Text('👍', style: TextStyle(fontSize: 14)),
             ),
-            SizedBox(
-              width: 40,
-              child: TextButton(
-                onPressed: () {
-                  react = "check";
-                  doReactMsg(widget.userid, react!);
-                  Navigator.pop(context);
-                },
-                child: const Text('✔️'),
-              ),
+            TextButton(
+              style: TextButton.styleFrom(
+                  minimumSize: Size.zero,
+                  padding: const EdgeInsets.all(6),
+                  backgroundColor: Colors.white,
+                  shape: const CircleBorder(
+                      side: BorderSide(color: Colors.white))),
+              onPressed: () {
+                react = "check";
+                doReactMsg(widget.userid, react!);
+                Navigator.pop(context);
+              },
+              child: const Text('✔️',
+                  style: TextStyle(color: Colors.green, fontSize: 14)),
             ),
-            SizedBox(
-              width: 40,
-              child: TextButton(
-                onPressed: () {
-                  react = "think";
-                  doReactMsg(widget.userid, react!);
-                  Navigator.pop(context);
-                },
-                child: const Text('🤔'),
-              ),
+            TextButton(
+              style: TextButton.styleFrom(
+                  minimumSize: Size.zero,
+                  padding: const EdgeInsets.all(6),
+                  backgroundColor: Colors.white,
+                  shape: const CircleBorder(
+                      side: BorderSide(color: Colors.white))),
+              onPressed: () {
+                react = "think";
+                doReactMsg(widget.userid, react!);
+                Navigator.pop(context);
+              },
+              child: const Text('🤔', style: TextStyle(fontSize: 14)),
             ),
-            SizedBox(
-              width: 40,
-              child: TextButton(
-                onPressed: () {
-                  react = "pin";
-                  doReactMsg(widget.userid, react!);
-                  Navigator.pop(context);
-                },
-                child: const Text('📌'),
-              ),
+            TextButton(
+              style: TextButton.styleFrom(
+                  minimumSize: Size.zero,
+                  padding: const EdgeInsets.all(6),
+                  backgroundColor: Colors.white,
+                  shape: const CircleBorder(
+                      side: BorderSide(color: Colors.white))),
+              onPressed: () {
+                react = "pin";
+                doReactMsg(widget.userid, react!);
+                Navigator.pop(context);
+              },
+              child: const Text('📌', style: TextStyle(fontSize: 14)),
             ),
-            SizedBox(
-              width: 40,
-              child: TextButton(
-                onPressed: () {
-                  react = "fix";
-                  doReactMsg(widget.userid, react!);
-                  Navigator.pop(context);
-                },
-                child: const Text('🛠️'),
-              ),
+            TextButton(
+              style: TextButton.styleFrom(
+                  minimumSize: Size.zero,
+                  padding: const EdgeInsets.all(6),
+                  backgroundColor: Colors.white,
+                  shape: const CircleBorder(
+                      side: BorderSide(color: Colors.white))),
+              onPressed: () {
+                react = "fix";
+                doReactMsg(widget.userid, react!);
+                Navigator.pop(context);
+              },
+              child: const Text('🛠️', style: TextStyle(fontSize: 14)),
             ),
           ],
         ),

@@ -28,7 +28,7 @@ class FCMLocalNotification {
     sendNotificationWithTopic(
         topic: roomID,
         title: roomName,
-        content: "$roomName 프로젝트가 마무리되었습니다! 참여도를 정산해주세요!",
+        content: "$roomName 과제가 마무리되었습니다! 참여도를 정산해주세요!",
         data: {"roomID": roomID});
   }
 
