@@ -49,7 +49,6 @@ class _ChatBubblesState extends State<ChatBubbles> {
   }
 
   Future<void> doReactMsg(String uid, String react) async {
-    //TODO: 불필요 동작 제거
     try {
       final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('chat')
@@ -60,15 +59,19 @@ class _ChatBubblesState extends State<ChatBubbles> {
           .where('sendTime', isEqualTo: widget.sendTime) //보낸 시간이 같으면
           .get();
 
+      final DocumentSnapshot docSnapshot = querySnapshot.docs.first;
+      final Map<String, dynamic> reactMap = docSnapshot.get('react') ?? {};
+
       if (querySnapshot.docs.isNotEmpty) {
-        final DocumentSnapshot docSnapshot = querySnapshot.docs.first;
-
-        final Map<String, dynamic> reactMap = docSnapshot.get('react') ?? {};
-
-        reactMap[user!.uid] = react;
-
-        await docSnapshot.reference.update({'react': reactMap});
-        print('메세지 반응 저장 성공!');
+        if (reactMap.containsKey(user!.uid) && reactMap[user!.uid] == react) {
+          reactMap.remove(user!.uid);
+          await docSnapshot.reference.update({'react': reactMap});
+          print('메세지 반응 삭제 성공!');
+        } else {
+          reactMap[user!.uid] = react;
+          await docSnapshot.reference.update({'react': reactMap});
+          print('메세지 반응 저장 성공!');
+        }
       }
     } catch (error) {
       print('메세지 반응 저장 실패!');
@@ -84,28 +87,31 @@ class _ChatBubblesState extends State<ChatBubbles> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(5),
       ),
-      child: Row(
-        children: reactCount.entries.map((entry) {
-          final emoji = _getEmoji(entry.key);
-          final count = entry.value;
+      child: IntrinsicHeight(
+        child: Row(
+          children: reactCount.entries.map((entry) {
+            final emoji = _getEmoji(entry.key);
+            final count = entry.value;
 
-          return Row(
-            children: [
-              Text(
-                emoji,
-                style: const TextStyle(fontSize: 13),
-              ),
-              const SizedBox(width: 1),
-              Text(
-                count.toString(),
-                style: const TextStyle(color: Palette.primary, fontSize: 13),
-              ),
-              const SizedBox(width: 1),
-            ],
-          );
-        }).toList(),
+            return Row(
+              children: [
+                Text(
+                  emoji,
+                  style: const TextStyle(fontSize: 13),
+                ),
+                const SizedBox(width: 1),
+                Text(
+                  count.toString(),
+                  style: const TextStyle(color: Palette.primary, fontSize: 12),
+                ),
+                const SizedBox(width: 1),
+                //const VerticalDivider(color: Colors.white, thickness: 1),
+              ],
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -120,7 +126,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
         return "🤔";
       case "pin":
         return "📌";
-      case "fixing":
+      case "fix":
         return "🛠️";
       default:
         return "";
@@ -149,11 +155,11 @@ class _ChatBubblesState extends State<ChatBubbles> {
 
   Widget sendTimeDisplay() {
     final EdgeInsets padding = widget.isMe
-        ? const EdgeInsets.fromLTRB(0, 0, 5, 5)
+        ? const EdgeInsets.fromLTRB(0, 25, 5, 5)
         : const EdgeInsets.fromLTRB(5, 25, 0, 5);
 
     final EdgeInsets paddingWithReact = widget.react.isNotEmpty
-        ? padding.copyWith(bottom: padding.bottom + 5)
+        ? padding.copyWith(bottom: padding.top - 5)
         : padding;
 
     return Padding(
@@ -197,6 +203,11 @@ class _ChatBubblesState extends State<ChatBubbles> {
         ],
         Row(
           children: [
+            if (widget.isMe)
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [sendTimeDisplay()],
+              ),
             Padding(
               padding: padding,
               child: Container(
@@ -326,37 +337,42 @@ class _ChatBubblesState extends State<ChatBubbles> {
       child: GestureDetector(
         onLongPressStart: (LongPressStartDetails longPressStartDetails) =>
             showMsgFuncDialog(context), //메시지 longpress하면 트리거
-        child: Stack(
+        child: Column(
           children: [
-            // 챗버블
-            Row(
-              mainAxisAlignment:
-                  widget.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            Stack(
               children: [
-                if (widget.isMe) //! 나일 때
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      sendTimeDisplay(),
-                      showChatBubble(context),
-                    ],
-                  ),
-                if (!widget.isMe) //! 나 아니여~
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      showChatBubble(context),
-                    ],
-                  ),
+                // 챗버블
+                Row(
+                  mainAxisAlignment: widget.isMe
+                      ? MainAxisAlignment.end
+                      : MainAxisAlignment.start,
+                  children: [
+                    if (widget.isMe) //! 나일 때
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          //sendTimeDisplay(),
+                          showChatBubble(context),
+                        ],
+                      ),
+                    if (!widget.isMe) //! 나 아니여~
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          showChatBubble(context),
+                        ],
+                      ),
+                  ],
+                ),
+                showProfileImage(),
+                Positioned(
+                  bottom: widget.isMe ? 10 : 10,
+                  left: widget.isMe ? null : 60,
+                  right: widget.isMe ? 10 : null,
+                  child: showReactCount(),
+                )
               ],
             ),
-            showProfileImage(),
-            Positioned(
-              bottom: widget.isMe ? 10 : 10,
-              left: widget.isMe ? null : 60,
-              right: widget.isMe ? 10 : null,
-              child: showReactCount(),
-            )
           ],
         ),
       ),
@@ -379,8 +395,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                 onPressed: () {
                   react = "good";
                   doReactMsg(widget.userid, react!);
-                  print('${widget.react}');
-                  //print(${react});
+                  Navigator.pop(context);
                 },
                 child: const Text('👍'),
               ),
@@ -391,7 +406,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                 onPressed: () {
                   react = "check";
                   doReactMsg(widget.userid, react!);
-                  print('버튼 바 버튼 터치됨');
+                  Navigator.pop(context);
                 },
                 child: const Text('✔️'),
               ),
@@ -402,7 +417,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                 onPressed: () {
                   react = "think";
                   doReactMsg(widget.userid, react!);
-                  print('버튼 바 버튼 터치됨');
+                  Navigator.pop(context);
                 },
                 child: const Text('🤔'),
               ),
@@ -413,7 +428,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                 onPressed: () {
                   react = "pin";
                   doReactMsg(widget.userid, react!);
-                  print('버튼 바 버튼 터치됨');
+                  Navigator.pop(context);
                 },
                 child: const Text('📌'),
               ),
@@ -424,7 +439,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                 onPressed: () {
                   react = "fixing";
                   doReactMsg(widget.userid, react!);
-                  print('버튼 바 버튼 터치됨');
+                  Navigator.pop(context);
                 },
                 child: const Text('🛠️'),
               ),
