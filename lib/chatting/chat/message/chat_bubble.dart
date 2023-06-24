@@ -822,14 +822,12 @@ class _HeroPhotoViewRouteWrapperState extends State<HeroPhotoViewRouteWrapper> {
       body: Stack(
         alignment: Alignment.center,
         children: [
-          Expanded(
-            child: PhotoView(
-              imageProvider: NetworkImage(widget.imageURL),
-              backgroundDecoration: widget.backgroundDecoration,
-              minScale: widget.minScale,
-              maxScale: widget.maxScale,
-              heroAttributes: PhotoViewHeroAttributes(tag: widget.tag),
-            ),
+          PhotoView(
+            imageProvider: NetworkImage(widget.imageURL),
+            backgroundDecoration: widget.backgroundDecoration,
+            minScale: widget.minScale,
+            maxScale: widget.maxScale,
+            heroAttributes: PhotoViewHeroAttributes(tag: widget.tag),
           ),
           Positioned(
             bottom: 0,
