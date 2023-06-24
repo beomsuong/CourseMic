@@ -68,6 +68,7 @@ dependencies:
   flex_with_main_child: ^0.2.1
   path: ^1.8.3
   open_file: ^3.3.2
+  url_launcher: ^6.0.0
 
 flutter_launcher_icons:
   path: "assets/images/icon.png"

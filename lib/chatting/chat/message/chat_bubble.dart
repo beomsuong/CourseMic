@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'package:capston/chatting/chat/chat.dart';
-import 'package:capston/chatting/chat/chat_user.dart';
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/mypage/profile.dart';
 import 'package:capston/palette.dart';
@@ -287,7 +285,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
 
     late Widget contentWidget;
     switch (widget.type) {
-      case LogType.text:
+      case LogType.text: //! 텍스트 메세지
         contentWidget = Text(
           widget.message,
           style: TextStyle(
@@ -297,7 +295,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
           ),
         );
         break;
-      case LogType.image:
+      case LogType.image: //! 이미지 파일
         contentWidget = GestureDetector(
           onTap: () {
             Navigator.push(
@@ -342,7 +340,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
           ),
         );
         break;
-      case LogType.file:
+      case LogType.file: //! 파일 형식
         String fileName = widget.message.split(" ")[0];
         String fileURL = widget.message.split(" ")[1];
         ValueNotifier<double> percentageNotifier = ValueNotifier(1);
@@ -402,7 +400,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
         ]);
         break;
       // 나중에 위로 올릴 예정
-      case LogType.video:
+      case LogType.video: //! 비디오 파일
       default:
         contentWidget = const Text("This is Video");
     }
@@ -432,7 +430,6 @@ class _ChatBubblesState extends State<ChatBubbles> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  //! 이곳에 읽은 사람 수 표시
                   showReaderandSendtime(),
                 ],
               ),
@@ -470,7 +467,6 @@ class _ChatBubblesState extends State<ChatBubbles> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  //! 여기에 읽은 사람 수 표시
                   showReaderandSendtime(),
                 ],
               ),
@@ -762,6 +758,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
       ),
     );
   }
+
   //! end of chatbubble class
 }
 
