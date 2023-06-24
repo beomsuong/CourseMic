@@ -1,4 +1,6 @@
+import 'package:capston/notification.dart';
 import 'package:capston/palette.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:capston/chatting/chat/chat_list.dart';
 import 'mypage/profile.dart';
@@ -13,6 +15,19 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    FCMLocalNotification.getMyDeviceToken().then(
+      (value) {
+        FirebaseFirestore.instance
+            .collection('user')
+            .doc(widget.currentUserID)
+            .update({'deviceToken': value});
+      },
+    );
+  }
 
   void _onItemTapped(int index) {
     setState(() {

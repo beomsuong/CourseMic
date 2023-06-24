@@ -68,19 +68,21 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
+              padding: const EdgeInsets.symmetric(),
+              child: ButtonBar(
+                buttonPadding: EdgeInsets.zero,
+                alignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
-                  ElevatedButton(
-                    onPressed: () {
-                      setFunction('자료 조회 or 보내기');
-                    },
-                    style: buttonStyle,
-                    child: const Text('자료'),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setFunction('자료 조회 or 보내기');
+                      },
+                      style: buttonStyle,
+                      child: const Text('자료'),
+                    ),
                   ),
-                  const Padding(padding: EdgeInsets.all(10.0)),
                   ElevatedButton(
                     onPressed: () {
                       setFunction('Todo리스트 조회');
@@ -88,7 +90,6 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
                     style: buttonStyle,
                     child: const Text('할 일 목록'),
                   ),
-                  const Padding(padding: EdgeInsets.all(10.0)),
                   ElevatedButton(
                     onPressed: () {
                       setFunction('중요한 메세지? 모아보기');
@@ -96,7 +97,6 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
                     style: buttonStyle,
                     child: const Text('중요메세지'),
                   ),
-                  const Padding(padding: EdgeInsets.all(10.0)),
                   ElevatedButton(
                     onPressed: () {
                       setFunction('참여도 점수 보기');

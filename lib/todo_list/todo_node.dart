@@ -1,13 +1,13 @@
 // ignore_for_file: avoid_init_to_null
 
 import 'package:capston/chatting/chat_screen.dart';
+import 'package:capston/notification.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:capston/widgets/CircularContainer.dart';
 import 'package:capston/palette.dart';
 import 'package:capston/todo_list/todo.dart';
-import 'package:capston/todo_list/todo_list.dart';
 import 'package:intl/intl.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
@@ -24,7 +24,6 @@ class ToDoNode extends StatefulWidget {
   Color fontColor;
 
   final ChatScreenState chatDataParent;
-  final ToDoListState buildParent;
 
   ToDoNode({
     super.key,
@@ -34,7 +33,6 @@ class ToDoNode extends StatefulWidget {
     this.iconColor = Palette.lightGray,
     this.fontColor = Palette.lightBlack,
     required this.chatDataParent,
-    required this.buildParent,
   });
 
   @override
@@ -45,8 +43,6 @@ class _ToDoNodeState extends State<ToDoNode> {
   // ToDoUpper(task)
   TextEditingController controller = TextEditingController();
   FocusNode focusNode = FocusNode();
-  // ToDoLower(user)
-  List<Widget> users = List.empty(growable: true);
 
   @override
   void initState() {
@@ -59,7 +55,6 @@ class _ToDoNodeState extends State<ToDoNode> {
         }
       });
     }
-    users = setUsers();
   }
 
   @override
@@ -151,7 +146,7 @@ class _ToDoNodeState extends State<ToDoNode> {
                                   Icon(Icons.delete, color: widget.iconColor))
                           : GestureDetector(
                               onTap: addToDo,
-                              child: const Text('Add',
+                              child: const Text('추가',
                                   style:
                                       TextStyle(color: Palette.pastelPurple))),
                     ),
@@ -168,10 +163,42 @@ class _ToDoNodeState extends State<ToDoNode> {
                 child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                GestureDetector(
-                  onTap: widget.toDo.state != ToDoState.Done ? showUser : null,
-                  child: Row(
-                    children: users,
+                Expanded(
+                  child: GestureDetector(
+                    onTap:
+                        widget.toDo.state != ToDoState.Done ? showUser : null,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 1, left: 4, right: 8),
+                      child:
+                          ListView(scrollDirection: Axis.horizontal, children: [
+                        if (widget.toDo.userIDs.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 10.0),
+                            child: Text(
+                              "일할 사람을 배정해주세요",
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  color: Palette.darkGray,
+                                  height: 2.5),
+                              textHeightBehavior: textHeightBehavior,
+                            ),
+                          )
+                        else
+                          for (var userID in widget.toDo.userIDs)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10.0),
+                              child: Text(
+                                widget.chatDataParent.userNameList[userID] ??
+                                    "Unknown",
+                                style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Palette.darkGray,
+                                    height: 2.5),
+                                textHeightBehavior: textHeightBehavior,
+                              ),
+                            ),
+                      ]),
+                    ),
                   ),
                 ),
                 GestureDetector(
@@ -318,8 +345,6 @@ class _ToDoNodeState extends State<ToDoNode> {
                     widget.chatDataParent.chatDocRef
                         .update(widget.chatDataParent.chat.toJson());
 
-                    widget.buildParent.rebuildToDo();
-                    widget.chatDataParent.updateProgressPercent();
                     Navigator.of(context).pop();
                   },
                   child: const Text('확인', style: purpleText)),
@@ -336,16 +361,32 @@ class _ToDoNodeState extends State<ToDoNode> {
       return;
     }
 
+    widget.toDo.createDate = Timestamp.now();
+
     widget.chatDataParent.toDoColRef
         .doc(controller.text)
         .set(widget.toDo.toJson());
 
+    sendToDoNotificationContain(widget.toDo.userIDs);
+
     // clear addToDoNode
     controller.text = '';
     widget.toDo.resetToDo();
+  }
 
-    widget.buildParent.rebuildToDo();
-    widget.chatDataParent.updateProgressPercent();
+  Future<void> sendToDoNotificationContain(List<String> userIDs) async {
+    for (var userID in userIDs) {
+      if (widget.chatDataParent.currentUser.uid == userID) continue;
+      FCMLocalNotification.sendToDoNotification(
+          deviceToken: (await FirebaseFirestore.instance
+                  .collection('user')
+                  .doc(userID)
+                  .get())
+              .get('deviceToken'),
+          roomID: widget.chatDataParent.widget.roomID,
+          roomName: widget.chatDataParent.chat.roomName,
+          task: widget.toDo.task);
+    }
   }
 
   void updateToDo() {
@@ -359,16 +400,11 @@ class _ToDoNodeState extends State<ToDoNode> {
     widget.chatDataParent.toDoColRef.doc(widget.toDo.task).delete();
     // replace old to new
     widget.toDo.task = controller.text;
-
-    widget.buildParent.rebuildToDo();
   }
 
   // TODO : Add delete dialog
   void deleteToDo() {
     widget.chatDataParent.toDoColRef.doc(widget.toDo.task).delete();
-
-    widget.buildParent.rebuildToDo();
-    widget.chatDataParent.updateProgressPercent();
   }
 
   void showDeadline() async {
@@ -472,7 +508,6 @@ class _ToDoNodeState extends State<ToDoNode> {
                       widget.toDo.userIDs.contains(userID)
                           ? widget.toDo.userIDs.remove(userID)
                           : widget.toDo.userIDs.add(userID);
-                      users = setUsers();
                     });
                   },
                 ),
@@ -487,7 +522,6 @@ class _ToDoNodeState extends State<ToDoNode> {
                   onPressed: () {
                     setState(() {
                       widget.toDo.userIDs = currentUserIDs;
-                      users = setUsers();
                     });
                     Navigator.of(context).pop();
                     return;
@@ -506,35 +540,6 @@ class _ToDoNodeState extends State<ToDoNode> {
             ],
           )
         ]);
-  }
-
-  List<Widget> setUsers() {
-    if (widget.toDo.userIDs.isEmpty) {
-      return <Widget>[
-        const Padding(
-          padding: EdgeInsets.only(left: 10.0),
-          child: Text(
-            "일할 사람을 배정해주세요",
-            style:
-                TextStyle(fontSize: 10, color: Palette.darkGray, height: 2.5),
-            textHeightBehavior: textHeightBehavior,
-          ),
-        ),
-      ];
-    }
-
-    return <Widget>[
-      for (var userID in widget.toDo.userIDs)
-        Padding(
-          padding: const EdgeInsets.only(left: 10.0),
-          child: Text(
-            widget.chatDataParent.userNameList[userID]!,
-            style: const TextStyle(
-                fontSize: 10, color: Palette.darkGray, height: 2.5),
-            textHeightBehavior: textHeightBehavior,
-          ),
-        )
-    ];
   }
 
   void showScore() {

@@ -12,11 +12,12 @@ class imp_msg {
       required this.timeStamp,
       required this.user_id});
 
-  imp_msg.fromJson(QueryDocumentSnapshot<Object?> json)
-      : this(
-            msg_detail: json["msg_detail"],
-            timeStamp: json["timeStamp"] as Timestamp,
-            user_id: json["user_id"]);
+  factory imp_msg.fromJson(QueryDocumentSnapshot<Object?> json) {
+    return imp_msg(
+        msg_detail: json["msg_detail"],
+        timeStamp: json["timeStamp"] as Timestamp,
+        user_id: json["user_id"]);
+  }
 
   Map<String, dynamic> toJson() {
     return {

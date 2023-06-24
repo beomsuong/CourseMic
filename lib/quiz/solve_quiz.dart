@@ -1,6 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:capston/chatting/chat_screen.dart';
+import 'package:capston/notification.dart';
 import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
@@ -46,6 +47,9 @@ class solve_quizState extends State<solve_quiz> {
         'quiz_C_date': quiz_C_date,
         'quiz_passer': quiz_passer,
       });
+      FCMLocalNotification.sendQuizNotification(
+          roomID: widget.roomID,
+          roomName: widget.chatScreenState.chat.roomName);
     } catch (error) {
       print('퀴즈 세팅 실패: $error');
     }
@@ -236,7 +240,7 @@ class _BuildOrderQuizState extends State<BuildOrderQuiz> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text("Q. 다음 중요메세지들을 오랜된 메세지(맨 위)부터 차례대로 나열하세요. (5 포인트)",
+          const Text("Q. 다음 중요메세지들을 오래된 메세지(맨 위)부터 차례대로 나열하세요. (5 포인트)",
               style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 30),
           ReorderableListView.builder(

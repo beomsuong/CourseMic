@@ -9,24 +9,37 @@ class MyUser {
   late String department;
   late String contactTime;
   late String imageURL;
+  late List<String> chatList;
+  late int exp;
+  late List<String> doneProject;
+  late String deviceToken;
 
-  MyUser(
-      {required this.name,
-      this.MBTI = "???",
-      this.university = "???",
-      this.department = "???",
-      this.contactTime = "???",
-      required this.imageURL});
+  MyUser({
+    required this.name,
+    this.MBTI = "???",
+    this.university = "???",
+    this.department = "???",
+    this.contactTime = "???",
+    required this.imageURL,
+    required this.chatList,
+    this.exp = 0,
+    required this.doneProject,
+    required this.deviceToken,
+  });
 
-  MyUser.fromJson(DocumentSnapshot<Object?> json)
-      : this(
-          name: json['name'],
-          MBTI: json['MBTI'],
-          university: json['university'],
-          department: json['department'],
-          contactTime: json['contactTime'],
-          imageURL: json['imageURL'],
-        );
+  factory MyUser.fromJson(DocumentSnapshot<Object?> json) {
+    return MyUser(
+        name: json['name'],
+        MBTI: json['MBTI'],
+        university: json['university'],
+        department: json['department'],
+        contactTime: json['contactTime'],
+        imageURL: json['imageURL'],
+        chatList: List<String>.from(json['chatList']),
+        exp: json['exp'],
+        doneProject: List<String>.from(json['doneProject']),
+        deviceToken: json['deviceToken']);
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -36,6 +49,10 @@ class MyUser {
       "department": department,
       "contactTime": contactTime,
       "imageURL": imageURL,
+      "chatList": chatList,
+      "exp": exp,
+      "doneProject": doneProject,
+      "deviceToken": deviceToken,
     };
   }
 
@@ -59,6 +76,18 @@ class MyUser {
         break;
       case "imageURL":
         data = imageURL;
+        break;
+      case "chatList":
+        data = chatList;
+        break;
+      case "exp":
+        data = exp;
+        break;
+      case "doneProject":
+        data = doneProject;
+        break;
+      case "deviceToken":
+        data = deviceToken;
         break;
     }
 

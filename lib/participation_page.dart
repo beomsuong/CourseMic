@@ -1,3 +1,5 @@
+import 'package:capston/chatting/chat/chat.dart';
+import 'package:capston/chatting/chat/chat_user.dart';
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
@@ -15,65 +17,95 @@ class _ParticipationPageState extends State<ParticipationPage> {
   bool bDetail = false;
 
   @override
+  void initState() {
+    super.initState();
+    widget.chatDataParent.chatStream =
+        widget.chatDataParent.chatDocRef.snapshots();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Palette.lightGray,
-                offset: Offset(0.0, 5.0), //(x,y)
-                blurRadius: 3.0,
+    return StreamBuilder(
+        stream: widget.chatDataParent.chatStream,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.hasError) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          Chat chat = Chat.fromJson(snapshot.data!);
+
+          return Column(
+            children: [
+              Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Palette.lightGray,
+                      offset: Offset(0.0, 5.0), //(x,y)
+                      blurRadius: 3.0,
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                      left: 8.0, right: 2.0, top: 1.0, bottom: 9.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            bDetail = !bDetail;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 12.0),
+                          child: Text(!bDetail ? " + 상세보기" : " + 그래프보기",
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 10,
+                                  color: Colors.black54)),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 12.0),
+                        child: Text(
+                          "나의 참여지수 : ${chat.getUser(userID: widget.chatDataParent.currentUser.uid)!.participation}포인트",
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
+              Expanded(
+                child: !bDetail
+                    ? ParticipationGraph(
+                        chatDataParent: widget.chatDataParent,
+                        userList: chat.userList)
+                    : ParticipationDetail(
+                        chatDataParent: widget.chatDataParent,
+                        userList: chat.userList,
+                        doneCount: chat
+                            .getUser(
+                                userID: widget.chatDataParent.currentUser.uid)!
+                            .doneCount,
+                      ),
+              )
             ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.only(
-                left: 8.0, right: 2.0, top: 1.0, bottom: 9.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      bDetail = !bDetail;
-                    });
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 12.0),
-                    child: Text(!bDetail ? " + 상세보기" : " + 그래프보기",
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 10,
-                            color: Colors.black54)),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 12.0),
-                  child: Text(
-                    "나의 참여지수 : ${widget.chatDataParent.chat.getUser(userID: widget.chatDataParent.currentUser.uid)!.participation}포인트",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Expanded(
-          child: !bDetail
-              ? ParticipationGraph(chatDataParent: widget.chatDataParent)
-              : ParticipationDetail(chatDataParent: widget.chatDataParent),
-        )
-      ],
-    );
+          );
+        });
   }
 }
 
 class ParticipationGraph extends StatefulWidget {
   final ChatScreenState chatDataParent;
-  const ParticipationGraph({super.key, required this.chatDataParent});
+  final List<ChatUser> userList;
+  const ParticipationGraph(
+      {super.key, required this.chatDataParent, required this.userList});
 
   @override
   State<ParticipationGraph> createState() => _ParticipationGraphState();
@@ -93,7 +125,7 @@ class _ParticipationGraphState extends State<ParticipationGraph> {
 
   void updateMaxParticipation() {
     int max = 0;
-    for (var user in widget.chatDataParent.chat.userList) {
+    for (var user in widget.userList) {
       if (user.participation >= max) {
         max = user.participation;
       }
@@ -106,6 +138,7 @@ class _ParticipationGraphState extends State<ParticipationGraph> {
 
   @override
   Widget build(BuildContext context) {
+    updateMaxParticipation();
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -114,7 +147,7 @@ class _ParticipationGraphState extends State<ParticipationGraph> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              for (var user in widget.chatDataParent.chat.userList)
+              for (var user in widget.userList)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: Text(
@@ -132,13 +165,13 @@ class _ParticipationGraphState extends State<ParticipationGraph> {
         ]),
         Wrap(children: [
           Padding(
-            padding: const EdgeInsets.only(left: 8.0, top: 8.0),
+            padding: const EdgeInsets.only(left: 8.0, top: 7.5),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                for (var user in widget.chatDataParent.chat.userList)
+                for (var user in widget.userList)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 13.0),
+                    padding: const EdgeInsets.only(bottom: 14.5),
                     child: LinearPercentIndicator(
                       backgroundColor: Colors.transparent,
                       padding: const EdgeInsets.only(right: 8.0),
@@ -180,7 +213,13 @@ class _ParticipationGraphState extends State<ParticipationGraph> {
 
 class ParticipationDetail extends StatefulWidget {
   final ChatScreenState chatDataParent;
-  const ParticipationDetail({super.key, required this.chatDataParent});
+  final List<ChatUser> userList;
+  final int doneCount;
+  const ParticipationDetail(
+      {super.key,
+      required this.chatDataParent,
+      required this.userList,
+      required this.doneCount});
 
   @override
   State<ParticipationDetail> createState() => _ParticipationDetailState();
@@ -201,7 +240,7 @@ class _ParticipationDetailState extends State<ParticipationDetail> {
                 padding: EdgeInsets.only(bottom: 8.0),
                 child: Text("팀원 점수"),
               ),
-              for (var user in widget.chatDataParent.chat.userList)
+              for (var user in widget.userList)
                 Text(
                     "${widget.chatDataParent.userNameList[user.userID]} : ${user.participation}포인트")
             ],
@@ -215,8 +254,7 @@ class _ParticipationDetailState extends State<ParticipationDetail> {
               const Text("채팅 : 0회"),
               const Text("자료공유 : 0회"),
               const Text("반응 : 0회"),
-              Text(
-                  "완료한 일 : ${widget.chatDataParent.chat.getUser(userID: widget.chatDataParent.currentUser.uid)!.doneCount}회"),
+              Text("완료한 일 : ${widget.doneCount}회"),
             ],
           )
         ],

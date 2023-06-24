@@ -1,6 +1,9 @@
+import 'package:capston/chatting/chat/chat.dart';
 import 'package:capston/chatting/chat/chat_list.dart';
+import 'package:capston/chatting/chat/message/log.dart';
 import 'package:capston/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:capston/chatting/chat/chat_user.dart';
 
@@ -26,23 +29,22 @@ class _AddChatState extends State<AddChat> {
     CollectionReference chatColRef =
         widget.chatListParent.firestore.collection('chat');
 
+    Chat chat = Chat(
+        roomName: roomName,
+        recentMessage: "",
+        userList: [ChatUser(userID: widget.chatListParent.currentUser.uid)]);
     // add user to chatting room field
-    chatColRef.add({
-      'roomName': roomName,
-      'commanderID': '',
-      'userList': <Map<String, dynamic>>[
-        ChatUser(userID: widget.chatListParent.currentUser.uid).toJson()
-      ],
-    }).then((DocumentReference doc) {
+    chatColRef.add(chat.toJson()).then((DocumentReference doc) {
       widget.chatListParent.currUserDocRef.update({
         'chatList': FieldValue.arrayUnion([doc.id]),
       }).then((value) {
         print("Value Added to Array");
+        addEnterEventLog(
+            roomID: doc.id, uid: widget.chatListParent.currentUser.uid);
+        FirebaseMessaging.instance.subscribeToTopic(doc.id);
       }).catchError((error) {
         print("Failed to add value to array: $error");
       });
-
-      widget.chatListParent.addRoom(doc.id, roomName);
     }).catchError((error) {
       print("Failed to add document: $error");
     });

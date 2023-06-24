@@ -10,6 +10,8 @@
 .svn/
 migrate_working_dir/
 .env*
+firebase_options.dart
+const.dart
 
 # Created by https://www.toptal.com/developers/gitignore/api/flutter,androidstudio,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=flutter,androidstudio,visualstudiocode

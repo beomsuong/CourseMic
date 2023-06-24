@@ -1,5 +1,6 @@
 import 'package:capston/chatting/main_screen.dart';
 import 'package:capston/mypage/my_user.dart';
+import 'package:capston/mypage/queryDialog.dart';
 import 'package:capston/palette.dart';
 import 'package:capston/widgets/GradientText.dart';
 import 'package:capston/widgets/RoundButtonStyle.dart';
@@ -28,12 +29,11 @@ class ProfileState extends State<Profile> {
   late MyUser myUser;
   late DocumentReference userDocRef;
 
-  Future<DocumentSnapshot> readUserData() async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    userDocRef = firestore.collection('user').doc(widget.userID);
-    DocumentSnapshot docSnapshot = await userDocRef.get();
-
-    return docSnapshot;
+  @override
+  void initState() {
+    super.initState();
+    userDocRef =
+        FirebaseFirestore.instance.collection('user').doc(widget.userID);
   }
 
   SizedBox print_info(String a, String b) {
@@ -122,14 +122,14 @@ class ProfileState extends State<Profile> {
             )
         ],
       ),
-      body: FutureBuilder<DocumentSnapshot>(
-          future: readUserData(),
-          builder:
-              (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+      body: StreamBuilder(
+          stream: userDocRef.snapshots(),
+          builder: (BuildContext context, snapshot) {
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
             myUser = MyUser.fromJson(snapshot.data!);
+            List<dynamic> level = calculateLevel(myUser.exp);
 
             return ListView(
               children: <Widget>[
@@ -261,7 +261,14 @@ class ProfileState extends State<Profile> {
                                 ),
                                 ElevatedButton(
                                   onPressed: () {
-                                    // 버튼을 눌렀을 때 실행되는 코드
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return QueryDialog(
+                                          myPageState: this,
+                                        );
+                                      },
+                                    );
                                   },
                                   style: buttonStyle,
                                   child: const Text(
@@ -274,9 +281,9 @@ class ProfileState extends State<Profile> {
                               ],
                             ),
                           ),
-                          const Card(
+                          Card(
                             child: Padding(
-                              padding: EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(8.0),
                               child: Align(
                                 alignment: Alignment.centerLeft,
                                 child: Column(
@@ -286,22 +293,22 @@ class ProfileState extends State<Profile> {
                                       child: Row(
                                         children: [
                                           Text(
-                                            '현재 참여중인 과제 : ' 'N' '(개)',
-                                            style: TextStyle(
+                                            '현재 참여중인 과제 : ${myUser.chatList.length}(개)',
+                                            style: const TextStyle(
                                               fontSize: 15,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    Divider(color: Palette.darkGray),
+                                    const Divider(color: Palette.darkGray),
                                     SizedBox(
                                       height: 30,
                                       child: Row(
                                         children: [
                                           Text(
-                                            '완료한 과제 : ' '0' '(개)',
-                                            style: TextStyle(
+                                            '완료한 과제 : ${myUser.doneProject.length}(개)',
+                                            style: const TextStyle(
                                               fontSize: 15,
                                             ),
                                           ),
@@ -325,9 +332,9 @@ class ProfileState extends State<Profile> {
                     Padding(
                       padding: EdgeInsets.only(
                           top: widget.bMyProfile ? 5 : 15, bottom: 5),
-                      child: const Text(
-                        'Level 0',
-                        style: TextStyle(
+                      child: Text(
+                        'Level ${level[0]}',
+                        style: const TextStyle(
                             fontSize: 25, fontWeight: FontWeight.w900),
                       ),
                     ),
@@ -341,15 +348,15 @@ class ProfileState extends State<Profile> {
                         style: TextStyle(
                             fontSize: 12, fontWeight: FontWeight.w900),
                       ),
-                      trailing: const Text(
+                      trailing: Text(
                         //우측 문자열 trailing
-                        "80%",
-                        style: TextStyle(
+                        "${(level[1] * 100).floor()}%",
+                        style: const TextStyle(
                             fontSize: 12, fontWeight: FontWeight.w900),
                       ),
-                      percent: 0.8,
-                      center: const Text("80.0%",
-                          style: TextStyle(color: Colors.white)),
+                      percent: level[1],
+                      center: Text("${(level[1] * 100).floor()}%",
+                          style: const TextStyle(color: Colors.white)),
                       backgroundColor: Palette.lightGray,
                       linearGradient: const LinearGradient(colors: [
                         Palette.brightViolet,
@@ -360,11 +367,16 @@ class ProfileState extends State<Profile> {
                       animationDuration: 2500,
                       barRadius: const Radius.circular(30.0),
                     ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ],
             );
           }),
     );
+  }
+
+  List<dynamic> calculateLevel(int exp) {
+    return [(exp ~/ 300), (exp / 300) - (exp ~/ 300)];
   }
 }
