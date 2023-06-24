@@ -1,6 +1,6 @@
-import 'dart:io';
-
-import 'package:capston/chatting/chat/message/log.dart';
+import 'package:capston/chatting/chat/chat.dart';
+import 'package:capston/chatting/chat/chat_list.dart';
+import 'package:capston/chatting/chat/chat_user.dart';
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/mypage/profile.dart';
 import 'package:capston/palette.dart';
@@ -24,7 +24,7 @@ class ChatBubbles extends StatefulWidget {
     this.userImage,
     this.sendTime,
     this.roomID,
-    this.react,
+    this.readers, 
     this.chatDataParent, {
     Key? key,
   }) : super(key: key);
@@ -38,6 +38,7 @@ class ChatBubbles extends StatefulWidget {
   final Timestamp sendTime;
   final String roomID;
   final Map<String, dynamic> react;
+  final List<String> readers;
   final ChatScreenState chatDataParent;
 
   @override
@@ -48,6 +49,7 @@ final user = FirebaseAuth.instance.currentUser;
 
 class _ChatBubblesState extends State<ChatBubbles> {
   late FToast fToast = FToast();
+  List<ChatUser> userList = [];
 
   @override
   void initState() {
@@ -150,6 +152,45 @@ class _ChatBubblesState extends State<ChatBubbles> {
     }
   }
 
+  Widget showReadersCount() {
+    final List<String> localReadersList = widget.readers;
+    //final test = Chat.chatdataParent.chat.userList.length;
+
+    return Positioned(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.blueAccent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          children: [
+            Text(localReadersList.length.toString()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Padding showReaderandSendtime() {
+    final EdgeInsets padding = widget.isMe
+        ? const EdgeInsets.fromLTRB(0, 18, 0, 0)
+        : const EdgeInsets.fromLTRB(0, 18, 0, 0);
+
+    final EdgeInsets paddingWithReact = widget.react.isNotEmpty
+        ? padding.copyWith(bottom: padding.top - 2)
+        : padding;
+
+    return Padding(
+      padding: paddingWithReact,
+      child: Column(
+        children: [
+          showReadersCount(),
+          sendTimeDisplay(),
+        ],
+      ),
+    );
+  }
+
   Widget toast = Container(
     padding: const EdgeInsets.all(12),
     margin: const EdgeInsets.only(bottom: 36),
@@ -171,16 +212,8 @@ class _ChatBubblesState extends State<ChatBubbles> {
   }
 
   Widget sendTimeDisplay() {
-    final EdgeInsets padding = widget.isMe
-        ? const EdgeInsets.fromLTRB(0, 25, 5, 5)
-        : const EdgeInsets.fromLTRB(5, 25, 0, 5);
-
-    final EdgeInsets paddingWithReact = widget.react.isNotEmpty
-        ? padding.copyWith(bottom: padding.top - 5)
-        : padding;
-
     return Padding(
-      padding: paddingWithReact,
+      padding: EdgeInsets.zero,
       child: Text(
         getFormattedTime(),
         style: const TextStyle(fontSize: 11, color: Palette.darkGray),
@@ -277,7 +310,11 @@ class _ChatBubblesState extends State<ChatBubbles> {
             if (widget.isMe)
               Column(
                 mainAxisAlignment: MainAxisAlignment.start,
-                children: [sendTimeDisplay()],
+                children: [
+                  //! 이곳에 읽은 사람 수 표시
+                  //sendTimeDisplay()
+                  showReaderandSendtime(),
+                ],
               ),
             Padding(
               padding: padding,
@@ -309,7 +346,9 @@ class _ChatBubblesState extends State<ChatBubbles> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  sendTimeDisplay(),
+                  //! 여기에 읽은 사람 수 표시
+                  showReaderandSendtime(),
+                  //sendTimeDisplay(),
                 ],
               ),
           ],
@@ -400,6 +439,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
 
   @override
   Widget build(BuildContext context) {
+    //! 테스트 용임 나중에 지우셈
     return WillPopScope(
       onWillPop: () async {
         return true;
@@ -440,7 +480,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                   left: widget.isMe ? null : 55,
                   right: widget.isMe ? 10 : null,
                   child: showReactCount(),
-                )
+                ),
               ],
             ),
           ],

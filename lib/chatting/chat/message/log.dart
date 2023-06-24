@@ -178,9 +178,7 @@ void addLog(
         sendTime: Timestamp.now(),
         content: content,
         react: {},
-        readers: [
-          uid,
-        ],
+        readers: [uid],
       );
       logColRef.add(msg.toJson());
       break;

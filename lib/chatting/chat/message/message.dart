@@ -76,6 +76,11 @@ class _MessagesState extends State<Messages> {
             final userName = userMap[userID]!;
             final userImageURL = userImage[userID]!;
             final type = LogType.values[chatDoc['type']];
+            final logDocRef = FirebaseFirestore.instance
+                .collection('chat')
+                .doc(widget.roomID)
+                .collection('log')
+                .doc(chatDoc.id);
 
             switch (type) {
               case LogType.text:
@@ -83,6 +88,15 @@ class _MessagesState extends State<Messages> {
               case LogType.video:
               case LogType.file:
                 final MSG msg = MSG.fromJson(chatDoc);
+                if (!msg.readers
+                    .contains(widget.chatDataParent.currentUser.uid)) {
+                  //읽은 사람 중에 내가 없으면
+                  msg.readers.add(widget.chatDataParent.currentUser.uid);
+                  logDocRef.update({
+                    'readers': FieldValue.arrayUnion(
+                        [widget.chatDataParent.currentUser.uid])
+                  });
+                }
                 return ChatBubbles(
                   msg.type,
                   msg.content,
@@ -93,6 +107,7 @@ class _MessagesState extends State<Messages> {
                   msg.sendTime,
                   widget.roomID,
                   msg.react,
+                  msg.readers,
                   widget.chatDataParent,
                   key: ValueKey(chatDoc.id),
                 );
