@@ -1,5 +1,6 @@
 import 'package:capston/chatting/chat/message/log.dart';
 import 'package:capston/chatting/chat_screen.dart';
+import 'package:capston/mypage/my_user.dart';
 import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -18,6 +19,7 @@ class Messages extends StatefulWidget {
 
 class _MessagesState extends State<Messages> {
   late final CollectionReference userRef;
+  late final CollectionReference logRef;
   late final Stream messageStream;
   Map<String, String> userMap = {};
   Map<String, String> userImage = {};
@@ -29,12 +31,11 @@ class _MessagesState extends State<Messages> {
   void initState() {
     super.initState();
     userRef = FirebaseFirestore.instance.collection('user');
-    messageStream = FirebaseFirestore.instance
+    logRef = FirebaseFirestore.instance
         .collection('chat')
         .doc(widget.roomID)
-        .collection('log')
-        .orderBy('sendTime', descending: true)
-        .snapshots();
+        .collection('log');
+    messageStream = logRef.orderBy('sendTime', descending: true).snapshots();
   }
 
   Stream<QuerySnapshot<Object?>> fetchUserDetails(
@@ -66,6 +67,7 @@ class _MessagesState extends State<Messages> {
         final chatDocs = snapshot.data!.docs;
 
         return ListView.builder(
+          padding: const EdgeInsets.only(top: 10, bottom: 10),
           reverse: true,
           itemCount: chatDocs.length,
           itemBuilder: (context, index) {
@@ -77,9 +79,12 @@ class _MessagesState extends State<Messages> {
 
             switch (type) {
               case LogType.text:
-              case LogType.media:
+              case LogType.image:
+              case LogType.video:
+              case LogType.file:
                 final MSG msg = MSG.fromJson(chatDoc);
                 return ChatBubbles(
+                  msg.type,
                   msg.content,
                   msg.uid == user!.uid,
                   msg.uid,
@@ -88,6 +93,7 @@ class _MessagesState extends State<Messages> {
                   msg.sendTime,
                   widget.roomID,
                   msg.react,
+                  widget.chatDataParent,
                   key: ValueKey(chatDoc.id),
                 );
               case LogType.enter:
@@ -109,17 +115,59 @@ class _MessagesState extends State<Messages> {
                         )));
               case LogType.date:
               case LogType.end:
-                return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("프로젝트가 마무리되었습니다. 참여도를 정산해주세요!"),
-                      ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.hotel_class_rounded,
-                          ),
-                          label: const Text("참여도 정산하기")),
-                    ]);
+                final EndLog endLog = EndLog.fromJson(chatDoc);
+
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 20, 10, 10),
+                  child: Card(
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 30, 20, 30),
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text("과제가 마무리되었습니다! 참여도를 정산해주세요!",
+                                style: TextStyle()),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            ElevatedButton.icon(
+                                onPressed: endLog.calUserIDs.contains(
+                                        widget.chatDataParent.currentUser.uid)
+                                    ? null
+                                    : () async {
+                                        endLog.calUserIDs.add(widget
+                                            .chatDataParent.currentUser.uid);
+                                        logRef.doc(chatDoc.id).update(
+                                            {"calUserIDs": endLog.calUserIDs});
+
+                                        var myUser = MyUser.fromJson(
+                                            (await userRef
+                                                .doc(widget.chatDataParent
+                                                    .currentUser.uid)
+                                                .get()));
+                                        var chatUser =
+                                            widget.chatDataParent.chat.getUser(
+                                                userID: widget.chatDataParent
+                                                    .currentUser.uid)!;
+
+                                        myUser.doneProject.add(widget
+                                            .chatDataParent.chat.roomName);
+                                        myUser.exp += chatUser.participation;
+
+                                        userRef
+                                            .doc(widget
+                                                .chatDataParent.currentUser.uid)
+                                            .update(myUser.toJson());
+                                      },
+                                icon: const Icon(
+                                  Icons.hotel_class_rounded,
+                                ),
+                                label: const Text("참여도 정산하기")),
+                          ]),
+                    ),
+                  ),
+                );
             }
           },
         );

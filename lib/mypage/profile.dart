@@ -1,5 +1,6 @@
 import 'package:capston/chatting/main_screen.dart';
 import 'package:capston/mypage/my_user.dart';
+import 'package:capston/mypage/queryDialog.dart';
 import 'package:capston/palette.dart';
 import 'package:capston/widgets/GradientText.dart';
 import 'package:capston/widgets/RoundButtonStyle.dart';
@@ -260,7 +261,14 @@ class ProfileState extends State<Profile> {
                                 ),
                                 ElevatedButton(
                                   onPressed: () {
-                                    // 버튼을 눌렀을 때 실행되는 코드
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return QueryDialog(
+                                          myPageState: this,
+                                        );
+                                      },
+                                    );
                                   },
                                   style: buttonStyle,
                                   child: const Text(
@@ -294,13 +302,13 @@ class ProfileState extends State<Profile> {
                                       ),
                                     ),
                                     const Divider(color: Palette.darkGray),
-                                    const SizedBox(
+                                    SizedBox(
                                       height: 30,
                                       child: Row(
                                         children: [
                                           Text(
-                                            '완료한 과제 : ' '0' '(개)',
-                                            style: TextStyle(
+                                            '완료한 과제 : ${myUser.doneProject.length}(개)',
+                                            style: const TextStyle(
                                               fontSize: 15,
                                             ),
                                           ),

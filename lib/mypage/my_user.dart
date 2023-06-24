@@ -9,8 +9,9 @@ class MyUser {
   late String department;
   late String contactTime;
   late String imageURL;
-  late List<dynamic> chatList;
+  late List<String> chatList;
   late int exp;
+  late List<String> doneProject;
   late String deviceToken;
 
   MyUser({
@@ -21,7 +22,8 @@ class MyUser {
     this.contactTime = "???",
     required this.imageURL,
     required this.chatList,
-    required this.exp,
+    this.exp = 0,
+    required this.doneProject,
     required this.deviceToken,
   });
 
@@ -33,8 +35,9 @@ class MyUser {
         department: json['department'],
         contactTime: json['contactTime'],
         imageURL: json['imageURL'],
-        chatList: json['chatList'],
+        chatList: List<String>.from(json['chatList']),
         exp: json['exp'],
+        doneProject: List<String>.from(json['doneProject']),
         deviceToken: json['deviceToken']);
   }
 
@@ -48,6 +51,7 @@ class MyUser {
       "imageURL": imageURL,
       "chatList": chatList,
       "exp": exp,
+      "doneProject": doneProject,
       "deviceToken": deviceToken,
     };
   }
@@ -78,6 +82,9 @@ class MyUser {
         break;
       case "exp":
         data = exp;
+        break;
+      case "doneProject":
+        data = doneProject;
         break;
       case "deviceToken":
         data = deviceToken;

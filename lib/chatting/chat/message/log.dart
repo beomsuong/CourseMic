@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum LogType {
   text,
-  media,
+  image,
+  video,
+  file,
   enter,
   exit,
   date,
@@ -83,6 +85,38 @@ class EventLog {
   }
 }
 
+class EndLog {
+  late LogType type;
+  late String uid;
+  late List<String> calUserIDs;
+  late Timestamp sendTime;
+
+  EndLog({
+    required this.type,
+    required this.uid,
+    required this.calUserIDs,
+    required this.sendTime,
+  });
+
+  factory EndLog.fromJson(DocumentSnapshot<Object?> json) {
+    return EndLog(
+      type: LogType.values[json["type"]],
+      uid: json["uid"],
+      calUserIDs: List<String>.from(json["calUserIDs"]),
+      sendTime: json["sendTime"] as Timestamp,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "type": type.index,
+      "uid": uid,
+      "calUserIDs": calUserIDs,
+      "sendTime": sendTime,
+    };
+  }
+}
+
 bool checkMSG(int logTypeindex) {
   return logTypeindex < LogType.enter.index;
 }
@@ -93,9 +127,19 @@ void addTextMSG(
   addLog(roomID: roomID, type: LogType.text, uid: uid, content: content);
 }
 
-void addMediaMSG(
+void addImageMSG(
     {required String roomID, required String uid, required String content}) {
-  addLog(roomID: roomID, type: LogType.media, uid: uid, content: content);
+  addLog(roomID: roomID, type: LogType.image, uid: uid, content: content);
+}
+
+void addVideoMSG(
+    {required String roomID, required String uid, required String content}) {
+  addLog(roomID: roomID, type: LogType.video, uid: uid, content: content);
+}
+
+void addFileMSG(
+    {required String roomID, required String uid, required String content}) {
+  addLog(roomID: roomID, type: LogType.file, uid: uid, content: content);
 }
 
 void addEnterEventLog({required String roomID, required String uid}) {
@@ -125,24 +169,32 @@ void addLog(
       .collection("log");
   switch (type) {
     case LogType.text:
-    case LogType.media:
+    case LogType.image:
+    case LogType.video:
+    case LogType.file:
       final MSG msg = MSG(
         type: type,
         uid: uid,
         sendTime: Timestamp.now(),
         content: content,
         react: {},
-        readers: [],
+        readers: [
+          uid,
+        ],
       );
       logColRef.add(msg.toJson());
       break;
     case LogType.enter:
     case LogType.exit:
     case LogType.date:
-    case LogType.end:
       final EventLog eventLog =
           EventLog(type: type, uid: uid, sendTime: Timestamp.now());
       logColRef.add(eventLog.toJson());
+      break;
+    case LogType.end:
+      final EndLog endLog = EndLog(
+          type: type, uid: uid, calUserIDs: [], sendTime: Timestamp.now());
+      logColRef.add(endLog.toJson());
       break;
   }
 }

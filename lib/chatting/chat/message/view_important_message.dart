@@ -143,56 +143,60 @@ class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
                 fmtTime = DateFormat('M월 d일 h:mm a').format(dateTime);
               }
 
-              return Card(
-                color: Palette.pastelYellow,
-                margin: const EdgeInsets.only(top: 14, left: 12, right: 12),
-                child: GestureDetector(
-                  onLongPress: () => showDialog<String>(
-                    context: context,
-                    builder: (BuildContext context) => AlertDialog(
-                      title: const Text('이 메시지를 삭제하시겠습니까?'),
-                      content: Text(messageDetail),
-                      actions: <Widget>[
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('취소'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            print(documents[index].id);
-                            deleteImpMsg(widget.roomID, impMsgId);
-                            Navigator.pop(context);
-                          },
-                          child: const Text('삭제'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  child: ListTile(
-                    title: Text(
-                      userId,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          color: Palette.pastelBlack),
-                    ),
-                    subtitle: Text(
-                      messageDetail,
-                      style: const TextStyle(
-                          fontSize: 14, color: Palette.pastelBlack),
-                    ),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          fmtTime,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 10,
+              return IgnorePointer(
+                ignoring: widget.chatScreenState.chat.bEndProject,
+                child: Card(
+                  color: Palette.pastelYellow,
+                  margin: const EdgeInsets.only(
+                      left: 12, right: 12, top: 6, bottom: 6),
+                  child: GestureDetector(
+                    onLongPress: () => showDialog<String>(
+                      context: context,
+                      builder: (BuildContext context) => AlertDialog(
+                        title: const Text('이 메시지를 삭제하시겠습니까?'),
+                        content: Text(messageDetail),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('취소'),
                           ),
-                        ),
-                      ],
+                          TextButton(
+                            onPressed: () {
+                              print(documents[index].id);
+                              deleteImpMsg(widget.roomID, impMsgId);
+                              Navigator.pop(context);
+                            },
+                            child: const Text('삭제'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    child: ListTile(
+                      title: Text(
+                        userId,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: Palette.pastelBlack),
+                      ),
+                      subtitle: Text(
+                        messageDetail,
+                        style: const TextStyle(
+                            fontSize: 14, color: Palette.pastelBlack),
+                      ),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            fmtTime,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -201,22 +205,23 @@ class _ImportantMessagesPageState extends State<ImportantMessagesPage> {
           );
         },
       ),
-      floatingActionButton: isBtnEnable
-          ? FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => solve_quiz(
-                      chatScreenState: widget.chatScreenState,
-                      roomID: widget.roomID,
-                    ),
-                  ),
-                );
-              },
-              child: const Text("Quiz!"),
-            )
-          : null,
+      floatingActionButton:
+          isBtnEnable && !widget.chatScreenState.chat.bEndProject
+              ? FloatingActionButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => solve_quiz(
+                          chatScreenState: widget.chatScreenState,
+                          roomID: widget.roomID,
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text("Quiz!"),
+                )
+              : null,
     );
   }
 }

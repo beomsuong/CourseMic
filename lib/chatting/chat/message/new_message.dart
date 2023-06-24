@@ -8,9 +8,9 @@ import 'package:capston/chatting/chat/message/log.dart';
 
 class NewMessage extends StatefulWidget {
   final String roomID;
-  final ChatScreenState chatScreenState;
+  final ChatScreenState chatDataParent;
   const NewMessage(
-      {Key? key, required this.roomID, required this.chatScreenState})
+      {Key? key, required this.roomID, required this.chatDataParent})
       : super(key: key);
 
   @override
@@ -33,9 +33,9 @@ class NewMessageState extends State<NewMessage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    widget.chatScreenState.chat.recentMessage = _userEnterMessage;
-    widget.chatScreenState.chatDocRef
-        .update(widget.chatScreenState.chat.toJson());
+    widget.chatDataParent.chat.recentMessage = _userEnterMessage;
+    widget.chatDataParent.chatDocRef
+        .update(widget.chatDataParent.chat.toJson());
     addTextMSG(
       roomID: widget.roomID,
       uid: user.uid,
@@ -43,8 +43,8 @@ class NewMessageState extends State<NewMessage> {
     );
     FCMLocalNotification.sendMessageNotification(
       roomID: widget.roomID,
-      roomName: widget.chatScreenState.chat.roomName,
-      userName: (await widget.chatScreenState.userDocRef.get()).get("name"),
+      roomName: widget.chatDataParent.chat.roomName,
+      userName: (await widget.chatDataParent.userDocRef.get()).get("name"),
       message: _userEnterMessage,
     );
     _controller.clear();
@@ -76,6 +76,7 @@ class NewMessageState extends State<NewMessage> {
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: TextField(
                     maxLines: null,
+                    enabled: !widget.chatDataParent.chat.bEndProject,
                     controller: _controller,
                     decoration:
                         const InputDecoration(labelText: 'Send a message...'),
@@ -92,18 +93,21 @@ class NewMessageState extends State<NewMessage> {
                   ),
                 ),
               ),
-              IconButton(
-                onPressed:
-                    _userEnterMessage.trim().isEmpty ? null : _sendMessage,
-                icon: const Icon(Icons.rocket_launch_rounded),
-                color: Palette.darkGray,
+              IgnorePointer(
+                ignoring: widget.chatDataParent.chat.bEndProject,
+                child: IconButton(
+                  onPressed:
+                      _userEnterMessage.trim().isEmpty ? null : _sendMessage,
+                  icon: const Icon(Icons.rocket_launch_rounded),
+                  color: Palette.darkGray,
+                ),
               ),
             ],
           ),
           block
               ? ChatPlusFunc(
                   roomID: widget.roomID,
-                  chatScreenState: widget.chatScreenState,
+                  chatScreenState: widget.chatDataParent,
                 )
               : const SizedBox(width: 0, height: 0)
         ],

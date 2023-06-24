@@ -1,3 +1,4 @@
+import 'package:capston/chatting/chat/chat.dart';
 import 'package:capston/chatting/chat/chat_list.dart';
 import 'package:capston/chatting/chat/message/log.dart';
 import 'package:capston/palette.dart';
@@ -28,14 +29,12 @@ class _AddChatState extends State<AddChat> {
     CollectionReference chatColRef =
         widget.chatListParent.firestore.collection('chat');
 
+    Chat chat = Chat(
+        roomName: roomName,
+        recentMessage: "",
+        userList: [ChatUser(userID: widget.chatListParent.currentUser.uid)]);
     // add user to chatting room field
-    chatColRef.add({
-      'roomName': roomName,
-      'commanderID': '',
-      'userList': <Map<String, dynamic>>[
-        ChatUser(userID: widget.chatListParent.currentUser.uid).toJson()
-      ],
-    }).then((DocumentReference doc) {
+    chatColRef.add(chat.toJson()).then((DocumentReference doc) {
       widget.chatListParent.currUserDocRef.update({
         'chatList': FieldValue.arrayUnion([doc.id]),
       }).then((value) {
