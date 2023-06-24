@@ -30,6 +30,7 @@ class _File_And_Image_PickerState extends State<File_And_Image_Picker> {
   late final String firebaseStoragePath;
   FileType? fileType;
   final int MAX_BYTE = 200 * 1024 * 1024;
+  bool bSend = false;
 
   @override
   void initState() {
@@ -42,7 +43,27 @@ class _File_And_Image_PickerState extends State<File_And_Image_Picker> {
   resetVariable({bool bError = false}) {
     localFile = null;
     fileType = null;
+    bSend = false;
     selectedFileNameNotifier.value = bError ? "다른 자료를 선택해주세요" : resetText;
+  }
+
+  showSendingToast() {
+    fToast.showToast(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 30),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+            color: Palette.toastGray,
+          ),
+          child: const Text(
+            "현재 공유하고 있는 자료가 있습니다\n공유가 완료될 때까지 기다려주세요!",
+            style: TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        toastDuration: const Duration(milliseconds: 1500),
+        fadeDuration: const Duration(milliseconds: 700));
   }
 
   showPickRequestToast() {
@@ -152,9 +173,15 @@ class _File_And_Image_PickerState extends State<File_And_Image_Picker> {
                         ),
                         onPressed: () async {
                           if (localFile == null) {
-                            showPickRequestToast();
+                            await showPickRequestToast();
                             return;
                           }
+                          if (bSend) {
+                            await showSendingToast();
+                            return;
+                          }
+
+                          bSend = true;
 
                           String content = "${localFile!.name} ";
 

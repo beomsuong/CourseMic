@@ -16,6 +16,7 @@ import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:text_scroll/text_scroll.dart';
 import 'save_important_message.dart';
 import 'package:capston/chatting/chat/message/log.dart';
 
@@ -568,76 +569,105 @@ class _ChatBubblesState extends State<ChatBubbles> {
     );
   }
 
-  Future<List<String>> getUserNames(List<String> readers) async {
-    final List<String> userNames = [];
-
-    for (String userID in readers) {
-      final docSnapshot =
-          await FirebaseFirestore.instance.collection('user').doc(userID).get();
-
-      if (docSnapshot.exists) {
-        final userName = docSnapshot.get('name');
-        userNames.add(userName);
-      }
-    }
-
-    return userNames;
-  }
-
   Widget showreadersDialog() {
     if (widget.readers.length > 1) {
-      return FilledButton.tonalIcon(
-        style: ButtonStyle(
-          backgroundColor: MaterialStateColor.resolveWith(
-            (states) => Palette.brightViolet,
+      String userNames = "";
+      for (int index = 0; index < widget.readers.length; index++) {
+        userNames +=
+            "${widget.chatDataParent.userNameList[widget.readers[index]]!}/";
+      }
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: SizedBox(
+          width: 250,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: TextScroll(
+                  userNames,
+                  mode: TextScrollMode.endless,
+                  velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(fontSize: 10),
+                ),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Palette.lightGray,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.done_all_rounded,
+                          color: Palette.brightBlue),
+                      Text(
+                        "${widget.readers.length}",
+                        style: const TextStyle(
+                            color: Palette.brightBlue,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      const Text(
+                        " 명 읽음",
+                        style:
+                            TextStyle(color: Palette.lightBlack, fontSize: 10),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
+      );
+      return FilledButton.tonalIcon(
+        style: FilledButton.styleFrom(
+            backgroundColor: Palette.lightGray,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.only(left: 8, right: 8)),
         onPressed: () async {
-          List<String> userNames = await getUserNames(widget.readers);
           showDialog(
             context: context,
             builder: (BuildContext context) => Dialog(
               child: SizedBox(
                 width: 100,
-                height: 250,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: userNames
-                              .map((userName) => Text(userName))
-                              .toList(),
+                child: SingleChildScrollView(
+                  child: Center(
+                    child: Column(children: [
+                      for (var userID in widget.readers)
+                        Text(
+                          widget.chatDataParent.userNameList[userID]!,
                         ),
-                      ),
-                    ),
-                  ],
+                    ]),
+                  ),
                 ),
               ),
             ),
           );
         },
-        icon: const Icon(Icons.done_all_sharp),
-        label: RichText(
-          text: TextSpan(
-            children: <TextSpan>[
-              TextSpan(
-                text: //!
-                    widget.readers.length.toString(),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Palette.lightGray,
-                  fontSize: 18,
-                ),
+        icon: const Icon(Icons.done_all_rounded, color: Palette.brightBlue),
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.readers.length.toString(),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Palette.brightBlue,
+                fontSize: 18,
               ),
-              const TextSpan(
-                text: '명이 읽음',
-                style: TextStyle(color: Colors.black87),
-              ),
-            ],
-          ),
+            ),
+            const Text(
+              ' 명이 읽음',
+              style: TextStyle(color: Palette.lightBlack, fontSize: 10),
+            ),
+          ],
         ),
       );
     } else {
@@ -701,7 +731,10 @@ class _ChatBubblesState extends State<ChatBubbles> {
                     },
               child: const Text('중요메세지 설정'),
             ),
-            dialogDivider(),
+            // dialogDivider(),
+            const SizedBox(
+              height: 10,
+            ),
             showreadersDialog(),
           ],
         ),
