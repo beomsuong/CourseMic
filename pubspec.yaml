@@ -62,6 +62,12 @@ dependencies:
   http: ^0.13.6
   firebase_analytics: ^10.4.3
   path_provider: ^2.0.15
+  photo_view: ^0.14.0
+  dio: ^5.2.1+1
+  gallery_saver: ^2.3.2
+  flex_with_main_child: ^0.2.1
+  path: ^1.8.3
+  open_file: ^3.3.2
 
 flutter_launcher_icons:
   path: "assets/images/icon.png"

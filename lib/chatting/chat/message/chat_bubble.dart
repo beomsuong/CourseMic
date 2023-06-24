@@ -1,15 +1,23 @@
+import 'dart:io';
 import 'package:capston/chatting/chat/chat.dart';
 import 'package:capston/chatting/chat/chat_user.dart';
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/mypage/profile.dart';
 import 'package:capston/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flex_with_main_child/flex_with_main_child.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:intl/intl.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:photo_view/photo_view.dart';
 import 'save_important_message.dart';
 import 'package:capston/chatting/chat/message/log.dart';
 
@@ -48,12 +56,44 @@ final user = FirebaseAuth.instance.currentUser;
 
 class _ChatBubblesState extends State<ChatBubbles> {
   late FToast fToast = FToast();
-  List<ChatUser> userList = [];
 
   @override
   void initState() {
     super.initState();
     fToast = FToast();
+    fToast.init(context);
+  }
+
+  showDownloadAlreadyToast() {
+    fToast.showToast(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 36),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+            color: Palette.toastGray,
+          ),
+          child: const Text("해당 파일이 이미 다운로드 폴더에 있습니다\n해당 파일을 열었습니다!",
+              style: TextStyle(color: Colors.white)),
+        ),
+        toastDuration: const Duration(milliseconds: 1500),
+        fadeDuration: const Duration(milliseconds: 700));
+  }
+
+  showDownloadEndToast() {
+    fToast.showToast(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 36),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+            color: Palette.toastGray,
+          ),
+          child: const Text("파일이 다운로드가 완료되었습니다\n다운로드 폴더를 확인해주세요!",
+              style: TextStyle(color: Colors.white)),
+        ),
+        toastDuration: const Duration(milliseconds: 1500),
+        fadeDuration: const Duration(milliseconds: 700));
   }
 
   Future<void> doReactMsg(String uid, String react) async {
@@ -151,24 +191,25 @@ class _ChatBubblesState extends State<ChatBubbles> {
     }
   }
 
-  Widget showReadersCount() {
+  Padding showReadersCount() {
     final List<String> localReadersList = widget.readers;
-    final test = widget.chatDataParent.chat.userList.length;
-    final test2 = test - localReadersList.length;
-    // MainAxisAlignment mainAxisAlignment =
-    //     widget.isMe ? MainAxisAlignment.end : MainAxisAlignment.start;
+    final int unreadReadersCount =
+        widget.chatDataParent.chat.userList.length - localReadersList.length;
 
-    return Positioned(
-      left: widget.isMe ? 0 : 10,
-      right: widget.isMe ? 10 : 0,
+    return Padding(
+      padding: EdgeInsets.only(
+        left: widget.isMe ? 10 : 0,
+        right: widget.isMe ? 0 : 10,
+      ),
       child: Column(
         children: [
           Text(
-            test2.toString(),
+            unreadReadersCount > 0 ? unreadReadersCount.toString() : '',
             style: const TextStyle(
-                color: Palette.brightBlue,
-                fontSize: 12,
-                fontWeight: FontWeight.normal),
+              color: Palette.brightBlue,
+              fontSize: 12,
+              fontWeight: FontWeight.normal,
+            ),
           ),
         ],
       ),
@@ -176,13 +217,10 @@ class _ChatBubblesState extends State<ChatBubbles> {
   }
 
   Padding showReaderandSendtime() {
-    //TODO: 위치 버그 있음
-    final EdgeInsets padding = widget.isMe
-        ? const EdgeInsets.fromLTRB(0, 10, 0, 0)
-        : const EdgeInsets.fromLTRB(0, 10, 0, 0);
+    const EdgeInsets padding = EdgeInsets.zero;
 
     final EdgeInsets paddingWithReact = widget.react.isNotEmpty
-        ? padding.copyWith(bottom: padding.top + 6)
+        ? padding.copyWith(bottom: padding.bottom + 20)
         : padding;
 
     return Padding(
@@ -247,6 +285,128 @@ class _ChatBubblesState extends State<ChatBubbles> {
         widget.isMe ? const Color(0xFF8754f8) : const Color(0xffE7E7ED);
     final Color txtColor = widget.isMe ? Colors.white : Colors.black;
 
+    late Widget contentWidget;
+    switch (widget.type) {
+      case LogType.text:
+        contentWidget = Text(
+          widget.message,
+          style: TextStyle(
+            color: txtColor,
+            fontWeight: FontWeight.w400,
+            fontSize: 14,
+          ),
+        );
+        break;
+      case LogType.image:
+        contentWidget = GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HeroPhotoViewRouteWrapper(
+                  roomName: widget.chatDataParent.chat.roomName,
+                  userName: widget.chatDataParent.userNameList[widget.userid] ??
+                      "userName",
+                  tag: widget.message,
+                  minScale: PhotoViewComputedScale.contained,
+                  maxScale: PhotoViewComputedScale.contained * 2.0,
+                  imageURL: widget.message,
+                ),
+              ),
+            );
+          },
+          child: Hero(
+            tag: widget.message,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                fit: BoxFit.cover,
+                widget.message,
+                loadingBuilder: (BuildContext context, Widget child,
+                    ImageChunkEvent? loadingProgress) {
+                  if (loadingProgress == null) {
+                    return child;
+                  }
+                  return Center(
+                    child: LinearProgressIndicator(
+                      color: Colors.white,
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+        break;
+      case LogType.file:
+        String fileName = widget.message.split(" ")[0];
+        String fileURL = widget.message.split(" ")[1];
+        ValueNotifier<double> percentageNotifier = ValueNotifier(1);
+        GlobalKey textButtonKey = GlobalKey();
+
+        contentWidget =
+            ColumnWithMainChild(mainChildKey: textButtonKey, children: [
+          TextButton.icon(
+            key: textButtonKey,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+              iconColor: txtColor,
+            ),
+            onPressed: () async {
+              var status = await Permission.storage.status;
+              if (!status.isGranted) {
+                await Permission.storage.request();
+                return;
+              }
+
+              percentageNotifier.value = 0;
+              String downloadDirPath = "/storage/emulated/0/Download/";
+              (await Directory(downloadDirPath).exists())
+                  ? null
+                  : downloadDirPath = "/storage/emulated/0/Downloads/";
+
+              final path = "$downloadDirPath/$fileName";
+
+              if (await Directory(path).exists()) {
+                percentageNotifier.value = 1;
+                showDownloadAlreadyToast();
+                OpenFile.open(path);
+                return;
+              }
+
+              await Dio().download(fileURL, path,
+                  onReceiveProgress: (received, total) {
+                percentageNotifier.value = (received / total);
+              });
+
+              showDownloadEndToast();
+            },
+            icon: const Icon(
+              Icons.description_rounded,
+            ),
+            label: Text(fileName,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: txtColor)),
+          ),
+          ValueListenableBuilder(
+            valueListenable: percentageNotifier,
+            builder: (context, value, child) => LinearProgressIndicator(
+              color: txtColor,
+              value: value,
+            ),
+          ),
+        ]);
+        break;
+      // 나중에 위로 올릴 예정
+      case LogType.video:
+      default:
+        contentWidget = const Text("This is Video");
+    }
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,13 +425,14 @@ class _ChatBubblesState extends State<ChatBubbles> {
           )
         ],
         Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             if (widget.isMe)
               Column(
                 mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   //! 이곳에 읽은 사람 수 표시
-                  //sendTimeDisplay()
                   showReaderandSendtime(),
                 ],
               ),
@@ -297,14 +458,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                     child: Column(
                       crossAxisAlignment: crossAxisAlignment,
                       children: [
-                        Text(
-                          widget.message,
-                          style: TextStyle(
-                            color: txtColor,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 14,
-                          ),
-                        ),
+                        contentWidget,
                       ],
                     ),
                   ),
@@ -314,10 +468,10 @@ class _ChatBubblesState extends State<ChatBubbles> {
             if (!widget.isMe)
               Column(
                 mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   //! 여기에 읽은 사람 수 표시
                   showReaderandSendtime(),
-                  //sendTimeDisplay(),
                 ],
               ),
           ],
@@ -343,74 +497,81 @@ class _ChatBubblesState extends State<ChatBubbles> {
     );
   }
 
+  Future<List<String>> getUserNames(List<String> readers) async {
+    final List<String> userNames = [];
+
+    for (String userID in readers) {
+      final docSnapshot =
+          await FirebaseFirestore.instance.collection('user').doc(userID).get();
+
+      if (docSnapshot.exists) {
+        final userName = docSnapshot.get('name');
+        userNames.add(userName);
+      }
+    }
+
+    return userNames;
+  }
+
   Widget showreadersDialog() {
-    return FilledButton.tonalIcon(
-      style: ButtonStyle(
-          backgroundColor:
-              MaterialStateColor.resolveWith((states) => Palette.brightViolet)),
-      onPressed: () {
-        showDialog(
+    if (widget.readers.length > 1) {
+      return FilledButton.tonalIcon(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateColor.resolveWith(
+            (states) => Palette.brightViolet,
+          ),
+        ),
+        onPressed: () async {
+          List<String> userNames = await getUserNames(widget.readers);
+          showDialog(
             context: context,
-            builder: (BuildContext context) => SimpleDialog(
-                  backgroundColor: Palette.backgroundColor,
-                  title: const Text('읽은 사람'),
+            builder: (BuildContext context) => Dialog(
+              child: Container(
+                width: 100,
+                height: 250,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    StreamBuilder(
-                        stream: widget.chatDataParent.chatStream,
-                        builder: (context, snapshot) {
-                          widget.chatDataParent.chat =
-                              Chat.fromJson(snapshot.data!);
-                          //유저 입장, 퇴장 때 이름 파싱
-                          for (var user
-                              in widget.chatDataParent.chat.userList) {
-                            FirebaseFirestore.instance
-                                .collection('user')
-                                .doc(user.userID)
-                                .get()
-                                .then((value) {
-                              //userNameList[user.userID = value.data()!['name']];
-                            });
-                          }
-                          var userNameList; //!
-                          return Column(
-                            children: <Widget>[
-                              Expanded(
-                                child: ListView(
-                                  children: userNameList.entries.map((entry) {
-                                    String key = entry.key;
-                                    String value = entry.value;
-                                    return ListTile(
-                                      title: Text(key),
-                                      subtitle: Text(value),
-                                    );
-                                  }).toList(),
-                                ),
-                              ),
-                            ],
-                          );
-                        })
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: userNames
+                              .map((userName) => Text(userName))
+                              .toList(),
+                        ),
+                      ),
+                    ),
                   ],
-                ));
-      },
-      icon: const Icon(Icons.done_all_sharp),
-      label: RichText(
-        text: TextSpan(
-          children: <TextSpan>[
-            TextSpan(
-                text: widget.readers.length.toString(),
+                ),
+              ),
+            ),
+          );
+        },
+        icon: const Icon(Icons.done_all_sharp),
+        label: RichText(
+          text: TextSpan(
+            children: <TextSpan>[
+              TextSpan(
+                text: //!
+                    widget.readers.length.toString(),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Palette.lightGray,
                   fontSize: 18,
-                )),
-            const TextSpan(
-              text: '명이 읽음',
-              style: TextStyle(color: Colors.black87),
-            ),
-          ],
+                ),
+              ),
+              const TextSpan(
+                text: '명이 읽음',
+                style: TextStyle(color: Colors.black87),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      return Container();
+    }
   }
 
   Future<dynamic> showMsgFuncDialog(BuildContext context) {
@@ -479,52 +640,36 @@ class _ChatBubblesState extends State<ChatBubbles> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        return true;
-      },
-      child: GestureDetector(
-        onLongPressStart: (LongPressStartDetails longPressStartDetails) =>
-            showMsgFuncDialog(context), //메시지 longpress하면 트리거
-        child: Column(
+    return Column(
+      children: [
+        Stack(
           children: [
-            Stack(
+            // 챗버블
+            Row(
+              mainAxisAlignment:
+                  widget.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+              crossAxisAlignment: widget.isMe
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
-                // 챗버블
-                Row(
-                  mainAxisAlignment: widget.isMe
-                      ? MainAxisAlignment.end
-                      : MainAxisAlignment.start,
-                  children: [
-                    if (widget.isMe) //! 나일 때
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          //sendTimeDisplay(),
-                          showChatBubble(context),
-                        ],
-                      ),
-                    if (!widget.isMe) //! 나 아니여~
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          showChatBubble(context),
-                        ],
-                      ),
-                  ],
-                ),
-                showProfileImage(),
-                Positioned(
-                  bottom: 0,
-                  left: widget.isMe ? null : 55,
-                  right: widget.isMe ? 10 : null,
-                  child: showReactCount(),
+                GestureDetector(
+                  onLongPressStart:
+                      (LongPressStartDetails longPressStartDetails) =>
+                          showMsgFuncDialog(context), //메시지 longpress하면 트리거,
+                  child: showChatBubble(context),
                 ),
               ],
             ),
+            showProfileImage(),
+            Positioned(
+              bottom: 0,
+              left: widget.isMe ? null : 55,
+              right: widget.isMe ? 10 : null,
+              child: showReactCount(),
+            ),
           ],
         ),
-      ),
+      ],
     );
   }
 
@@ -627,4 +772,151 @@ Divider dialogDivider() {
     indent: 30,
     endIndent: 30,
   );
+}
+
+class HeroPhotoViewRouteWrapper extends StatefulWidget {
+  const HeroPhotoViewRouteWrapper(
+      {super.key,
+      required this.imageURL,
+      this.backgroundDecoration,
+      this.minScale,
+      this.maxScale,
+      required this.userName,
+      required this.tag,
+      required this.roomName});
+
+  final String imageURL;
+  final BoxDecoration? backgroundDecoration;
+  final dynamic minScale;
+  final dynamic maxScale;
+  final String tag;
+  final String userName;
+  final String roomName;
+
+  @override
+  State<HeroPhotoViewRouteWrapper> createState() =>
+      _HeroPhotoViewRouteWrapperState();
+}
+
+class _HeroPhotoViewRouteWrapperState extends State<HeroPhotoViewRouteWrapper> {
+  late FToast fToast;
+  ValueNotifier<double> percentageNotifier = ValueNotifier(0);
+
+  @override
+  void initState() {
+    super.initState();
+    fToast = FToast();
+    fToast.init(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.userName),
+        centerTitle: true,
+        backgroundColor: Colors.black.withOpacity(0.7),
+        elevation: 0,
+      ),
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          PhotoView(
+            imageProvider: NetworkImage(widget.imageURL),
+            backgroundDecoration: widget.backgroundDecoration,
+            minScale: widget.minScale,
+            maxScale: widget.maxScale,
+            heroAttributes: PhotoViewHeroAttributes(tag: widget.tag),
+          ),
+          Positioned(
+            bottom: 0,
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: 80,
+              alignment: Alignment.bottomCenter,
+              decoration: BoxDecoration(color: Colors.black.withOpacity(0.7)),
+              child: Column(
+                children: [
+                  ValueListenableBuilder(
+                    valueListenable: percentageNotifier,
+                    builder: (context, value, child) => LinearProgressIndicator(
+                      backgroundColor: Palette.darkGray,
+                      color: Colors.white,
+                      value: value,
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  IconButton(
+                    onPressed: () async {
+                      var status = await Permission.photos.status;
+                      if (!status.isGranted) {
+                        await Permission.photos.request();
+                      }
+
+                      final tempDir = await getTemporaryDirectory();
+
+                      final path =
+                          "${tempDir.path}/${widget.imageURL.substring(widget.imageURL.length - 4, widget.imageURL.length)}.jpg";
+
+                      await Dio().download(widget.imageURL, path,
+                          onReceiveProgress: (received, total) {
+                        percentageNotifier.value = (received / total);
+                      });
+
+                      await GallerySaver.saveImage(
+                          albumName: widget.roomName, path);
+
+                      final file = File(path);
+                      if (await file.exists()) file.delete();
+                      showDownloadEndToast();
+                    },
+                    icon: const Icon(
+                      Icons.download_rounded,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  showDownloadAlreadyToast() {
+    fToast.showToast(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 36),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+            color: Palette.toastGray,
+          ),
+          child: const Text("해당 이미지가 이미 갤러리에 있습니다",
+              style: TextStyle(color: Colors.white)),
+        ),
+        toastDuration: const Duration(milliseconds: 1500),
+        fadeDuration: const Duration(milliseconds: 700));
+  }
+
+  showDownloadEndToast() {
+    fToast.showToast(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 36),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+            color: Palette.toastGray,
+          ),
+          child: const Text(
+            "이미지 다운로드가 완료되었습니다\n갤러리를 확인해주세요!",
+            style: TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        toastDuration: const Duration(milliseconds: 1500),
+        fadeDuration: const Duration(milliseconds: 700));
+  }
 }
