@@ -1,5 +1,4 @@
 import 'package:capston/chatting/chat/chat.dart';
-import 'package:capston/chatting/chat/chat_list.dart';
 import 'package:capston/chatting/chat/chat_user.dart';
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/mypage/profile.dart';
@@ -11,8 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'save_important_message.dart';
+import 'package:capston/chatting/chat/message/log.dart';
 
 class ChatBubbles extends StatefulWidget {
   const ChatBubbles(
@@ -24,7 +23,8 @@ class ChatBubbles extends StatefulWidget {
     this.userImage,
     this.sendTime,
     this.roomID,
-    this.readers, 
+    this.react,
+    this.readers,
     this.chatDataParent, {
     Key? key,
   }) : super(key: key);
@@ -40,7 +40,6 @@ class ChatBubbles extends StatefulWidget {
   final Map<String, dynamic> react;
   final List<String> readers;
   final ChatScreenState chatDataParent;
-
   @override
   State<ChatBubbles> createState() => _ChatBubblesState();
 }
@@ -154,38 +153,52 @@ class _ChatBubblesState extends State<ChatBubbles> {
 
   Widget showReadersCount() {
     final List<String> localReadersList = widget.readers;
-    //final test = Chat.chatdataParent.chat.userList.length;
+    final test = widget.chatDataParent.chat.userList.length;
+    final test2 = test - localReadersList.length;
+    // MainAxisAlignment mainAxisAlignment =
+    //     widget.isMe ? MainAxisAlignment.end : MainAxisAlignment.start;
 
     return Positioned(
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.blueAccent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          children: [
-            Text(localReadersList.length.toString()),
-          ],
-        ),
+      left: widget.isMe ? 0 : 10,
+      right: widget.isMe ? 10 : 0,
+      child: Column(
+        children: [
+          Text(
+            test2.toString(),
+            style: const TextStyle(
+                color: Palette.brightBlue,
+                fontSize: 12,
+                fontWeight: FontWeight.normal),
+          ),
+        ],
       ),
     );
   }
 
   Padding showReaderandSendtime() {
+    //TODO: 위치 버그 있음
     final EdgeInsets padding = widget.isMe
-        ? const EdgeInsets.fromLTRB(0, 18, 0, 0)
-        : const EdgeInsets.fromLTRB(0, 18, 0, 0);
+        ? const EdgeInsets.fromLTRB(0, 10, 0, 0)
+        : const EdgeInsets.fromLTRB(0, 10, 0, 0);
 
     final EdgeInsets paddingWithReact = widget.react.isNotEmpty
-        ? padding.copyWith(bottom: padding.top - 2)
+        ? padding.copyWith(bottom: padding.top + 6)
         : padding;
 
     return Padding(
       padding: paddingWithReact,
       child: Column(
+        crossAxisAlignment:
+            widget.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          showReadersCount(),
-          sendTimeDisplay(),
+          Padding(
+            padding: const EdgeInsets.only(left: 5, right: 5),
+            child: showReadersCount(),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 5, right: 5),
+            child: sendTimeDisplay(),
+          ),
         ],
       ),
     );
@@ -234,60 +247,6 @@ class _ChatBubblesState extends State<ChatBubbles> {
         widget.isMe ? const Color(0xFF8754f8) : const Color(0xffE7E7ED);
     final Color txtColor = widget.isMe ? Colors.white : Colors.black;
 
-    late Widget contentWidget;
-    switch (widget.type) {
-      case LogType.text:
-        contentWidget = Text(
-          widget.message,
-          style: TextStyle(
-            color: txtColor,
-            fontWeight: FontWeight.w400,
-            fontSize: 14,
-          ),
-        );
-        break;
-      case LogType.image:
-        contentWidget = ClipRRect(
-          borderRadius: BorderRadius.circular(15),
-          child: Image.network(
-            widget.message,
-          ),
-        );
-        break;
-      case LogType.file:
-        String fileName = widget.message.split(" ")[0];
-        String fileURL = widget.message.split(" ")[1];
-
-        contentWidget = TextButton.icon(
-          style: TextButton.styleFrom(
-              padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
-              iconColor: Colors.white,
-              textStyle: const TextStyle(color: Colors.white)),
-          onPressed: () async {
-            Directory appDir = await getApplicationDocumentsDirectory();
-            File downloadTo = File("${appDir.path}/$fileName");
-            print("${appDir.path}/$fileName");
-
-            // await FirebaseStorage.instance
-            //     .ref()
-            //     .child("shared_file")
-            //     .child(fileName)
-            //     .writeToFile(downloadTo);
-
-            // await FirebaseStorage.instance.refFromURL(fileURL).getData();
-          },
-          icon: const Icon(
-            Icons.description_rounded,
-          ),
-          label: Text(fileName),
-        );
-        break;
-      // 나중에 위로 올릴 예정
-      case LogType.video:
-      default:
-        contentWidget = const Text("hello");
-    }
-
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,7 +281,10 @@ class _ChatBubblesState extends State<ChatBubbles> {
                 margin:
                     EdgeInsets.only(bottom: widget.react.isNotEmpty ? 10 : 0),
                 child: ChatBubble(
-                  clipper: ChatBubbleClipper8(type: decideBubbleType),
+                  clipper: ChatBubbleClipper8(
+                    type: decideBubbleType,
+                    radius: 15,
+                  ),
                   alignment:
                       widget.isMe ? Alignment.topRight : Alignment.topLeft,
                   margin:
@@ -335,7 +297,14 @@ class _ChatBubblesState extends State<ChatBubbles> {
                     child: Column(
                       crossAxisAlignment: crossAxisAlignment,
                       children: [
-                        contentWidget,
+                        Text(
+                          widget.message,
+                          style: TextStyle(
+                            color: txtColor,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -371,6 +340,76 @@ class _ChatBubblesState extends State<ChatBubbles> {
       right: widget.isMe ? 5 : null,
       left: widget.isMe ? null : 5,
       child: profileImage,
+    );
+  }
+
+  Widget showreadersDialog() {
+    return FilledButton.tonalIcon(
+      style: ButtonStyle(
+          backgroundColor:
+              MaterialStateColor.resolveWith((states) => Palette.brightViolet)),
+      onPressed: () {
+        showDialog(
+            context: context,
+            builder: (BuildContext context) => SimpleDialog(
+                  backgroundColor: Palette.backgroundColor,
+                  title: const Text('읽은 사람'),
+                  children: [
+                    StreamBuilder(
+                        stream: widget.chatDataParent.chatStream,
+                        builder: (context, snapshot) {
+                          widget.chatDataParent.chat =
+                              Chat.fromJson(snapshot.data!);
+                          //유저 입장, 퇴장 때 이름 파싱
+                          for (var user
+                              in widget.chatDataParent.chat.userList) {
+                            FirebaseFirestore.instance
+                                .collection('user')
+                                .doc(user.userID)
+                                .get()
+                                .then((value) {
+                              //userNameList[user.userID = value.data()!['name']];
+                            });
+                          }
+                          var userNameList; //!
+                          return Column(
+                            children: <Widget>[
+                              Expanded(
+                                child: ListView(
+                                  children: userNameList.entries.map((entry) {
+                                    String key = entry.key;
+                                    String value = entry.value;
+                                    return ListTile(
+                                      title: Text(key),
+                                      subtitle: Text(value),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ],
+                          );
+                        })
+                  ],
+                ));
+      },
+      icon: const Icon(Icons.done_all_sharp),
+      label: RichText(
+        text: TextSpan(
+          children: <TextSpan>[
+            TextSpan(
+                text: widget.readers.length.toString(),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Palette.lightGray,
+                  fontSize: 18,
+                )),
+            const TextSpan(
+              text: '명이 읽음',
+              style: TextStyle(color: Colors.black87),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -431,6 +470,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
               child: const Text('중요메세지 설정'),
             ),
             dialogDivider(),
+            showreadersDialog(),
           ],
         ),
       ),
@@ -439,7 +479,6 @@ class _ChatBubblesState extends State<ChatBubbles> {
 
   @override
   Widget build(BuildContext context) {
-    //! 테스트 용임 나중에 지우셈
     return WillPopScope(
       onWillPop: () async {
         return true;
