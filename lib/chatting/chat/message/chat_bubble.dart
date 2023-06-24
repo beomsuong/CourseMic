@@ -371,10 +371,10 @@ class _ChatBubblesState extends State<ChatBubbles> {
 
               final path = "$downloadDirPath/$fileName";
 
-              if (await Directory(downloadDirPath).exists()) {
+              if (await Directory(path).exists()) {
                 percentageNotifier.value = 1;
                 showDownloadAlreadyToast();
-                OpenFile.open(downloadDirPath);
+                OpenFile.open(path);
                 return;
               }
 
