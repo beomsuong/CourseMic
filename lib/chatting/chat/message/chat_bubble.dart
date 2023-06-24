@@ -345,6 +345,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
       case LogType.image:
         String imageName = widget.message.split(" ")[0];
         String imageURL = widget.message.split(" ")[1];
+        final keyStr = UniqueKey().toString();
         contentWidget = GestureDetector(
           onTap: () async {
             Navigator.push(
@@ -354,7 +355,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                   roomName: widget.chatDataParent.chat.roomName,
                   userName: widget.chatDataParent.userNameList[widget.userid] ??
                       "userName",
-                  tag: imageURL,
+                  tag: keyStr,
                   minScale: PhotoViewComputedScale.contained,
                   maxScale: PhotoViewComputedScale.contained * 2.0,
                   imageName: imageName,
@@ -364,7 +365,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
             );
           },
           child: Hero(
-            tag: imageURL,
+            tag: keyStr,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: Image.network(
@@ -581,14 +582,14 @@ class _ChatBubblesState extends State<ChatBubbles> {
         child: SizedBox(
           width: 250,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Expanded(
                 child: TextScroll(
                   userNames,
                   mode: TextScrollMode.endless,
                   velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
-                  textAlign: TextAlign.right,
+                  textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 10),
                 ),
               ),
@@ -626,50 +627,50 @@ class _ChatBubblesState extends State<ChatBubbles> {
           ),
         ),
       );
-      return FilledButton.tonalIcon(
-        style: FilledButton.styleFrom(
-            backgroundColor: Palette.lightGray,
-            alignment: Alignment.center,
-            padding: const EdgeInsets.only(left: 8, right: 8)),
-        onPressed: () async {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) => Dialog(
-              child: SizedBox(
-                width: 100,
-                child: SingleChildScrollView(
-                  child: Center(
-                    child: Column(children: [
-                      for (var userID in widget.readers)
-                        Text(
-                          widget.chatDataParent.userNameList[userID]!,
-                        ),
-                    ]),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-        icon: const Icon(Icons.done_all_rounded, color: Palette.brightBlue),
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              widget.readers.length.toString(),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Palette.brightBlue,
-                fontSize: 18,
-              ),
-            ),
-            const Text(
-              ' 명이 읽음',
-              style: TextStyle(color: Palette.lightBlack, fontSize: 10),
-            ),
-          ],
-        ),
-      );
+      // return FilledButton.tonalIcon(
+      //   style: FilledButton.styleFrom(
+      //       backgroundColor: Palette.lightGray,
+      //       alignment: Alignment.center,
+      //       padding: const EdgeInsets.only(left: 8, right: 8)),
+      //   onPressed: () async {
+      //     showDialog(
+      //       context: context,
+      //       builder: (BuildContext context) => Dialog(
+      //         child: SizedBox(
+      //           width: 100,
+      //           child: SingleChildScrollView(
+      //             child: Center(
+      //               child: Column(children: [
+      //                 for (var userID in widget.readers)
+      //                   Text(
+      //                     widget.chatDataParent.userNameList[userID]!,
+      //                   ),
+      //               ]),
+      //             ),
+      //           ),
+      //         ),
+      //       ),
+      //     );
+      //   },
+      //   icon: const Icon(Icons.done_all_rounded, color: Palette.brightBlue),
+      //   label: Row(
+      //     mainAxisSize: MainAxisSize.min,
+      //     children: [
+      //       Text(
+      //         widget.readers.length.toString(),
+      //         style: const TextStyle(
+      //           fontWeight: FontWeight.bold,
+      //           color: Palette.brightBlue,
+      //           fontSize: 18,
+      //         ),
+      //       ),
+      //       const Text(
+      //         ' 명이 읽음',
+      //         style: TextStyle(color: Palette.lightBlack, fontSize: 10),
+      //       ),
+      //     ],
+      //   ),
+      // );
     } else {
       return Container();
     }

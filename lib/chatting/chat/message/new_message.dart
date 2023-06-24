@@ -1,10 +1,10 @@
+import 'package:capston/chatting/chat/message/log.dart';
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/notification.dart';
 import 'package:capston/palette.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'chat_plus_func.dart';
-import 'package:capston/chatting/chat/message/log.dart';
 import 'package:http/http.dart' as http;
 
 class NewMessage extends StatefulWidget {
@@ -23,6 +23,7 @@ class NewMessageState extends State<NewMessage> {
   bool block = false;
   var _userEnterMessage = '';
   String fileExtension = "";
+  bool bSending = false;
 
   setBlockFalse() {
     setState(() {
@@ -32,10 +33,10 @@ class NewMessageState extends State<NewMessage> {
 
   void _sendMessage() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null || bSending) return;
+    bSending = true;
 
-    if (isURL(_userEnterMessage) &&
-        await isUrlContentTypeImage(_userEnterMessage)) {
+    if (await isUrlContentTypeImage(_userEnterMessage)) {
       addImageMSG(
         roomID: widget.roomID,
         uid: user.uid,
@@ -68,12 +69,13 @@ class NewMessageState extends State<NewMessage> {
     _controller.clear();
     setState(() {
       _userEnterMessage = "";
+      bSending = false;
     });
   }
 
   bool isURL(String text) {
     final RegExp urlRegex = RegExp(
-      r'(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)',
+      r'(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+',
     );
 
     if (!text.startsWith('http') && !text.startsWith('https')) {
@@ -84,7 +86,15 @@ class NewMessageState extends State<NewMessage> {
   }
 
   Future<bool> isUrlContentTypeImage(String url) async {
-    final response = await http.head(Uri.parse(url));
+    http.Response response;
+    try {
+      response = await http.head(Uri.parse(url));
+    } catch (e) {
+      return false;
+    }
+
+    if (response.statusCode != 200) return false;
+
     final contentType = response.headers['content-type'];
     if (contentType?.startsWith('image/') ?? false) {
       fileExtension = contentType!.split("/")[1];
@@ -136,8 +146,9 @@ class NewMessageState extends State<NewMessage> {
               IgnorePointer(
                 ignoring: widget.chatDataParent.chat.bEndProject,
                 child: IconButton(
-                  onPressed:
-                      _userEnterMessage.trim().isEmpty ? null : _sendMessage,
+                  onPressed: _userEnterMessage.trim().isEmpty || bSending
+                      ? null
+                      : _sendMessage,
                   icon: const Icon(Icons.rocket_launch_rounded),
                   color: Palette.darkGray,
                 ),
