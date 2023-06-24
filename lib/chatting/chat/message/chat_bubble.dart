@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flex_with_main_child/flex_with_main_child.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
@@ -16,8 +17,11 @@ import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'save_important_message.dart';
 import 'package:capston/chatting/chat/message/log.dart';
+import 'package:http/http.dart' as http;
 
 class ChatBubbles extends StatefulWidget {
   const ChatBubbles(
@@ -270,6 +274,56 @@ class _ChatBubblesState extends State<ChatBubbles> {
     );
   }
 
+  TextSpan parseMessage(String message) {
+    final List<String> words = message.split(' ');
+    final List<TextSpan> spans = [];
+
+    for (String word in words) {
+      if (isURL(word)) {
+        spans.add(
+          TextSpan(
+            text: '$word ',
+            style: TextStyle(
+              color: Colors.blue,
+              decoration: TextDecoration.underline,
+            ),
+            recognizer: TapGestureRecognizer()..onTap = () => launchURL(word),
+          ),
+        );
+      } else {
+        spans.add(TextSpan(text: '$word '));
+      }
+    }
+
+    return TextSpan(children: spans);
+  }
+
+  bool isURL(String text) {
+    final RegExp urlRegex = RegExp(
+      r'(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)',
+    );
+
+    if (!text.startsWith('http') && !text.startsWith('https')) {
+      text = 'https://www.$text';
+    }
+
+    return urlRegex.hasMatch(text);
+  }
+
+  void launchURL(String url) async {
+    Uri uri = Uri.parse(url);
+    print('>>> $uri');
+
+    if (await canLaunchUrlString(url)) {
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalNonBrowserApplication,
+      );
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
   Widget showChatBubble(BuildContext context) {
     //isMe 조건으로 통합 위젯화
     final CrossAxisAlignment crossAxisAlignment =
@@ -286,14 +340,16 @@ class _ChatBubblesState extends State<ChatBubbles> {
     late Widget contentWidget;
     switch (widget.type) {
       case LogType.text: //! 텍스트 메세지
-        contentWidget = Text(
-          widget.message,
-          style: TextStyle(
-            color: txtColor,
-            fontWeight: FontWeight.w400,
-            fontSize: 14,
-          ),
-        );
+
+        TextSpan messageSpan = parseMessage(widget.message);
+        contentWidget = RichText(
+            text: TextSpan(
+                style: TextStyle(
+                  color: txtColor,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                ),
+                children: [messageSpan]));
         break;
       case LogType.image: //! 이미지 파일
         contentWidget = GestureDetector(
