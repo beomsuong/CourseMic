@@ -23,6 +23,7 @@ class ChatBubbles extends StatefulWidget {
   const ChatBubbles(
     this.type,
     this.message,
+    // this.bPreUser,
     this.isMe,
     this.userid,
     this.userName,
@@ -37,6 +38,7 @@ class ChatBubbles extends StatefulWidget {
 
   final LogType type;
   final String message;
+  // final bool bPreUser;
   final bool isMe;
   final String userid;
   final String userName;
@@ -340,64 +342,72 @@ class _ChatBubblesState extends State<ChatBubbles> {
         );
         break;
       case LogType.image:
-        ValueNotifier<bool> bExpiredNotifier = ValueNotifier(false);
-        contentWidget = ValueListenableBuilder(
-            valueListenable: bExpiredNotifier,
-            builder: (context, value, child) {
-              return GestureDetector(
-                onTap: () async {
-                  if (value) await showExpiredFileToast();
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HeroPhotoViewRouteWrapper(
-                        roomName: widget.chatDataParent.chat.roomName,
-                        userName:
-                            widget.chatDataParent.userNameList[widget.userid] ??
-                                "userName",
-                        tag: widget.message,
-                        minScale: PhotoViewComputedScale.contained,
-                        maxScale: PhotoViewComputedScale.contained * 2.0,
-                        imageURL: widget.message,
-                      ),
+        String imageName = widget.message.split(" ")[0];
+        String imageURL = widget.message.split(" ")[1];
+        contentWidget = GestureDetector(
+          onTap: () async {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HeroPhotoViewRouteWrapper(
+                  roomName: widget.chatDataParent.chat.roomName,
+                  userName: widget.chatDataParent.userNameList[widget.userid] ??
+                      "userName",
+                  tag: imageURL,
+                  minScale: PhotoViewComputedScale.contained,
+                  maxScale: PhotoViewComputedScale.contained * 2.0,
+                  imageName: imageName,
+                  imageURL: imageURL,
+                ),
+              ),
+            );
+          },
+          child: Hero(
+            tag: imageURL,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                fit: BoxFit.cover,
+                widget.message,
+                loadingBuilder: (BuildContext context, Widget child,
+                    ImageChunkEvent? loadingProgress) {
+                  if (loadingProgress == null) {
+                    return child;
+                  }
+                  return Center(
+                    child: LinearProgressIndicator(
+                      color: Colors.white,
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
                     ),
                   );
                 },
-                child: Hero(
-                  tag: widget.message,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      fit: BoxFit.cover,
-                      widget.message,
-                      loadingBuilder: (BuildContext context, Widget child,
-                          ImageChunkEvent? loadingProgress) {
-                        if (loadingProgress == null) {
-                          return child;
-                        }
-                        return Center(
-                          child: LinearProgressIndicator(
-                            color: Colors.white,
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                                : null,
-                          ),
-                        );
-                      },
-                      errorBuilder: (BuildContext context, Object exception,
-                          StackTrace? stackTrace) {
-                        bExpiredNotifier.value = true;
-                        return const Icon(
+                errorBuilder: (BuildContext context, Object exception,
+                    StackTrace? stackTrace) {
+                  return Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
                           Icons.broken_image_rounded,
-                        );
-                      },
+                          color: txtColor,
+                        ),
+                        Text(
+                          " 만료된 이미지",
+                          style: TextStyle(color: txtColor),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-              );
-            });
+                  );
+                },
+              ),
+            ),
+          ),
+        );
         break;
       case LogType.file:
         String fileName = widget.message.split(" ")[0];
@@ -428,9 +438,9 @@ class _ChatBubblesState extends State<ChatBubbles> {
 
               final path = "$downloadDirPath/$fileName";
 
-              if (await Directory(path).exists()) {
+              if (await File(path).exists()) {
                 percentageNotifier.value = 1;
-                await showDownloadAlreadyToast();
+                // await showDownloadAlreadyToast();
                 OpenFile.open(path);
                 return;
               }
@@ -445,7 +455,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                 return;
               }
 
-              showDownloadEndToast();
+              await showDownloadEndToast();
             },
             icon: const Icon(
               Icons.description_rounded,
@@ -473,6 +483,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // if (!widget.isMe && !widget.bPreUser) ...[
         if (!widget.isMe) ...[
           //조건이 거짓이면 조건문의 리스트가 빈 리스트가 됨
           Padding(
@@ -722,6 +733,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                 ),
               ],
             ),
+            // if (!widget.bPreUser) showProfileImage(),
             showProfileImage(),
             Positioned(
               bottom: 0,
@@ -839,6 +851,7 @@ Divider dialogDivider() {
 class HeroPhotoViewRouteWrapper extends StatefulWidget {
   const HeroPhotoViewRouteWrapper(
       {super.key,
+      required this.imageName,
       required this.imageURL,
       this.backgroundDecoration,
       this.minScale,
@@ -847,6 +860,7 @@ class HeroPhotoViewRouteWrapper extends StatefulWidget {
       required this.tag,
       required this.roomName});
 
+  final String imageName;
   final String imageURL;
   final BoxDecoration? backgroundDecoration;
   final dynamic minScale;
@@ -918,8 +932,7 @@ class _HeroPhotoViewRouteWrapperState extends State<HeroPhotoViewRouteWrapper> {
 
                       final tempDir = await getTemporaryDirectory();
 
-                      final path =
-                          "${tempDir.path}/${widget.imageURL.substring(widget.imageURL.length - 4, widget.imageURL.length)}.jpg";
+                      final path = "${tempDir.path}/${widget.imageName}";
 
                       try {
                         await Dio().download(widget.imageURL, path,

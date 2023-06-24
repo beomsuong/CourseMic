@@ -156,9 +156,7 @@ class _File_And_Image_PickerState extends State<File_And_Image_Picker> {
                             return;
                           }
 
-                          String content = fileType == FileType.any
-                              ? "${localFile!.name} "
-                              : "";
+                          String content = "${localFile!.name} ";
 
                           UploadTask putFileProgress = firebaseStorage
                               .ref(firebaseStoragePath + localFile!.name)
