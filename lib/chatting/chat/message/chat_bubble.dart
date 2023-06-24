@@ -1,15 +1,23 @@
+import 'dart:io';
 import 'package:capston/chatting/chat/chat.dart';
 import 'package:capston/chatting/chat/chat_user.dart';
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/mypage/profile.dart';
 import 'package:capston/palette.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flex_with_main_child/flex_with_main_child.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:intl/intl.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:photo_view/photo_view.dart';
 import 'save_important_message.dart';
 import 'package:capston/chatting/chat/message/log.dart';
 
@@ -53,6 +61,39 @@ class _ChatBubblesState extends State<ChatBubbles> {
   void initState() {
     super.initState();
     fToast = FToast();
+    fToast.init(context);
+  }
+
+  showDownloadAlreadyToast() {
+    fToast.showToast(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 36),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+            color: Palette.toastGray,
+          ),
+          child: const Text("해당 파일이 이미 다운로드 폴더에 있습니다\n해당 파일을 열었습니다!",
+              style: TextStyle(color: Colors.white)),
+        ),
+        toastDuration: const Duration(milliseconds: 1500),
+        fadeDuration: const Duration(milliseconds: 700));
+  }
+
+  showDownloadEndToast() {
+    fToast.showToast(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 36),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+            color: Palette.toastGray,
+          ),
+          child: const Text("파일이 다운로드가 완료되었습니다\n다운로드 폴더를 확인해주세요!",
+              style: TextStyle(color: Colors.white)),
+        ),
+        toastDuration: const Duration(milliseconds: 1500),
+        fadeDuration: const Duration(milliseconds: 700));
   }
 
   Future<void> doReactMsg(String uid, String react) async {
@@ -244,6 +285,128 @@ class _ChatBubblesState extends State<ChatBubbles> {
         widget.isMe ? const Color(0xFF8754f8) : const Color(0xffE7E7ED);
     final Color txtColor = widget.isMe ? Colors.white : Colors.black;
 
+    late Widget contentWidget;
+    switch (widget.type) {
+      case LogType.text:
+        contentWidget = Text(
+          widget.message,
+          style: TextStyle(
+            color: txtColor,
+            fontWeight: FontWeight.w400,
+            fontSize: 14,
+          ),
+        );
+        break;
+      case LogType.image:
+        contentWidget = GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HeroPhotoViewRouteWrapper(
+                  roomName: widget.chatDataParent.chat.roomName,
+                  userName: widget.chatDataParent.userNameList[widget.userid] ??
+                      "userName",
+                  tag: widget.message,
+                  minScale: PhotoViewComputedScale.contained,
+                  maxScale: PhotoViewComputedScale.contained * 2.0,
+                  imageURL: widget.message,
+                ),
+              ),
+            );
+          },
+          child: Hero(
+            tag: widget.message,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                fit: BoxFit.cover,
+                widget.message,
+                loadingBuilder: (BuildContext context, Widget child,
+                    ImageChunkEvent? loadingProgress) {
+                  if (loadingProgress == null) {
+                    return child;
+                  }
+                  return Center(
+                    child: LinearProgressIndicator(
+                      color: Colors.white,
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+        break;
+      case LogType.file:
+        String fileName = widget.message.split(" ")[0];
+        String fileURL = widget.message.split(" ")[1];
+        ValueNotifier<double> percentageNotifier = ValueNotifier(1);
+        GlobalKey textButtonKey = GlobalKey();
+
+        contentWidget =
+            ColumnWithMainChild(mainChildKey: textButtonKey, children: [
+          TextButton.icon(
+            key: textButtonKey,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+              iconColor: txtColor,
+            ),
+            onPressed: () async {
+              var status = await Permission.storage.status;
+              if (!status.isGranted) {
+                await Permission.storage.request();
+                return;
+              }
+
+              percentageNotifier.value = 0;
+              String downloadDirPath = "/storage/emulated/0/Download/";
+              (await Directory(downloadDirPath).exists())
+                  ? null
+                  : downloadDirPath = "/storage/emulated/0/Downloads/";
+
+              final path = "$downloadDirPath/$fileName";
+
+              if (await Directory(downloadDirPath).exists()) {
+                percentageNotifier.value = 1;
+                showDownloadAlreadyToast();
+                OpenFile.open(downloadDirPath);
+                return;
+              }
+
+              await Dio().download(fileURL, path,
+                  onReceiveProgress: (received, total) {
+                percentageNotifier.value = (received / total);
+              });
+
+              showDownloadEndToast();
+            },
+            icon: const Icon(
+              Icons.description_rounded,
+            ),
+            label: Text(fileName,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: txtColor)),
+          ),
+          ValueListenableBuilder(
+            valueListenable: percentageNotifier,
+            builder: (context, value, child) => LinearProgressIndicator(
+              color: txtColor,
+              value: value,
+            ),
+          ),
+        ]);
+        break;
+      // 나중에 위로 올릴 예정
+      case LogType.video:
+      default:
+        contentWidget = const Text("This is Video");
+    }
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,14 +458,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                     child: Column(
                       crossAxisAlignment: crossAxisAlignment,
                       children: [
-                        Text(
-                          widget.message,
-                          style: TextStyle(
-                            color: txtColor,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 14,
-                          ),
-                        ),
+                        contentWidget,
                       ],
                     ),
                   ),
@@ -616,4 +772,153 @@ Divider dialogDivider() {
     indent: 30,
     endIndent: 30,
   );
+}
+
+class HeroPhotoViewRouteWrapper extends StatefulWidget {
+  const HeroPhotoViewRouteWrapper(
+      {super.key,
+      required this.imageURL,
+      this.backgroundDecoration,
+      this.minScale,
+      this.maxScale,
+      required this.userName,
+      required this.tag,
+      required this.roomName});
+
+  final String imageURL;
+  final BoxDecoration? backgroundDecoration;
+  final dynamic minScale;
+  final dynamic maxScale;
+  final String tag;
+  final String userName;
+  final String roomName;
+
+  @override
+  State<HeroPhotoViewRouteWrapper> createState() =>
+      _HeroPhotoViewRouteWrapperState();
+}
+
+class _HeroPhotoViewRouteWrapperState extends State<HeroPhotoViewRouteWrapper> {
+  late FToast fToast;
+  ValueNotifier<double> percentageNotifier = ValueNotifier(0);
+
+  @override
+  void initState() {
+    super.initState();
+    fToast = FToast();
+    fToast.init(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.userName),
+        centerTitle: true,
+        backgroundColor: Colors.black.withOpacity(0.7),
+        elevation: 0,
+      ),
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          Expanded(
+            child: PhotoView(
+              imageProvider: NetworkImage(widget.imageURL),
+              backgroundDecoration: widget.backgroundDecoration,
+              minScale: widget.minScale,
+              maxScale: widget.maxScale,
+              heroAttributes: PhotoViewHeroAttributes(tag: widget.tag),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: 80,
+              alignment: Alignment.bottomCenter,
+              decoration: BoxDecoration(color: Colors.black.withOpacity(0.7)),
+              child: Column(
+                children: [
+                  ValueListenableBuilder(
+                    valueListenable: percentageNotifier,
+                    builder: (context, value, child) => LinearProgressIndicator(
+                      backgroundColor: Palette.darkGray,
+                      color: Colors.white,
+                      value: value,
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  IconButton(
+                    onPressed: () async {
+                      var status = await Permission.photos.status;
+                      if (!status.isGranted) {
+                        await Permission.photos.request();
+                      }
+
+                      final tempDir = await getTemporaryDirectory();
+
+                      final path =
+                          "${tempDir.path}/${widget.imageURL.substring(widget.imageURL.length - 4, widget.imageURL.length)}.jpg";
+
+                      await Dio().download(widget.imageURL, path,
+                          onReceiveProgress: (received, total) {
+                        percentageNotifier.value = (received / total);
+                      });
+
+                      await GallerySaver.saveImage(
+                          albumName: widget.roomName, path);
+
+                      final file = File(path);
+                      if (await file.exists()) file.delete();
+                      showDownloadEndToast();
+                    },
+                    icon: const Icon(
+                      Icons.download_rounded,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  showDownloadAlreadyToast() {
+    fToast.showToast(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 36),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+            color: Palette.toastGray,
+          ),
+          child: const Text("해당 이미지가 이미 갤러리에 있습니다",
+              style: TextStyle(color: Colors.white)),
+        ),
+        toastDuration: const Duration(milliseconds: 1500),
+        fadeDuration: const Duration(milliseconds: 700));
+  }
+
+  showDownloadEndToast() {
+    fToast.showToast(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 36),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+            color: Palette.toastGray,
+          ),
+          child: const Text(
+            "이미지 다운로드가 완료되었습니다\n갤러리를 확인해주세요!",
+            style: TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        toastDuration: const Duration(milliseconds: 1500),
+        fadeDuration: const Duration(milliseconds: 700));
+  }
 }
