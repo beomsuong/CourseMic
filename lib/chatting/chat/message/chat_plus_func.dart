@@ -1,5 +1,6 @@
 import 'package:capston/chatting/chat/message/view_important_message.dart';
 import 'package:capston/chatting/chat_screen.dart';
+import 'package:capston/file_and_image/file_and_image_upload.dart';
 import 'package:capston/participation_page.dart';
 import 'package:capston/todo_list/todo_page.dart';
 import 'package:capston/widgets/RoundButtonStyle.dart';
@@ -29,7 +30,10 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
       currentFunction = function;
       switch (function) {
         case "자료 조회 or 보내기":
-          dynamicWidget = const DataWidget();
+          dynamicWidget = File_And_Image_Picker(
+            roomID: widget.roomID,
+            chatDataParent: widget.chatScreenState,
+          );
           break;
         case "Todo리스트 조회":
           dynamicWidget = ToDoPage(
@@ -80,7 +84,7 @@ class _ChatPlusFuncState extends State<ChatPlusFunc> {
                         setFunction('자료 조회 or 보내기');
                       },
                       style: buttonStyle,
-                      child: const Text('자료'),
+                      child: const Text('자료 공유'),
                     ),
                   ),
                   ElevatedButton(

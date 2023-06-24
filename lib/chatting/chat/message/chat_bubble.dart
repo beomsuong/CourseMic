@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'package:capston/chatting/chat/chat.dart';
-import 'package:capston/chatting/chat/chat_user.dart';
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/mypage/profile.dart';
 import 'package:capston/palette.dart';
@@ -64,6 +62,44 @@ class _ChatBubblesState extends State<ChatBubbles> {
     fToast.init(context);
   }
 
+  showExpiredFileToast() {
+    fToast.showToast(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 36),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+            color: Palette.toastGray,
+          ),
+          child: const Text(
+            "만료된 파일입니다, 다운로드 받을 수 없습니다",
+            style: TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        toastDuration: const Duration(milliseconds: 1500),
+        fadeDuration: const Duration(milliseconds: 700));
+  }
+
+  showExpiredImageToast() {
+    fToast.showToast(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 36),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+            color: Palette.toastGray,
+          ),
+          child: const Text(
+            "만료된 사진입니다, 사진 뷰어로 볼 수 없습니다",
+            style: TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        toastDuration: const Duration(milliseconds: 1500),
+        fadeDuration: const Duration(milliseconds: 700));
+  }
+
   showDownloadAlreadyToast() {
     fToast.showToast(
         child: Container(
@@ -73,8 +109,11 @@ class _ChatBubblesState extends State<ChatBubbles> {
             borderRadius: BorderRadius.circular(20.0),
             color: Palette.toastGray,
           ),
-          child: const Text("해당 파일이 이미 다운로드 폴더에 있습니다\n해당 파일을 열었습니다!",
-              style: TextStyle(color: Colors.white)),
+          child: const Text(
+            "해당 파일이 이미 다운로드 폴더에 있습니다\n해당 파일을 열었습니다!",
+            style: TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
         ),
         toastDuration: const Duration(milliseconds: 1500),
         fadeDuration: const Duration(milliseconds: 700));
@@ -89,8 +128,11 @@ class _ChatBubblesState extends State<ChatBubbles> {
             borderRadius: BorderRadius.circular(20.0),
             color: Palette.toastGray,
           ),
-          child: const Text("파일이 다운로드가 완료되었습니다\n다운로드 폴더를 확인해주세요!",
-              style: TextStyle(color: Colors.white)),
+          child: const Text(
+            "파일이 다운로드가 완료되었습니다\n다운로드 폴더를 확인해주세요!",
+            style: TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
         ),
         toastDuration: const Duration(milliseconds: 1500),
         fadeDuration: const Duration(milliseconds: 700));
@@ -298,49 +340,64 @@ class _ChatBubblesState extends State<ChatBubbles> {
         );
         break;
       case LogType.image:
-        contentWidget = GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => HeroPhotoViewRouteWrapper(
-                  roomName: widget.chatDataParent.chat.roomName,
-                  userName: widget.chatDataParent.userNameList[widget.userid] ??
-                      "userName",
-                  tag: widget.message,
-                  minScale: PhotoViewComputedScale.contained,
-                  maxScale: PhotoViewComputedScale.contained * 2.0,
-                  imageURL: widget.message,
-                ),
-              ),
-            );
-          },
-          child: Hero(
-            tag: widget.message,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                fit: BoxFit.cover,
-                widget.message,
-                loadingBuilder: (BuildContext context, Widget child,
-                    ImageChunkEvent? loadingProgress) {
-                  if (loadingProgress == null) {
-                    return child;
-                  }
-                  return Center(
-                    child: LinearProgressIndicator(
-                      color: Colors.white,
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
+        ValueNotifier<bool> bExpiredNotifier = ValueNotifier(false);
+        contentWidget = ValueListenableBuilder(
+            valueListenable: bExpiredNotifier,
+            builder: (context, value, child) {
+              return GestureDetector(
+                onTap: () async {
+                  if (value) await showExpiredFileToast();
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HeroPhotoViewRouteWrapper(
+                        roomName: widget.chatDataParent.chat.roomName,
+                        userName:
+                            widget.chatDataParent.userNameList[widget.userid] ??
+                                "userName",
+                        tag: widget.message,
+                        minScale: PhotoViewComputedScale.contained,
+                        maxScale: PhotoViewComputedScale.contained * 2.0,
+                        imageURL: widget.message,
+                      ),
                     ),
                   );
                 },
-              ),
-            ),
-          ),
-        );
+                child: Hero(
+                  tag: widget.message,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      fit: BoxFit.cover,
+                      widget.message,
+                      loadingBuilder: (BuildContext context, Widget child,
+                          ImageChunkEvent? loadingProgress) {
+                        if (loadingProgress == null) {
+                          return child;
+                        }
+                        return Center(
+                          child: LinearProgressIndicator(
+                            color: Colors.white,
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        );
+                      },
+                      errorBuilder: (BuildContext context, Object exception,
+                          StackTrace? stackTrace) {
+                        bExpiredNotifier.value = true;
+                        return const Icon(
+                          Icons.broken_image_rounded,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            });
         break;
       case LogType.file:
         String fileName = widget.message.split(" ")[0];
@@ -373,15 +430,20 @@ class _ChatBubblesState extends State<ChatBubbles> {
 
               if (await Directory(path).exists()) {
                 percentageNotifier.value = 1;
-                showDownloadAlreadyToast();
+                await showDownloadAlreadyToast();
                 OpenFile.open(path);
                 return;
               }
 
-              await Dio().download(fileURL, path,
-                  onReceiveProgress: (received, total) {
-                percentageNotifier.value = (received / total);
-              });
+              try {
+                await Dio().download(fileURL, path,
+                    onReceiveProgress: (received, total) {
+                  percentageNotifier.value = (received / total);
+                });
+              } on DioException {
+                await showExpiredFileToast();
+                return;
+              }
 
               showDownloadEndToast();
             },
@@ -526,7 +588,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
           showDialog(
             context: context,
             builder: (BuildContext context) => Dialog(
-              child: Container(
+              child: SizedBox(
                 width: 100,
                 height: 250,
                 child: Column(
@@ -859,17 +921,22 @@ class _HeroPhotoViewRouteWrapperState extends State<HeroPhotoViewRouteWrapper> {
                       final path =
                           "${tempDir.path}/${widget.imageURL.substring(widget.imageURL.length - 4, widget.imageURL.length)}.jpg";
 
-                      await Dio().download(widget.imageURL, path,
-                          onReceiveProgress: (received, total) {
-                        percentageNotifier.value = (received / total);
-                      });
+                      try {
+                        await Dio().download(widget.imageURL, path,
+                            onReceiveProgress: (received, total) {
+                          percentageNotifier.value = (received / total);
+                        });
+                      } on DioException {
+                        await showExpiredImageToast();
+                        return;
+                      }
 
                       await GallerySaver.saveImage(
                           albumName: widget.roomName, path);
 
                       final file = File(path);
                       if (await file.exists()) file.delete();
-                      showDownloadEndToast();
+                      await showDownloadEndToast();
                     },
                     icon: const Icon(
                       Icons.download_rounded,
@@ -885,6 +952,25 @@ class _HeroPhotoViewRouteWrapperState extends State<HeroPhotoViewRouteWrapper> {
     );
   }
 
+  showExpiredImageToast() {
+    fToast.showToast(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 36),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+            color: Palette.toastGray,
+          ),
+          child: const Text(
+            "만료된 사진입니다, 다운로드 받을 수 없습니다",
+            style: TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        toastDuration: const Duration(milliseconds: 1500),
+        fadeDuration: const Duration(milliseconds: 700));
+  }
+
   showDownloadAlreadyToast() {
     fToast.showToast(
         child: Container(
@@ -894,7 +980,7 @@ class _HeroPhotoViewRouteWrapperState extends State<HeroPhotoViewRouteWrapper> {
             borderRadius: BorderRadius.circular(20.0),
             color: Palette.toastGray,
           ),
-          child: const Text("해당 이미지가 이미 갤러리에 있습니다",
+          child: const Text("해당 사진이 이미 갤러리에 있습니다",
               style: TextStyle(color: Colors.white)),
         ),
         toastDuration: const Duration(milliseconds: 1500),
@@ -911,7 +997,7 @@ class _HeroPhotoViewRouteWrapperState extends State<HeroPhotoViewRouteWrapper> {
             color: Palette.toastGray,
           ),
           child: const Text(
-            "이미지 다운로드가 완료되었습니다\n갤러리를 확인해주세요!",
+            "사진 다운로드가 완료되었습니다\n갤러리를 확인해주세요!",
             style: TextStyle(color: Colors.white),
             textAlign: TextAlign.center,
           ),

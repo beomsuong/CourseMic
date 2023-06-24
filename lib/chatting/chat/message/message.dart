@@ -38,7 +38,7 @@ class _MessagesState extends State<Messages> {
     messageStream = logRef.orderBy('sendTime', descending: true).snapshots();
   }
 
-  Stream<QuerySnapshot<Object?>> fetchUserDetails(
+  Stream<QuerySnapshot<Object?>> updateUserDetail(
       QuerySnapshot<Object?> message) async* {
     // 유저마다 한 번만 호출되도록 Set을 사용
     final uniqueUserIDs = message.docs.map((doc) => doc['uid']).toSet();
@@ -57,7 +57,7 @@ class _MessagesState extends State<Messages> {
     final user = FirebaseAuth.instance.currentUser;
 
     return StreamBuilder<QuerySnapshot<Object?>>(
-      stream: messageStream.asyncExpand((message) => fetchUserDetails(message)),
+      stream: messageStream.asyncExpand((message) => updateUserDetail(message)),
       builder: (context, AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
