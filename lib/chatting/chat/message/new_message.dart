@@ -37,13 +37,20 @@ class NewMessageState extends State<NewMessage> {
     widget.chatDataParent.chatDocRef
         .update(widget.chatDataParent.chat.toJson());
 
-    if (isURL(_userEnterMessage) &&
-        await isUrlContentTypeImage(_userEnterMessage)) {
-      addImageMSG(
-        roomID: widget.roomID,
-        uid: user.uid,
-        content: _userEnterMessage,
-      );
+    if (isURL(_userEnterMessage)) {
+      if (await isUrlContentTypeImage(_userEnterMessage)) {
+        addImageMSG(
+          roomID: widget.roomID,
+          uid: user.uid,
+          content: _userEnterMessage,
+        );
+      } else {
+        addTextMSG(
+          roomID: widget.roomID,
+          uid: user.uid,
+          content: _userEnterMessage,
+        );
+      }
     } else {
       addTextMSG(
         roomID: widget.roomID,

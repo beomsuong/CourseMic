@@ -280,10 +280,14 @@ class _ChatBubblesState extends State<ChatBubbles> {
 
     for (String word in words) {
       if (isURL(word)) {
+        if (!word.startsWith('http://') && !word.startsWith('https://')) {
+          // ignore: prefer_interpolation_to_compose_strings
+          word = 'https://' + word;
+        }
         spans.add(
           TextSpan(
             text: '$word ',
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.blue,
               decoration: TextDecoration.underline,
             ),
@@ -302,10 +306,6 @@ class _ChatBubblesState extends State<ChatBubbles> {
     final RegExp urlRegex = RegExp(
       r'(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)',
     );
-
-    if (!text.startsWith('http') && !text.startsWith('https')) {
-      text = 'https://www.$text';
-    }
 
     return urlRegex.hasMatch(text);
   }
