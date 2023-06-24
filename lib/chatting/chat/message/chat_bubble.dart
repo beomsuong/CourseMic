@@ -48,7 +48,6 @@ final user = FirebaseAuth.instance.currentUser;
 
 class _ChatBubblesState extends State<ChatBubbles> {
   late FToast fToast = FToast();
-  List<ChatUser> userList = [];
 
   @override
   void initState() {
@@ -151,24 +150,25 @@ class _ChatBubblesState extends State<ChatBubbles> {
     }
   }
 
-  Widget showReadersCount() {
+  Padding showReadersCount() {
     final List<String> localReadersList = widget.readers;
-    final test = widget.chatDataParent.chat.userList.length;
-    final test2 = test - localReadersList.length;
-    // MainAxisAlignment mainAxisAlignment =
-    //     widget.isMe ? MainAxisAlignment.end : MainAxisAlignment.start;
+    final int unreadReadersCount =
+        widget.chatDataParent.chat.userList.length - localReadersList.length;
 
-    return Positioned(
-      left: widget.isMe ? 0 : 10,
-      right: widget.isMe ? 10 : 0,
+    return Padding(
+      padding: EdgeInsets.only(
+        left: widget.isMe ? 10 : 0,
+        right: widget.isMe ? 0 : 10,
+      ),
       child: Column(
         children: [
           Text(
-            test2.toString(),
+            unreadReadersCount > 0 ? unreadReadersCount.toString() : '',
             style: const TextStyle(
-                color: Palette.brightBlue,
-                fontSize: 12,
-                fontWeight: FontWeight.normal),
+              color: Palette.brightBlue,
+              fontSize: 12,
+              fontWeight: FontWeight.normal,
+            ),
           ),
         ],
       ),
@@ -176,13 +176,10 @@ class _ChatBubblesState extends State<ChatBubbles> {
   }
 
   Padding showReaderandSendtime() {
-    //TODO: 위치 버그 있음
-    final EdgeInsets padding = widget.isMe
-        ? const EdgeInsets.fromLTRB(0, 10, 0, 0)
-        : const EdgeInsets.fromLTRB(0, 10, 0, 0);
+    const EdgeInsets padding = EdgeInsets.zero;
 
     final EdgeInsets paddingWithReact = widget.react.isNotEmpty
-        ? padding.copyWith(bottom: padding.top + 6)
+        ? padding.copyWith(bottom: padding.bottom + 20)
         : padding;
 
     return Padding(
@@ -265,13 +262,14 @@ class _ChatBubblesState extends State<ChatBubbles> {
           )
         ],
         Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             if (widget.isMe)
               Column(
                 mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   //! 이곳에 읽은 사람 수 표시
-                  //sendTimeDisplay()
                   showReaderandSendtime(),
                 ],
               ),
@@ -314,10 +312,10 @@ class _ChatBubblesState extends State<ChatBubbles> {
             if (!widget.isMe)
               Column(
                 mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   //! 여기에 읽은 사람 수 표시
                   showReaderandSendtime(),
-                  //sendTimeDisplay(),
                 ],
               ),
           ],
@@ -343,74 +341,81 @@ class _ChatBubblesState extends State<ChatBubbles> {
     );
   }
 
+  Future<List<String>> getUserNames(List<String> readers) async {
+    final List<String> userNames = [];
+
+    for (String userID in readers) {
+      final docSnapshot =
+          await FirebaseFirestore.instance.collection('user').doc(userID).get();
+
+      if (docSnapshot.exists) {
+        final userName = docSnapshot.get('name');
+        userNames.add(userName);
+      }
+    }
+
+    return userNames;
+  }
+
   Widget showreadersDialog() {
-    return FilledButton.tonalIcon(
-      style: ButtonStyle(
-          backgroundColor:
-              MaterialStateColor.resolveWith((states) => Palette.brightViolet)),
-      onPressed: () {
-        showDialog(
+    if (widget.readers.length > 1) {
+      return FilledButton.tonalIcon(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateColor.resolveWith(
+            (states) => Palette.brightViolet,
+          ),
+        ),
+        onPressed: () async {
+          List<String> userNames = await getUserNames(widget.readers);
+          showDialog(
             context: context,
-            builder: (BuildContext context) => SimpleDialog(
-                  backgroundColor: Palette.backgroundColor,
-                  title: const Text('읽은 사람'),
+            builder: (BuildContext context) => Dialog(
+              child: Container(
+                width: 100,
+                height: 250,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    StreamBuilder(
-                        stream: widget.chatDataParent.chatStream,
-                        builder: (context, snapshot) {
-                          widget.chatDataParent.chat =
-                              Chat.fromJson(snapshot.data!);
-                          //유저 입장, 퇴장 때 이름 파싱
-                          for (var user
-                              in widget.chatDataParent.chat.userList) {
-                            FirebaseFirestore.instance
-                                .collection('user')
-                                .doc(user.userID)
-                                .get()
-                                .then((value) {
-                              //userNameList[user.userID = value.data()!['name']];
-                            });
-                          }
-                          var userNameList; //!
-                          return Column(
-                            children: <Widget>[
-                              Expanded(
-                                child: ListView(
-                                  children: userNameList.entries.map((entry) {
-                                    String key = entry.key;
-                                    String value = entry.value;
-                                    return ListTile(
-                                      title: Text(key),
-                                      subtitle: Text(value),
-                                    );
-                                  }).toList(),
-                                ),
-                              ),
-                            ],
-                          );
-                        })
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: userNames
+                              .map((userName) => Text(userName))
+                              .toList(),
+                        ),
+                      ),
+                    ),
                   ],
-                ));
-      },
-      icon: const Icon(Icons.done_all_sharp),
-      label: RichText(
-        text: TextSpan(
-          children: <TextSpan>[
-            TextSpan(
-                text: widget.readers.length.toString(),
+                ),
+              ),
+            ),
+          );
+        },
+        icon: const Icon(Icons.done_all_sharp),
+        label: RichText(
+          text: TextSpan(
+            children: <TextSpan>[
+              TextSpan(
+                text: //!
+                    widget.readers.length.toString(),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Palette.lightGray,
                   fontSize: 18,
-                )),
-            const TextSpan(
-              text: '명이 읽음',
-              style: TextStyle(color: Colors.black87),
-            ),
-          ],
+                ),
+              ),
+              const TextSpan(
+                text: '명이 읽음',
+                style: TextStyle(color: Colors.black87),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      return Container();
+    }
   }
 
   Future<dynamic> showMsgFuncDialog(BuildContext context) {
@@ -479,52 +484,36 @@ class _ChatBubblesState extends State<ChatBubbles> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        return true;
-      },
-      child: GestureDetector(
-        onLongPressStart: (LongPressStartDetails longPressStartDetails) =>
-            showMsgFuncDialog(context), //메시지 longpress하면 트리거
-        child: Column(
+    return Column(
+      children: [
+        Stack(
           children: [
-            Stack(
+            // 챗버블
+            Row(
+              mainAxisAlignment:
+                  widget.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+              crossAxisAlignment: widget.isMe
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
-                // 챗버블
-                Row(
-                  mainAxisAlignment: widget.isMe
-                      ? MainAxisAlignment.end
-                      : MainAxisAlignment.start,
-                  children: [
-                    if (widget.isMe) //! 나일 때
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          //sendTimeDisplay(),
-                          showChatBubble(context),
-                        ],
-                      ),
-                    if (!widget.isMe) //! 나 아니여~
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          showChatBubble(context),
-                        ],
-                      ),
-                  ],
-                ),
-                showProfileImage(),
-                Positioned(
-                  bottom: 0,
-                  left: widget.isMe ? null : 55,
-                  right: widget.isMe ? 10 : null,
-                  child: showReactCount(),
+                GestureDetector(
+                  onLongPressStart:
+                      (LongPressStartDetails longPressStartDetails) =>
+                          showMsgFuncDialog(context), //메시지 longpress하면 트리거,
+                  child: showChatBubble(context),
                 ),
               ],
             ),
+            showProfileImage(),
+            Positioned(
+              bottom: 0,
+              left: widget.isMe ? null : 55,
+              right: widget.isMe ? 10 : null,
+              child: showReactCount(),
+            ),
           ],
         ),
-      ),
+      ],
     );
   }
 
