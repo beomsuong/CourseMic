@@ -22,6 +22,7 @@ class NewMessageState extends State<NewMessage> {
   final _controller = TextEditingController();
   bool block = false;
   var _userEnterMessage = '';
+  String fileExtension = "";
 
   setBlockFalse() {
     setState(() {
@@ -33,16 +34,20 @@ class NewMessageState extends State<NewMessage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    widget.chatDataParent.chat.recentMessage = _userEnterMessage;
-    widget.chatDataParent.chatDocRef
-        .update(widget.chatDataParent.chat.toJson());
-
     if (isURL(_userEnterMessage) &&
         await isUrlContentTypeImage(_userEnterMessage)) {
       addImageMSG(
         roomID: widget.roomID,
         uid: user.uid,
-        content: _userEnterMessage,
+        content: "이미지.$fileExtension $_userEnterMessage",
+      );
+      widget.chatDataParent.updateRecentMessage("사진");
+      FCMLocalNotification.sendMessageNotification(
+        roomID: widget.roomID,
+        roomName: widget.chatDataParent.chat.roomName,
+        userName: widget.chatDataParent
+            .userNameList[widget.chatDataParent.currentUser.uid]!,
+        message: "사진을 보냈습니다",
       );
     } else {
       addTextMSG(
@@ -50,16 +55,15 @@ class NewMessageState extends State<NewMessage> {
         uid: user.uid,
         content: _userEnterMessage,
       );
+      widget.chatDataParent.updateRecentMessage(_userEnterMessage);
+      FCMLocalNotification.sendMessageNotification(
+        roomID: widget.roomID,
+        roomName: widget.chatDataParent.chat.roomName,
+        userName: widget.chatDataParent
+            .userNameList[widget.chatDataParent.currentUser.uid]!,
+        message: _userEnterMessage,
+      );
     }
-
-    widget.chatDataParent.updateRecentMessage(_userEnterMessage);
-    FCMLocalNotification.sendMessageNotification(
-      roomID: widget.roomID,
-      roomName: widget.chatDataParent.chat.roomName,
-      userName: widget
-          .chatDataParent.userNameList[widget.chatDataParent.currentUser.uid]!,
-      message: _userEnterMessage,
-    );
 
     _controller.clear();
     setState(() {
@@ -82,7 +86,11 @@ class NewMessageState extends State<NewMessage> {
   Future<bool> isUrlContentTypeImage(String url) async {
     final response = await http.head(Uri.parse(url));
     final contentType = response.headers['content-type'];
-    return contentType?.startsWith('image/') ?? false;
+    if (contentType?.startsWith('image/') ?? false) {
+      fileExtension = contentType!.split("/")[1];
+      return true;
+    }
+    return false;
   }
 
   @override

@@ -368,7 +368,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
               borderRadius: BorderRadius.circular(10),
               child: Image.network(
                 fit: BoxFit.cover,
-                widget.message,
+                imageURL,
                 loadingBuilder: (BuildContext context, Widget child,
                     ImageChunkEvent? loadingProgress) {
                   if (loadingProgress == null) {
