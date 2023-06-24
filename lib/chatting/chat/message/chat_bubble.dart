@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:capston/chatting/chat/message/log.dart';
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/mypage/profile.dart';
 import 'package:capston/palette.dart';
@@ -8,10 +11,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'save_important_message.dart';
 
 class ChatBubbles extends StatefulWidget {
   const ChatBubbles(
+    this.type,
     this.message,
     this.isMe,
     this.userid,
@@ -24,10 +29,11 @@ class ChatBubbles extends StatefulWidget {
     Key? key,
   }) : super(key: key);
 
-  final String userid;
+  final LogType type;
   final String message;
-  final String userName;
   final bool isMe;
+  final String userid;
+  final String userName;
   final String userImage;
   final Timestamp sendTime;
   final String roomID;
@@ -195,6 +201,60 @@ class _ChatBubblesState extends State<ChatBubbles> {
         widget.isMe ? const Color(0xFF8754f8) : const Color(0xffE7E7ED);
     final Color txtColor = widget.isMe ? Colors.white : Colors.black;
 
+    late Widget contentWidget;
+    switch (widget.type) {
+      case LogType.text:
+        contentWidget = Text(
+          widget.message,
+          style: TextStyle(
+            color: txtColor,
+            fontWeight: FontWeight.w400,
+            fontSize: 14,
+          ),
+        );
+        break;
+      case LogType.image:
+        contentWidget = ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: Image.network(
+            widget.message,
+          ),
+        );
+        break;
+      case LogType.file:
+        String fileName = widget.message.split(" ")[0];
+        String fileURL = widget.message.split(" ")[1];
+
+        contentWidget = TextButton.icon(
+          style: TextButton.styleFrom(
+              padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
+              iconColor: Colors.white,
+              textStyle: const TextStyle(color: Colors.white)),
+          onPressed: () async {
+            Directory appDir = await getApplicationDocumentsDirectory();
+            File downloadTo = File("${appDir.path}/$fileName");
+            print("${appDir.path}/$fileName");
+
+            // await FirebaseStorage.instance
+            //     .ref()
+            //     .child("shared_file")
+            //     .child(fileName)
+            //     .writeToFile(downloadTo);
+
+            // await FirebaseStorage.instance.refFromURL(fileURL).getData();
+          },
+          icon: const Icon(
+            Icons.description_rounded,
+          ),
+          label: Text(fileName),
+        );
+        break;
+      // 나중에 위로 올릴 예정
+      case LogType.video:
+      default:
+        contentWidget = const Text("hello");
+    }
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,14 +298,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                     child: Column(
                       crossAxisAlignment: crossAxisAlignment,
                       children: [
-                        Text(
-                          widget.message,
-                          style: TextStyle(
-                            color: txtColor,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 14,
-                          ),
-                        ),
+                        contentWidget,
                       ],
                     ),
                   ),

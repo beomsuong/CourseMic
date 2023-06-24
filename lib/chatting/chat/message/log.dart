@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum LogType {
   text,
-  media,
+  image,
+  video,
+  file,
   enter,
   exit,
   date,
@@ -125,9 +127,19 @@ void addTextMSG(
   addLog(roomID: roomID, type: LogType.text, uid: uid, content: content);
 }
 
-void addMediaMSG(
+void addImageMSG(
     {required String roomID, required String uid, required String content}) {
-  addLog(roomID: roomID, type: LogType.media, uid: uid, content: content);
+  addLog(roomID: roomID, type: LogType.image, uid: uid, content: content);
+}
+
+void addVideoMSG(
+    {required String roomID, required String uid, required String content}) {
+  addLog(roomID: roomID, type: LogType.video, uid: uid, content: content);
+}
+
+void addFileMSG(
+    {required String roomID, required String uid, required String content}) {
+  addLog(roomID: roomID, type: LogType.file, uid: uid, content: content);
 }
 
 void addEnterEventLog({required String roomID, required String uid}) {
@@ -157,7 +169,9 @@ void addLog(
       .collection("log");
   switch (type) {
     case LogType.text:
-    case LogType.media:
+    case LogType.image:
+    case LogType.video:
+    case LogType.file:
       final MSG msg = MSG(
         type: type,
         uid: uid,

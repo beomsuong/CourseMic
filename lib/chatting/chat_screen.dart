@@ -75,7 +75,7 @@ class ChatScreenState extends State<ChatScreen> {
     toDoColRef =
         firestore.collection("chat").doc(widget.roomID).collection("todo");
 
-    chat = Chat(roomName: widget.roomName, recentMessage: "");
+    chat = Chat(roomName: widget.roomName, recentMessage: "", userList: []);
     readInitChatData();
     progressPercentStream = toDoColRef.snapshots();
     chatStream = chatDocRef.snapshots();

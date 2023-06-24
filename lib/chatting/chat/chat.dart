@@ -12,7 +12,7 @@ class Chat {
       {this.bEndProject = false,
       required this.roomName,
       this.commanderID = '',
-      this.userList = const <ChatUser>[],
+      required this.userList,
       required this.recentMessage});
 
   factory Chat.fromJson(DocumentSnapshot<Object?> json) {
@@ -30,6 +30,8 @@ class Chat {
   // don't use set, use update!!! / 다른 필드들은 개별적으로 업데이트
   Map<String, dynamic> toJson() {
     return {
+      'bEndProject': bEndProject,
+      'roomName': roomName,
       'commanderID': commanderID,
       'userList': <Map<String, dynamic>>[
         for (var user in userList) user.toJson(),

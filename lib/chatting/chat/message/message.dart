@@ -79,9 +79,12 @@ class _MessagesState extends State<Messages> {
 
             switch (type) {
               case LogType.text:
-              case LogType.media:
+              case LogType.image:
+              case LogType.video:
+              case LogType.file:
                 final MSG msg = MSG.fromJson(chatDoc);
                 return ChatBubbles(
+                  msg.type,
                   msg.content,
                   msg.uid == user!.uid,
                   msg.uid,

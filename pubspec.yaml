@@ -61,6 +61,7 @@ dependencies:
   flutter_local_notifications: ^14.1.1
   http: ^0.13.6
   firebase_analytics: ^10.4.3
+  path_provider: ^2.0.15
 
 flutter_launcher_icons:
   path: "assets/images/icon.png"
