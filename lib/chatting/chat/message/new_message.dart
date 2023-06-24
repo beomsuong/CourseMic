@@ -52,10 +52,12 @@ class NewMessageState extends State<NewMessage> {
       );
     }
 
+    widget.chatDataParent.updateRecentMessage(_userEnterMessage);
     FCMLocalNotification.sendMessageNotification(
       roomID: widget.roomID,
       roomName: widget.chatDataParent.chat.roomName,
-      userName: (await widget.chatDataParent.userDocRef.get()).get("name"),
+      userName: widget
+          .chatDataParent.userNameList[widget.chatDataParent.currentUser.uid]!,
       message: _userEnterMessage,
     );
 
