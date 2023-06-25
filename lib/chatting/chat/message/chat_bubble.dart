@@ -399,7 +399,7 @@ class _ChatBubblesState extends State<ChatBubbles> {
                           color: txtColor,
                         ),
                         Text(
-                          " 만료된 이미지",
+                          " 만료된 사진",
                           style: TextStyle(color: txtColor),
                         ),
                       ],

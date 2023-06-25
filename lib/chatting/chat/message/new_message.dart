@@ -125,7 +125,9 @@ class NewMessageState extends State<NewMessage> {
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: TextField(
-                    maxLines: null,
+                    minLines: 1,
+                    maxLines: 4,
+                    maxLength: 1000,
                     enabled: !widget.chatDataParent.chat.bEndProject,
                     controller: _controller,
                     decoration:
