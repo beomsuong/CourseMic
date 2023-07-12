@@ -1,3 +1,5 @@
+//톡방 내의 각 메시지 표시
+
 import 'dart:io';
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/mypage/profile.dart';
@@ -24,8 +26,7 @@ class ChatBubbles extends StatefulWidget {
   const ChatBubbles(
     this.type,
     this.message,
-    // this.bPreUser,
-    this.isMe,
+    this.isMe, //업로드 한사람이 나라면 오른쪽에 출
     this.userid,
     this.userName,
     this.userImage,

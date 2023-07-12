@@ -18,8 +18,8 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ChatScreen extends StatefulWidget {
-  final String roomID;
-  final String roomName;
+  final String roomID; //체팅방 고유 ID
+  final String roomName; //체팅방 이름
 
   const ChatScreen({
     Key? key,
@@ -51,23 +51,9 @@ class ChatScreenState extends State<ChatScreen> {
 
   GlobalKey<NewMessageState> newMessageKey = GlobalKey();
 
-  // late FToast fToast;
-  // Widget toast = Container(
-  //   padding: const EdgeInsets.all(12),
-  //   margin: const EdgeInsets.only(bottom: 36),
-  //   decoration: BoxDecoration(
-  //     borderRadius: BorderRadius.circular(20.0),
-  //     color: Palette.toastGray,
-  //   ),
-  //   child: const Text("채팅방 코드가 클립보드에 복사되었습니다",
-  //       style: TextStyle(color: Colors.white)),
-  // );
-
   @override
   void initState() {
     super.initState();
-    // fToast = FToast();
-    // fToast.init(context);
     currentUser = _authentication.currentUser!;
     roomCode = widget.roomID.substring(0, 4);
     userDocRef = firestore.collection("user").doc(currentUser.uid);
@@ -115,8 +101,10 @@ class ChatScreenState extends State<ChatScreen> {
   }
 
   Widget roleUser(String userID, String userName, int userRole) {
+    //참가 유저의 역할 표시
     return InkWell(
       onTap: () {
+        //클릭시 해당 유저 프로필 확인
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -135,7 +123,7 @@ class ChatScreenState extends State<ChatScreen> {
         child: Padding(
           padding: const EdgeInsets.only(left: 10.0),
           child: Row(children: [
-            if (userRole == 0)
+            if (userRole == 0) //역할의 숫자가 큰 거만 표시
               Image.asset(
                 "assets/image/logo.png",
                 width: 30,
@@ -320,7 +308,6 @@ class ChatScreenState extends State<ChatScreen> {
                     color: Palette.pastelPurple,
                   );
                 }
-
                 chat = Chat.fromJson(snapshot.data!);
                 // 유저 들어오거나 나갈때, 이름 파싱
                 for (var user in chat.userList) {
@@ -568,10 +555,6 @@ class ChatScreenState extends State<ChatScreen> {
                                                             FontWeight.bold))),
                                             TextButton(
                                                 onPressed: () async {
-                                                  // FirebaseMessaging.instance
-                                                  //     .unsubscribeFromTopic(
-                                                  //         widget.roomID);
-
                                                   addEndEventLog(
                                                       roomID: widget.roomID,
                                                       uid: currentUser.uid);
@@ -580,7 +563,6 @@ class ChatScreenState extends State<ChatScreen> {
                                                           roomID: widget.roomID,
                                                           roomName:
                                                               chat.roomName);
-
                                                   chat.bEndProject = true;
                                                   chatDocRef.update({
                                                     "bEndProject":
@@ -611,6 +593,7 @@ class ChatScreenState extends State<ChatScreen> {
                       ),
                     ),
                     SizedBox(
+                      //톡방 나가기
                       height: 65,
                       child: ListTile(
                         tileColor: Palette.lightGray,
@@ -763,6 +746,7 @@ class ChatScreenState extends State<ChatScreen> {
                 newMessageKey.currentState?.setBlockFalse();
               },
               child: Messages(
+                // 톡방 특수 메시지 표시
                 roomID: widget.roomID,
                 chatDataParent: this,
               ),

@@ -21,8 +21,7 @@ class solve_quiz extends StatefulWidget {
 }
 
 class solve_quizState extends State<solve_quiz> {
-  bool bSubmit = false;
-
+  bool bSubmit = false; //퀴즈 제출 여부 체크
   late FToast fToast;
   Widget errorToast = Container(
     padding: const EdgeInsets.all(12),

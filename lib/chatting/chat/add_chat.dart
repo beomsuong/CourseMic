@@ -23,17 +23,15 @@ class _AddChatState extends State<AddChat> {
 
 // Add chatting room
   void addroom() async {
-    // 입력된 문자가 없을 경우 리턴
+    //체팅방 추가
     if (roomName.isEmpty) return;
-
+    // 방제목이 없으면 종료
     CollectionReference chatColRef =
         widget.chatListParent.firestore.collection('chat');
-
     Chat chat = Chat(
         roomName: roomName,
         recentMessage: "",
         userList: [ChatUser(userID: widget.chatListParent.currentUser.uid)]);
-    // add user to chatting room field
     chatColRef.add(chat.toJson()).then((DocumentReference doc) {
       widget.chatListParent.currUserDocRef.update({
         'chatList': FieldValue.arrayUnion([doc.id]),

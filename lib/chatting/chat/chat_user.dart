@@ -1,4 +1,5 @@
 final Map<String, int> userRole = {
+  //역할 정보
   '역할없음': 0,
   '커맨더': 16,
   '익스플로러': 8,
@@ -9,9 +10,9 @@ final Map<String, int> userRole = {
 
 class ChatUser {
   final String userID;
-  late int role;
-  late int participation;
-  late int doneCount;
+  late int role; //유저 역할
+  late int participation; //참가중인 과제
+  late int doneCount; //완료한 과제
 
   ChatUser(
       {required this.userID,
@@ -38,12 +39,10 @@ class ChatUser {
 
   List<String> getRoleList() {
     List<String> roleList = List<String>.empty(growable: true);
-
     for (var roleKey in userRole.keys) {
       var bRole = role & userRole[roleKey]!;
       if (bRole == userRole[roleKey]) roleList.add(roleKey);
     }
-
     return roleList;
   }
 

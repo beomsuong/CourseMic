@@ -14,8 +14,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _currentIndex = 0;
-
+  int _currentIndex = 0; //현재 보고 있는 페이지
   @override
   void initState() {
     super.initState();
@@ -39,8 +38,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: [
-        const ChatList(),
+        const ChatList(), //체팅방 리스트
         Profile(
+          //프로필보기
           userID: widget.currentUserID,
           bMyProfile: true,
           bChild: false,

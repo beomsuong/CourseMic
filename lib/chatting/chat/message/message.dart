@@ -65,10 +65,6 @@ class _MessagesState extends State<Messages> {
           );
         }
         final chatDocs = snapshot.data!.docs;
-        // String preUserID = "";
-        // int preTypeIndex = 0;
-        // bool bPreUser = false;
-
         return ListView.builder(
           padding: const EdgeInsets.only(top: 10, bottom: 10),
           reverse: true,
@@ -80,12 +76,6 @@ class _MessagesState extends State<Messages> {
             final userImageURL = userImage[userID]!;
             final type = LogType.values[chatDoc['type']];
             final logDocRef = logRef.doc(chatDoc.id);
-
-            // bPreUser =
-            //     userID == preUserID && preTypeIndex < LogType.enter.index;
-            // preUserID = userID;
-            // preTypeIndex = type.index;
-
             switch (type) {
               case LogType.text:
               case LogType.image:
@@ -94,7 +84,7 @@ class _MessagesState extends State<Messages> {
                 final MSG msg = MSG.fromJson(chatDoc);
                 if (!msg.readers
                     .contains(widget.chatDataParent.currentUser.uid)) {
-                  //읽은 사람 중에 내가 없으면
+                  //읽은 사람 중에 내가 없으면 메시지를 읽었다고 표시
                   msg.readers.add(widget.chatDataParent.currentUser.uid);
                   logDocRef.update({
                     'readers': FieldValue.arrayUnion(

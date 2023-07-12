@@ -1,3 +1,5 @@
+//톡방을 검색해서 들어가기
+
 import 'package:capston/chatting/chat/chat.dart';
 import 'package:capston/chatting/chat/chat_list.dart';
 import 'package:capston/chatting/chat/message/log.dart';
@@ -25,14 +27,13 @@ class _SearchChatState extends State<SearchChat> {
   Chat? searchedChat;
 
   void searchChat(String shortRoomCode) async {
+    //유저가 코드를 입력했을 때 실행
     QuerySnapshot querySnapshot =
         await widget.chatListParent.firestore.collection('chat').get();
-
     for (var doc in querySnapshot.docs) {
       if (shortRoomCode == doc.id.substring(0, 4)) {
         searchedChat = Chat.fromJson(doc);
         roomID = doc.id;
-
         if (searchedChat!.getIndexOfUser(
                 userID: widget.chatListParent.currentUser.uid) !=
             -1) {
@@ -61,6 +62,7 @@ class _SearchChatState extends State<SearchChat> {
   }
 
   void addRoom() {
+    //해당 톡방을 유저에게 추가
     widget.chatListParent.currUserDocRef.update({
       'chatList': FieldValue.arrayUnion([roomID]),
     });

@@ -28,7 +28,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
   final storage = FirebaseStorage.instance;
   final firestore = FirebaseFirestore.instance;
 
-  bool bSignupScreen = false;
+  bool bSignupScreen = false; //로그인, 회원가입인지 구분
 
   bool showSpinner = false;
   final _formKey = GlobalKey<FormState>();

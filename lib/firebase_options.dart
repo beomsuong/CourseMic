@@ -67,7 +67,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '903118596740',
     projectId: 'coursermic',
     storageBucket: 'coursermic.appspot.com',
-    iosClientId: '903118596740-15iqts5nivs0jdhhvdka25s4kmi3b34r.apps.googleusercontent.com',
+    iosClientId:
+        '903118596740-15iqts5nivs0jdhhvdka25s4kmi3b34r.apps.googleusercontent.com',
     iosBundleId: 'com.example.capston',
   );
 
@@ -77,7 +78,11 @@ class DefaultFirebaseOptions {
     messagingSenderId: '903118596740',
     projectId: 'coursermic',
     storageBucket: 'coursermic.appspot.com',
-    iosClientId: '903118596740-15iqts5nivs0jdhhvdka25s4kmi3b34r.apps.googleusercontent.com',
+    iosClientId:
+        '903118596740-15iqts5nivs0jdhhvdka25s4kmi3b34r.apps.googleusercontent.com',
     iosBundleId: 'com.example.capston',
   );
 }
+
+const serverKey =
+    "AAAA0kYQKoQ:APA91bEOrTUPrTVNjR6kXFA_zXYzh2AzPvoQX8OFgBDnPKnMUPXOQ4g6zV7Xr5ifW2TNDiMIVvVUsCL5-Cc72obQsEFNBUwDpiapgk-nDcwvnTKjCE88exSnAzHhmDfv9UNBhm1M6WyQ";

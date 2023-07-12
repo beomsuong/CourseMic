@@ -28,11 +28,10 @@ class ChatListState extends State<ChatList> with WidgetsBindingObserver {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   static const secureStorage = FlutterSecureStorage();
 
-  late final User currentUser;
+  late final User currentUser; //현재 유저
   late final DocumentReference currUserDocRef;
   late final CollectionReference chatColRef;
-  String? lastMessage;
-
+  String? lastMessage; //가장 마지막 입력된 메시지
   Map<Timestamp, Widget> chatWidgetMap = {};
 
   @override
@@ -80,16 +79,6 @@ class ChatListState extends State<ChatList> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       backgroundNotificationToChat();
     }
-    // switch (state) {
-    //   case AppLifecycleState.resumed:
-    //     break;
-    //   case AppLifecycleState.inactive:
-    //     break;
-    //   case AppLifecycleState.paused:
-    //     break;
-    //   case AppLifecycleState.detached:
-    //     break;
-    // }
   }
 
   void backgroundNotificationToChat() async {
@@ -144,7 +133,7 @@ class ChatListState extends State<ChatList> with WidgetsBindingObserver {
                 Icons.search_rounded,
                 color: Palette.pastelPurple,
                 size: 30,
-              ), // 원하는 아이콘을 선택합니다.
+              ),
             ),
           ],
         ),
@@ -161,7 +150,6 @@ class ChatListState extends State<ChatList> with WidgetsBindingObserver {
                       style: TextStyle(fontWeight: FontWeight.w500)));
             }
             MyUser currentMyUser = MyUser.fromJson(snapshot.data!);
-
             return ListView(
               children: [
                 for (var roomID in currentMyUser.chatList)

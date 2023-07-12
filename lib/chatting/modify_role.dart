@@ -1,3 +1,5 @@
+//체팅방 참가자의 역할을 수정
+
 import 'package:capston/palette.dart';
 import 'package:capston/widgets/RoundButtonStyle.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +25,7 @@ class ModifyRole extends StatefulWidget {
 }
 
 class _ModifyRoleState extends State<ModifyRole> {
-  late int userRole;
+  late int userRole; //유저의 역할 계산 비트 연산
   @override
   void initState() {
     super.initState();

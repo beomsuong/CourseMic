@@ -8,13 +8,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:percent_indicator/percent_indicator.dart';
-
 import 'package:capston/mypage/addDialog.dart';
 
 class Profile extends StatefulWidget {
   final String userID;
-  final bool bChild;
-  final bool bMyProfile;
+  final bool bChild; //내 프로필
+  final bool bMyProfile; // 내프로필
   const Profile(
       {super.key,
       required this.userID,
@@ -37,6 +36,7 @@ class ProfileState extends State<Profile> {
   }
 
   SizedBox print_info(String a, String b) {
+    //출력 양식
     return SizedBox(
       height: 30,
       child: Row(

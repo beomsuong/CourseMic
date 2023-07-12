@@ -246,33 +246,6 @@ class FCMLocalNotification {
             "foreground message alert ${notification.hashCode}, ${notification.title}, ${notification.body}");
       }
     });
-
-    // Disableground Alert
-    // RemoteMessage? message =
-    //     await FirebaseMessaging.instance.getInitialMessage();
-    // if (message != null) {
-    //   // 액션 부분 -> 파라미터는 message.data['test_parameter1'] 이런 방식으로...
-    //   print("background message alert");
-    //   var roomName = (await FirebaseFirestore.instance
-    //           .collection('chat')
-    //           .doc(message.data['roomID'])
-    //           .get())
-    //       .get('roomName');
-
-    //   if (context.mounted) {
-    //     await Navigator.push(
-    //       context,
-    //       MaterialPageRoute(
-    //         builder: (context) {
-    //           return ChatScreen(
-    //             roomID: message.data['roomID'],
-    //             roomName: roomName,
-    //           );
-    //         },
-    //       ),
-    //     );
-    //   }
-    // }
   }
 
   static Future<String> getInitalMessage() async {
