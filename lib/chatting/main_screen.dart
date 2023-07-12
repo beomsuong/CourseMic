@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:capston/mainpage.dart';
+import 'package:capston/mypage/my_user.dart';
 import 'package:flutter/material.dart';
 import 'package:capston/palette.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -554,20 +555,19 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                             }
                             final url = await imageRef.getDownloadURL();
 
+                            MyUser myUser = MyUser(
+                                name: userName,
+                                imageURL: url,
+                                chatList: [],
+                                doneProject: [],
+                                deviceToken: "");
+
                             await firestore
                                 .collection('user')
                                 .doc(newUser.user!.uid)
                                 .set(
-                              {
-                                'name': userName,
-                                'university': '???',
-                                'contactTime': '???',
-                                'MBTI': '???',
-                                'department': '???',
-                                'chatList': [],
-                                'imageURL': url
-                              },
-                            );
+                                  myUser.toJson(),
+                                );
 
                             await secureStorage.write(
                                 key: "login",

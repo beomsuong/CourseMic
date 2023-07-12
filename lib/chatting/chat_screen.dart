@@ -103,6 +103,17 @@ class ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Stream<DocumentSnapshot<Object?>> updateUserNameList(
+      DocumentSnapshot<Object?> chatSnapshot) async* {
+    Chat chat = Chat.fromJson(chatSnapshot);
+    for (var user in chat.userList) {
+      firestore.collection('user').doc(user.userID).get().then((value) {
+        userNameList[user.userID] = value.data()!['name'];
+      });
+    }
+    yield chatSnapshot;
+  }
+
   Widget roleUser(String userID, String userName, int userRole) {
     return InkWell(
       onTap: () {
@@ -301,7 +312,8 @@ class ChatScreenState extends State<ChatScreen> {
         },
         endDrawer: Drawer(
           child: StreamBuilder(
-              stream: chatStream,
+              stream: chatStream.asyncExpand(
+                  (chatSnapshot) => updateUserNameList(chatSnapshot)),
               builder: (context, snapshot) {
                 if (!snapshot.hasData || snapshot.hasError) {
                   return const CircularProgressIndicator(
@@ -784,5 +796,10 @@ class ChatScreenState extends State<ChatScreen> {
               content: widget,
               actions: actions,
             ));
+  }
+
+  void updateRecentMessage(String content) {
+    chat.recentMessage = content;
+    chatDocRef.update(chat.toJson());
   }
 }

@@ -511,14 +511,14 @@ class _BuildWriterQuizState extends State<BuildWriterQuiz> {
             Card(
               child: SizedBox(
                 width: 300,
-                height: 100,
+                height: 200,
                 child: Center(
                   child: Text(
                     randomMsgTxt!,
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        overflow: TextOverflow.fade),
                     textAlign: TextAlign.justify,
                   ),
                 ),
