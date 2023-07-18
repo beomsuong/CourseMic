@@ -1,3 +1,4 @@
+//초기 로그인 화면
 import 'dart:io';
 import 'package:capston/mainpage.dart';
 import 'package:capston/mypage/my_user.dart';
@@ -45,10 +46,11 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
     super.initState();
     fToast = FToast();
     fToast.init(context);
-    _autoLogin();
+    _autoLogin(); //자동 로그인
   }
 
   _autoLogin() async {
+    //이전에 로그인 정보가 남아있을 시 자동 로그인
     userInfo = await secureStorage.read(key: "login");
 
     if (userInfo == null) return;
@@ -60,14 +62,12 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
       emailController.text = userEmail;
       passwordController.text = userPassword;
     });
-
     try {
       final newUser = await _authentication.signInWithEmailAndPassword(
         email: userEmail,
         password: userPassword,
       );
       currentUserID = newUser.user!.uid;
-
       fToast.showToast(
           child: Container(
             padding: const EdgeInsets.all(12),

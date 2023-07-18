@@ -1,3 +1,5 @@
+//정보 수정 다이얼로그
+
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:capston/mypage/profile.dart';

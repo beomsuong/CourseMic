@@ -1,3 +1,4 @@
+//정보 수정
 import 'package:capston/mypage/profile.dart';
 import 'package:capston/palette.dart';
 import 'package:capston/widgets/RoundButtonStyle.dart';

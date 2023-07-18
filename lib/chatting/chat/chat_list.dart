@@ -1,3 +1,4 @@
+//톡방 리스트 표시
 import 'package:capston/chatting/chat/chat.dart';
 import 'package:capston/mypage/my_user.dart';
 import 'package:capston/notification.dart';
@@ -228,7 +229,7 @@ class Room extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.only(top: 8, left: 8, right: 8), //톡방간 간격
           child: Row(children: [
-            if (userRole == 0)
+            if (userRole == 0) //유저의 역할에 맞게 톡방 이미지 표시
               SizedBox(
                 width: 70,
                 height: 60,

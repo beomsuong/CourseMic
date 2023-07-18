@@ -1,3 +1,4 @@
+//체팅 로고 파이어베이스 저장
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum LogType {
@@ -159,6 +160,7 @@ void addEndEventLog({required String roomID, required String uid}) {
 }
 
 void addLog(
+    //파이어베이스에 해당 로그 저장
     {required String roomID,
     required LogType type,
     required String uid,
@@ -168,10 +170,11 @@ void addLog(
       .doc(roomID)
       .collection("log");
   switch (type) {
+    //로그 타입에 맞게 실행
     case LogType.text:
     case LogType.image:
     case LogType.video:
-    case LogType.file:
+    case LogType.file: //파일일 경우
       final MSG msg = MSG(
         type: type,
         uid: uid,
@@ -189,7 +192,7 @@ void addLog(
           EventLog(type: type, uid: uid, sendTime: Timestamp.now());
       logColRef.add(eventLog.toJson());
       break;
-    case LogType.end:
+    case LogType.end: //톡방 종료 시
       final EndLog endLog = EndLog(
           type: type, uid: uid, calUserIDs: [], sendTime: Timestamp.now());
       logColRef.add(endLog.toJson());
