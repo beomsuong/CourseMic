@@ -1,3 +1,4 @@
+//퀴즈 생성 로직
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:capston/chatting/chat_screen.dart';

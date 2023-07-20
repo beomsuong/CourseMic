@@ -180,7 +180,7 @@ class _AddDialog1State extends State<AddDialog> {
                           contentPadding: EdgeInsets.only(bottom: 4),
                         ),
                         onChanged: (value) {
-                          widget.myPageState.myUser.department = value;
+                          widget.myPageState.myUser.MBTI = value;
                         })),
                 ElevatedButton(
                   onPressed: () {

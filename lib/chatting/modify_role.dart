@@ -53,7 +53,7 @@ class _ModifyRoleState extends State<ModifyRole> {
     }
   }
 
-  bool _commander = false;
+  bool _commander = false; //각 역할 변수
   bool _engineer = false;
   bool _artist = false;
   bool _explorer = false;

@@ -1,3 +1,5 @@
+//프로필 확인 화면
+
 import 'package:capston/chatting/main_screen.dart';
 import 'package:capston/mypage/my_user.dart';
 import 'package:capston/mypage/queryDialog.dart';
@@ -18,7 +20,7 @@ class Profile extends StatefulWidget {
       {super.key,
       required this.userID,
       this.bChild = true,
-      this.bMyProfile = false});
+      this.bMyProfile = false}); //내 프로필인지 상대방 프로필인지 확인
 
   @override
   State<Profile> createState() => ProfileState();

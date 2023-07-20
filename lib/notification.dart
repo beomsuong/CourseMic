@@ -1,3 +1,5 @@
+//사용자 알림메시지 능
+
 import 'package:capston/chatting/chat_screen.dart';
 import 'package:capston/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
